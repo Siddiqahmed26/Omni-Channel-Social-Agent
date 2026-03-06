@@ -23,6 +23,7 @@
     "@typescript-eslint/no-explicit-any": "off",
     "@typescript-eslint/no-empty-object-type": "off",
     "import/extensions": "off",
+    "react-hooks/exhaustive-deps": "warn",
     "unused-imports/no-unused-imports": "error"
   }
 }
