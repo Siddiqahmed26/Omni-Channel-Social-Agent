@@ -34,6 +34,8 @@ import { AddAgentInboxDialog } from "../agent-inbox/components/add-agent-inbox-d
 import { useLocalStorage } from "../agent-inbox/hooks/use-local-storage";
 import { DropdownDialogMenu } from "../agent-inbox/components/dropdown-and-dialog";
 import { QuickGenerateDialog } from "../agent-inbox/components/quick-generate-dialog";
+import { logout } from "@/app/actions";
+import { LogOut } from "lucide-react";
 
 export function AppSidebar() {
   const { agentInboxes, changeAgentInbox, deleteAgentInbox } =
@@ -145,6 +147,17 @@ export function AppSidebar() {
                     <span>Documentation</span>
                   </PillButton>
                 </NextLink>
+
+                <form action={logout}>
+                  <PillButton
+                    variant="outline"
+                    className="flex gap-2 items-center justify-center text-red-600 hover:text-red-700 hover:bg-red-50"
+                    size="lg"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    <span>Sign Out</span>
+                  </PillButton>
+                </form>
               </div>
             </SidebarMenu>
           </SidebarGroupContent>
