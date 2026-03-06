@@ -5,11 +5,10 @@ import { Label } from '@/components/ui/label'
 import { signup } from '../actions'
 import { UserPlus, Mail, ArrowRight } from 'lucide-react'
 
-export default function SignupPage({
-    searchParams,
-}: {
-    searchParams: { message: string; error: string }
+export default async function SignupPage(props: {
+    searchParams: Promise<{ message?: string; error?: string }>
 }) {
+    const searchParams = await props.searchParams;
     return (
         <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-black">
             {/* Soft 'Classic' ambient background glows */}
