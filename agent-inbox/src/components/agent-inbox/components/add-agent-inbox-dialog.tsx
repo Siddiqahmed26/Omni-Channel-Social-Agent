@@ -185,10 +185,10 @@ export function AddAgentInboxDialog({
     >
       {!hideTrigger && (
         <DialogTrigger asChild>
-          <Button variant="outline">Add Inbox</Button>
+          <Button variant="outline" className="w-[85%] mx-auto mb-2 bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10 hover:text-white hover:border-white/20 shadow-lg rounded-xl transition-all font-medium">Add Inbox</Button>
         </DialogTrigger>
       )}
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] bg-slate-900/80 backdrop-blur-2xl border-white/10 text-white shadow-2xl">
         {noInboxesFoundParam === "true" ? (
           <DialogHeader>
             <DialogTitle>Welcome to the Agent Inbox!</DialogTitle>
