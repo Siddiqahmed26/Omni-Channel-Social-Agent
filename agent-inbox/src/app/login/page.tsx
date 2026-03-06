@@ -5,6 +5,7 @@ import { Label } from '@/components/ui/label'
 import { login } from '../actions'
 import { Lock, Mail, ArrowRight } from 'lucide-react'
 import { OAuthButtons } from '@/components/oauth-buttons'
+import { PasswordInput } from '@/components/password-input'
 
 export default async function LoginPage(props: {
     searchParams: Promise<{ message?: string; error?: string }>
@@ -67,18 +68,7 @@ export default async function LoginPage(props: {
                                 Forgot password?
                             </Link>
                         </div>
-                        <div className="relative">
-                            {/* Note: 'Show password' logic usually requires client-side state. 
-                   Keeping it generic password field for now as this is a server form. */}
-                            <Input
-                                className="bg-black/20 border-white/10 text-white placeholder:text-slate-500 rounded-xl focus:border-blue-500/50 focus:ring-blue-500/20 transition-all h-11"
-                                id="password"
-                                name="password"
-                                type="password"
-                                placeholder="........"
-                                required
-                            />
-                        </div>
+                        <PasswordInput id="password" name="password" required />
                     </div>
 
                     <Button

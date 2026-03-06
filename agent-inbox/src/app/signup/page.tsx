@@ -5,6 +5,7 @@ import { Label } from '@/components/ui/label'
 import { signup } from '../actions'
 import { UserPlus, Mail, ArrowRight } from 'lucide-react'
 import { OAuthButtons } from '@/components/oauth-buttons'
+import { PasswordInput } from '@/components/password-input'
 
 export default async function SignupPage(props: {
     searchParams: Promise<{ message?: string; error?: string }>
@@ -58,16 +59,7 @@ export default async function SignupPage(props: {
 
                     <div className="space-y-2">
                         <Label className="text-slate-300 ml-1" htmlFor="password">Password</Label>
-                        <div className="relative">
-                            <Input
-                                className="bg-black/20 border-white/10 text-white placeholder:text-slate-500 rounded-xl focus:border-blue-500/50 focus:ring-blue-500/20 transition-all h-11"
-                                id="password"
-                                name="password"
-                                type="password"
-                                placeholder="........"
-                                required
-                            />
-                        </div>
+                        <PasswordInput id="password" name="password" required />
                     </div>
 
                     <Button
