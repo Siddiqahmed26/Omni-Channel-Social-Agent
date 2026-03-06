@@ -5,11 +5,10 @@ import { Label } from '@/components/ui/label'
 import { resetPassword } from '../actions'
 import { KeyRound, Mail, ArrowRight, ArrowLeft } from 'lucide-react'
 
-export default function ForgotPasswordPage({
-    searchParams,
-}: {
-    searchParams: { message: string; error: string }
+export default async function ForgotPasswordPage(props: {
+    searchParams: Promise<{ message?: string; error?: string }>
 }) {
+    const searchParams = await props.searchParams;
     return (
         <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-black">
             <div className="absolute top-[-20%] right-[-10%] w-[50%] h-[50%] bg-blue-500/10 rounded-full blur-[120px] mix-blend-screen pointer-events-none" />
