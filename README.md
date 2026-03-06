@@ -1,3 +1,13 @@
+---
+title: Omni-Channel Social Agent
+emoji: 🤖
+colorFrom: blue
+colorTo: green
+sdk: docker
+app_port: 54367
+pinned: false
+---
+
 # 🤖 Omni-Channel Social Media Agent
 
 > **One URL. Any Content. Every Platform.**
