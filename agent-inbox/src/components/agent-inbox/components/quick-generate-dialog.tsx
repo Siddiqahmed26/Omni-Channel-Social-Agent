@@ -14,6 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { LoaderCircle, PlusCircle } from "lucide-react";
 import { logger } from "../utils/logger";
 import { createClient } from "@/lib/client";
+import { createClient as createSupabaseClient } from "@/utils/supabase/client";
 
 export function QuickGenerateDialog() {
     const { toast } = useToast();
@@ -35,8 +36,14 @@ export function QuickGenerateDialog() {
             // Initialize the client
             const client = createClient({ deploymentUrl, langchainApiKey: undefined });
 
-            // Create a brand new thread
-            const thread = await client.threads.create();
+            // Get current user for metadata
+            const supabase = createSupabaseClient();
+            const { data: { user } } = await supabase.auth.getUser();
+
+            // Create a brand new thread with user_id metadata
+            const thread = await client.threads.create({
+                metadata: { user_id: user?.id }
+            });
 
             // Start the agent run on this new thread
             await client.runs.create(thread.thread_id, graphId, {

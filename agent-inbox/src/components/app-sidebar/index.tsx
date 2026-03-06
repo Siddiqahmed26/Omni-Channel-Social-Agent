@@ -66,7 +66,7 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar className="border-r-[0px] bg-[#F9FAFB]">
+    <Sidebar className="border-r border-white/5 bg-slate-900/50 backdrop-blur-xl">
       <SidebarContent className="flex flex-col h-screen pb-9 pt-6">
         <div className="flex items-center justify-between px-11">
           <NextLink href="/" className="flex-shrink-0 w-full">
@@ -86,8 +86,8 @@ export function AppSidebar() {
                     <SidebarMenuItem
                       key={`graph-id-${item.graphId}-${idx}`}
                       className={cn(
-                        "flex items-center w-full",
-                        item.selected ? "bg-gray-100 rounded-md" : ""
+                        "flex items-center w-full px-2",
+                        item.selected ? "bg-white/10 rounded-lg shadow-[0_0_15px_rgba(255,255,255,0.05)]" : ""
                       )}
                     >
                       <TooltipProvider>
@@ -104,7 +104,7 @@ export function AppSidebar() {
                               <span
                                 className={cn(
                                   "truncate min-w-0 font-medium",
-                                  item.selected ? "text-black" : "text-gray-600"
+                                  item.selected ? "text-white" : "text-slate-400"
                                 )}
                               >
                                 {label}
@@ -140,7 +140,7 @@ export function AppSidebar() {
                 >
                   <PillButton
                     variant="outline"
-                    className="flex gap-2 items-center justify-center text-gray-800"
+                    className="flex gap-2 items-center justify-center text-slate-300 border-white/10 hover:bg-white/5 hover:text-white"
                     size="lg"
                   >
                     <FileText />

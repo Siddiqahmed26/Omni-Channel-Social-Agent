@@ -186,14 +186,14 @@ export function AgentInboxView<
   };
 
   return (
-    <div ref={containerRef} className="min-w-[1000px] h-full overflow-y-auto">
+    <div ref={containerRef} className="min-w-[1000px] h-full overflow-y-auto bg-transparent">
       <div className="pl-5 pt-4">
         <BackfillBanner />
         <InboxButtons changeInbox={changeInbox} />
       </div>
       <div
         ref={scrollableContentRef}
-        className="flex flex-col items-start w-full max-h-fit h-full border-y-[1px] border-gray-50 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 mt-3"
+        className="flex flex-col items-start w-full max-h-fit h-full border-y border-white/5 overflow-y-auto scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent mt-3"
       >
         {threadDataToRender.map((threadData, idx) => {
           return (
@@ -205,19 +205,17 @@ export function AgentInboxView<
             />
           );
         })}
-        {noThreadsFound && !loading && (
-          <div className="w-full flex items-center justify-center p-4 flex-col">
-            <div className="flex gap-2 items-center justify-center text-gray-700 mb-4">
-              <InboxIcon className="w-6 h-6" />
+            <div className="flex gap-2 items-center justify-center text-slate-500 mb-4">
+              <InboxIcon className="w-6 h-6 opacity-20" />
               <p className="font-medium">No threads found</p>
             </div>
           </div>
         )}
         {noThreadsFound && loading && (
-          <div className="w-full flex items-center justify-center p-4">
-            <div className="flex gap-2 items-center justify-center text-gray-700">
-              <p className="font-medium">Loading</p>
-              <LoaderCircle className="w-6 h-6 animate-spin" />
+          <div className="w-full flex items-center justify-center p-8">
+            <div className="flex gap-2 items-center justify-center text-slate-400">
+              <p className="font-medium italic">Scanning for your tasks...</p>
+              <LoaderCircle className="w-6 h-6 animate-spin text-blue-500" />
             </div>
           </div>
         )}
@@ -225,6 +223,6 @@ export function AgentInboxView<
       <div className="flex justify-start w-full p-5">
         <Pagination />
       </div>
-    </div>
+    </div >
   );
 }

@@ -62,8 +62,8 @@ function ButtonGroup({
       <Button
         variant="outline"
         className={cn(
-          "rounded-l-md rounded-r-none border-r-[0px]",
-          showingState ? "text-black" : "bg-white"
+          "rounded-l-md rounded-r-none border-white/10",
+          showingState ? "bg-white/20 text-white" : "bg-white/5 text-slate-400"
         )}
         size="sm"
         onClick={handleShowState}
@@ -73,8 +73,8 @@ function ButtonGroup({
       <Button
         variant="outline"
         className={cn(
-          "rounded-l-none rounded-r-md border-l-[0px]",
-          showingDescription ? "text-black" : "bg-white"
+          "rounded-l-none rounded-r-md border-l-[0px] border-white/10",
+          showingDescription ? "bg-white/20 text-white" : "bg-white/5 text-slate-400"
         )}
         size="sm"
         onClick={handleShowDescription}
@@ -134,10 +134,10 @@ export function ThreadActionsView<
   const actions = useInterruptedActions<ThreadValues>({
     threadData: isInterrupted
       ? {
-          thread: threadData.thread,
-          status: "interrupted",
-          interrupts: threadData.interrupts || [],
-        }
+        thread: threadData.thread,
+        status: "interrupted",
+        interrupts: threadData.interrupts || [],
+      }
       : null,
     setThreadData,
   });
@@ -276,7 +276,7 @@ export function ThreadActionsView<
                 <ArrowLeft className="w-5 h-5" />
               </TooltipIconButton>
               <div className="flex items-center gap-2">
-                <p className="text-2xl tracking-tighter text-pretty">
+                <p className="text-2xl tracking-tighter text-pretty text-white font-light">
                   {threadTitle}
                 </p>
               </div>
@@ -288,7 +288,7 @@ export function ThreadActionsView<
                 <Button
                   size="sm"
                   variant="outline"
-                  className="flex items-center gap-1 bg-white"
+                  className="flex items-center gap-1 bg-white/5 border-white/10 text-slate-300 hover:bg-white/10 hover:text-white"
                   onClick={handleOpenInStudio}
                 >
                   Studio
@@ -316,7 +316,7 @@ export function ThreadActionsView<
           <div className="flex flex-row gap-2 items-center justify-start w-full">
             <Button
               variant="outline"
-              className="text-gray-800 border-gray-500 font-normal bg-white"
+              className="text-slate-300 border-white/20 font-normal bg-white/5 hover:bg-white/10 hover:text-white"
               onClick={actions?.handleIgnore} // Assuming ignore doesn't need config
               disabled={actions?.loading}
             >
@@ -355,7 +355,7 @@ export function ThreadActionsView<
                 <AlertCircle className="w-4 h-4 text-yellow-600" />
               )}{" "}
               {/* Icon for valid interrupt */}
-              <p className="text-2xl tracking-tighter text-pretty">
+              <p className="text-2xl tracking-tighter text-pretty text-white font-light">
                 {threadTitle}
               </p>
             </div>
@@ -366,7 +366,7 @@ export function ThreadActionsView<
               <Button
                 size="sm"
                 variant="outline"
-                className="flex items-center gap-1 bg-white"
+                className="flex items-center gap-1 bg-white/5 border-white/10 text-slate-300 hover:bg-white/10 hover:text-white"
                 onClick={handleOpenInStudio}
               >
                 Studio
@@ -388,14 +388,14 @@ export function ThreadActionsView<
             <div className="flex flex-row gap-2 items-center justify-start w-full">
               <Button
                 variant="outline"
-                className="text-gray-800 border-gray-500 font-normal bg-white flex items-center gap-2"
+                className="text-slate-300 border-white/20 font-normal bg-white/5 hover:bg-white/10 hover:text-white flex items-center gap-2"
                 onClick={handleRefreshThread}
                 disabled={refreshing}
               >
                 <RefreshCw
-                  className={cn("w-4 h-4", refreshing && "animate-spin")}
+                  className={cn("w-4 h-4", refreshing && "animate-spin text-blue-400")}
                 />
-                {refreshing ? "Refreshing..." : "Refresh Thread Status"}
+                {refreshing ? "Refreshing..." : "Refresh Status"}
               </Button>
             </div>
           )}
@@ -416,39 +416,39 @@ export function ThreadActionsView<
           )}
 
           {/* Thread information summary */}
-          <div className="flex flex-col gap-3 p-4 border border-gray-200 rounded-md bg-gray-50">
-            <h3 className="font-medium">Thread Details</h3>
+          <div className="flex flex-col gap-3 p-6 border border-white/10 rounded-2xl bg-white/5 backdrop-blur-sm">
+            <h3 className="font-medium text-white tracking-tight">Thread Details</h3>
 
-            <div className="grid grid-cols-2 gap-2 text-sm">
-              <div>
-                <span className="font-medium text-gray-700">Status:</span>
-                <span className="ml-2 capitalize">{threadData.status}</span>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+              <div className="flex flex-col gap-1">
+                <span className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Status</span>
+                <span className="capitalize text-slate-200">{threadData.status}</span>
               </div>
 
-              <div>
-                <span className="font-medium text-gray-700">Created:</span>
-                <span className="ml-2">
-                  {new Date(threadData.thread.created_at).toLocaleString()}
+              <div className="flex flex-col gap-1">
+                <span className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Created</span>
+                <span className="text-slate-200">
+                  {new Date(threadData.thread.thread_id ? threadData.thread.created_at : "").toLocaleString()}
                 </span>
               </div>
 
-              <div>
-                <span className="font-medium text-gray-700">Last updated:</span>
-                <span className="ml-2">
+              <div className="flex flex-col gap-1">
+                <span className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Last updated</span>
+                <span className="text-slate-200">
                   {new Date(threadData.thread.updated_at).toLocaleString()}
                 </span>
               </div>
 
-              <div>
-                <span className="font-medium text-gray-700">ID:</span>
-                <span className="ml-2 font-mono text-xs">
+              <div className="flex flex-col gap-1">
+                <span className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">ID</span>
+                <span className="font-mono text-xs text-blue-400/80 truncate">
                   {threadData.thread.thread_id}
                 </span>
               </div>
             </div>
           </div>
 
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-slate-400">
             View the thread state in the &quot;State&quot; tab for detailed
             information about this thread.
           </p>
@@ -475,7 +475,7 @@ export function ThreadActionsView<
           </TooltipIconButton>
           <div className="flex items-center gap-2">
             <AlertCircle className="w-4 h-4 text-yellow-600" />
-            <p className="text-2xl tracking-tighter text-pretty">
+            <p className="text-2xl tracking-tighter text-pretty text-white font-light">
               {threadTitle}
             </p>
           </div>
@@ -486,7 +486,7 @@ export function ThreadActionsView<
             <Button
               size="sm"
               variant="outline"
-              className="flex items-center gap-1 bg-white"
+              className="flex items-center gap-1 bg-white/5 border-white/10 text-slate-300 hover:bg-white/10 hover:text-white"
               onClick={handleOpenInStudio}
             >
               Studio
@@ -506,7 +506,7 @@ export function ThreadActionsView<
       <div className="flex flex-row gap-2 items-center justify-start w-full">
         <Button
           variant="outline"
-          className="text-gray-800 border-gray-500 font-normal bg-white"
+          className="text-slate-300 border-white/20 font-normal bg-white/5 hover:bg-white/10 hover:text-white"
           onClick={actions?.handleResolve}
           disabled={actions?.loading}
         >
@@ -518,6 +518,7 @@ export function ThreadActionsView<
               <Button
                 variant="outline"
                 size="sm"
+                className="text-slate-300 border-white/20 font-normal bg-white/5 hover:bg-white/10 hover:text-white"
                 onClick={actions?.handleIgnore}
                 disabled={actions?.loading}
               >
@@ -539,15 +540,15 @@ export function ThreadActionsView<
         interruptValue={firstInterrupt!}
         humanResponse={actions?.humanResponse as any}
         initialValues={actions?.initialHumanInterruptEditValue.current || {}}
-        setHumanResponse={actions?.setHumanResponse ?? (() => {})}
+        setHumanResponse={actions?.setHumanResponse ?? (() => { })}
         streaming={actions?.streaming ?? false}
         streamFinished={actions?.streamFinished ?? false}
         currentNode={actions?.currentNode ?? ""}
         supportsMultipleMethods={actions?.supportsMultipleMethods ?? false}
-        setSelectedSubmitType={actions?.setSelectedSubmitType ?? (() => {})}
-        setHasAddedResponse={actions?.setHasAddedResponse ?? (() => {})}
-        setHasEdited={actions?.setHasEdited ?? (() => {})}
-        handleSubmit={actions?.handleSubmit ?? (async () => {})}
+        setSelectedSubmitType={actions?.setSelectedSubmitType ?? (() => { })}
+        setHasAddedResponse={actions?.setHasAddedResponse ?? (() => { })}
+        setHasEdited={actions?.setHasEdited ?? (() => { })}
+        handleSubmit={actions?.handleSubmit ?? (async () => { })}
       />
     </div>
   );

@@ -1,7 +1,7 @@
 export const agentInboxSvg = (
   <img
     src="/logo.png"
-    alt="Omni Social Agent"
-    style={{ height: '32px', width: 'auto' }}
+    alt="Omni"
+    className="h-8 w-auto object-contain brightness-0 invert"
   />
 );

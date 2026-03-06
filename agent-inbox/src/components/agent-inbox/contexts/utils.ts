@@ -315,27 +315,32 @@ export function processThreadWithoutInterrupts<
 
 type ThreadFilterMetadata =
   | {
-      graph_id: string;
-    }
+    graph_id: string;
+  }
   | {
-      assistant_id: string;
-    };
+    assistant_id: string;
+  };
 
 export function getThreadFilterMetadata(
-  agentInboxes: AgentInbox[]
-): ThreadFilterMetadata | undefined {
+  agentInboxes: AgentInbox[],
+  userId?: string
+): (ThreadFilterMetadata & { user_id?: string }) | undefined {
   const graphAssistantId = agentInboxes.find((i) => i.selected)?.graphId;
+  const metadata: any = {};
+
   if (graphAssistantId) {
     if (validate(graphAssistantId)) {
-      return {
-        assistant_id: graphAssistantId,
-      };
+      metadata.assistant_id = graphAssistantId;
     } else {
-      return {
-        graph_id: graphAssistantId,
-      };
+      metadata.graph_id = graphAssistantId;
     }
   }
+
+  if (userId) {
+    metadata.user_id = userId;
+  }
+
+  return Object.keys(metadata).length > 0 ? metadata : undefined;
 }
 
 /**
