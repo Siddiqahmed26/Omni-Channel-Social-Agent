@@ -11,6 +11,7 @@ import { createClient } from "@/lib/client";
 import { Run, Thread, ThreadStatus } from "@langchain/langgraph-sdk";
 import { END } from "@langchain/langgraph/web";
 import React from "react";
+import { createClient as createSupabaseClient } from "@/utils/supabase/client";
 import { useQueryParams } from "../hooks/use-query-params";
 import {
   INBOX_PARAM,
@@ -51,11 +52,11 @@ type ThreadContentType<
     }
   ) => TStream extends true
     ?
-        | AsyncGenerator<{
-            event: Record<string, any>;
-            data: any;
-          }>
-        | undefined
+    | AsyncGenerator<{
+      event: Record<string, any>;
+      data: any;
+    }>
+    | undefined
     : Promise<Run> | undefined;
   fetchSingleThread: (
     threadId: string
@@ -136,8 +137,17 @@ export function ThreadsProvider<
   const offsetParam = searchParams.get(OFFSET_PARAM);
   const inboxParam = searchParams.get(INBOX_PARAM);
 
+  const [user, setUser] = React.useState<any>(null);
+
   React.useEffect(() => {
-    if (typeof window === "undefined") {
+    const supabase = createSupabaseClient();
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUser(user);
+    });
+  }, []);
+
+  React.useEffect(() => {
+    if (typeof window === "undefined" || !user) {
       return;
     }
     if (!agentInboxes.length) {
@@ -192,12 +202,12 @@ export function ThreadsProvider<
         }
 
         // Handle inbox filtering differently based on type
-        let statusInput: { status?: ThreadStatus } = {};
+        const statusInput: { status?: ThreadStatus } = {};
         if (inbox !== "all" && inbox !== "human_response_needed") {
           statusInput = { status: inbox as ThreadStatus };
         }
 
-        const metadataInput = getThreadFilterMetadata(agentInboxes);
+        const metadataInput = getThreadFilterMetadata(agentInboxes, user?.id);
 
         const threadSearchArgs = {
           offset,
@@ -313,7 +323,7 @@ export function ThreadsProvider<
         getItem,
         toast,
       });
-      if (!client) {
+      if (!client || !user) {
         return;
       }
       const thread = await client.threads.get(threadId);
@@ -417,11 +427,11 @@ export function ThreadsProvider<
     }
   ): TStream extends true
     ?
-        | AsyncGenerator<{
-            event: Record<string, any>;
-            data: any;
-          }>
-        | undefined
+    | AsyncGenerator<{
+      event: Record<string, any>;
+      data: any;
+    }>
+    | undefined
     : Promise<Run> | undefined => {
     const graphId = agentInboxes.find((i) => i.selected)?.graphId;
     if (!graphId) {

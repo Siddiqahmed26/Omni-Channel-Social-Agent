@@ -12,12 +12,12 @@ import {
 
 export function MobileHeader() {
     return (
-        <header className="flex md:hidden items-center justify-between px-4 py-3 bg-white border-b border-gray-100 sticky top-0 z-50">
+        <header className="flex md:hidden items-center justify-between px-4 py-3 bg-slate-900/80 backdrop-blur-xl border-b border-white/5 sticky top-0 z-50">
             <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-blue-500 to-purple-600 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-blue-500 to-purple-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
                     <span className="text-white text-xs font-bold">O</span>
                 </div>
-                <span className="font-semibold text-sm text-gray-800">Omni Social Agent</span>
+                <span className="font-light text-sm text-white tracking-wide">Omni Social Agent</span>
             </div>
 
             <DropdownMenu>

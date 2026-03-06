@@ -19,12 +19,12 @@ interface GenericInboxItemProps<
   ThreadValues extends Record<string, any> = Record<string, any>,
 > {
   threadData:
-    | GenericThreadData<ThreadValues>
-    | {
-        thread: Thread<ThreadValues>;
-        status: "interrupted";
-        interrupts?: undefined;
-      };
+  | GenericThreadData<ThreadValues>
+  | {
+    thread: Thread<ThreadValues>;
+    status: "interrupted";
+    interrupts?: undefined;
+  };
   isLast: boolean;
 }
 
@@ -96,8 +96,8 @@ export function GenericInboxItem<
         )
       }
       className={cn(
-        "grid grid-cols-12 w-full p-4 py-4.5 cursor-pointer hover:bg-gray-50/90 transition-colors ease-in-out h-[71px]",
-        !isLast && "border-b-[1px] border-gray-200"
+        "grid grid-cols-12 w-full p-4 py-4.5 cursor-pointer hover:bg-white/5 transition-all ease-in-out h-[71px] group",
+        !isLast && "border-b border-white/5"
       )}
     >
       <div className="col-span-1 flex justify-center items-center">
@@ -110,7 +110,7 @@ export function GenericInboxItem<
           !selectedInbox && "col-span-9"
         )}
       >
-        <p className="text-sm font-semibold text-black">Thread ID:</p>
+        <p className="text-sm font-medium text-slate-400 group-hover:text-slate-300">Thread ID:</p>
         <ThreadIdCopyable showUUID threadId={threadData.thread.thread_id} />
       </div>
 
@@ -119,7 +119,7 @@ export function GenericInboxItem<
           <Button
             size="sm"
             variant="outline"
-            className="flex items-center gap-1 bg-white"
+            className="flex items-center gap-1 bg-white/5 border-white/10 text-slate-300 hover:bg-white/10 hover:text-white"
             onClick={handleOpenInStudio}
           >
             Studio
@@ -136,7 +136,7 @@ export function GenericInboxItem<
         <InboxItemStatuses status={threadData.status} />
       </div>
 
-      <p className="col-span-1 text-right text-sm text-gray-600 font-light pt-2">
+      <p className="col-span-1 text-right text-xs text-slate-500 font-light pt-2 italic">
         {updatedAtDateString}
       </p>
     </div>
