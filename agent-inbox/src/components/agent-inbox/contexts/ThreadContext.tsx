@@ -202,7 +202,7 @@ export function ThreadsProvider<
         }
 
         // Handle inbox filtering differently based on type
-        const statusInput: { status?: ThreadStatus } = {};
+        let statusInput: { status?: ThreadStatus } = {};
         if (inbox !== "all" && inbox !== "human_response_needed") {
           statusInput = { status: inbox as ThreadStatus };
         }
