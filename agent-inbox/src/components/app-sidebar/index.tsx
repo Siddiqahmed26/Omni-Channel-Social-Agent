@@ -33,6 +33,7 @@ import {
 import { AddAgentInboxDialog } from "../agent-inbox/components/add-agent-inbox-dialog";
 import { useLocalStorage } from "../agent-inbox/hooks/use-local-storage";
 import { DropdownDialogMenu } from "../agent-inbox/components/dropdown-and-dialog";
+import { QuickGenerateDialog } from "../agent-inbox/components/quick-generate-dialog";
 
 export function AppSidebar() {
   const { agentInboxes, changeAgentInbox, deleteAgentInbox } =
@@ -71,6 +72,7 @@ export function AppSidebar() {
           </NextLink>
           <AppSidebarTrigger isOutside={false} className="mt-1" />
         </div>
+        <QuickGenerateDialog />
         <SidebarGroup className="flex-1 overflow-y-auto pt-6">
           <SidebarGroupContent className="h-full">
             <SidebarMenu className="flex flex-col gap-2 justify-between h-full">
