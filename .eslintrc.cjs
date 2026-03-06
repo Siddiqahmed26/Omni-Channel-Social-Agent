@@ -9,7 +9,7 @@ module.exports = {
     project: "./tsconfig.json",
     sourceType: "module",
   },
-  plugins: ["import", "@typescript-eslint", "no-instanceof"],
+  plugins: ["import", "@typescript-eslint"],
   ignorePatterns: [
     ".eslintrc.cjs",
     "scripts",

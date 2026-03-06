@@ -2,8 +2,9 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { signup, signInWithGoogle, signInWithGithub } from '../actions'
+import { signup } from '../actions'
 import { UserPlus, Mail, ArrowRight } from 'lucide-react'
+import { OAuthButtons } from '@/components/oauth-buttons'
 
 export default async function SignupPage(props: {
     searchParams: Promise<{ message?: string; error?: string }>
@@ -82,18 +83,7 @@ export default async function SignupPage(props: {
                         <div className="relative flex justify-center text-xs uppercase"><span className="bg-transparent px-2 text-slate-500">Or continue with</span></div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-3">
-                        <form action={signInWithGoogle}>
-                            <Button type="submit" variant="outline" className="w-full h-10 bg-white/5 border-white/10 text-slate-300 hover:bg-white/10 hover:text-white rounded-lg transition-colors">
-                                Google
-                            </Button>
-                        </form>
-                        <form action={signInWithGithub}>
-                            <Button type="submit" variant="outline" className="w-full h-10 bg-white/5 border-white/10 text-slate-300 hover:bg-white/10 hover:text-white rounded-lg transition-colors">
-                                GitHub
-                            </Button>
-                        </form>
-                    </div>
+                    <OAuthButtons />
 
                     <p className="mt-4 text-sm text-center text-slate-400">
                         Already have an account?{' '}
