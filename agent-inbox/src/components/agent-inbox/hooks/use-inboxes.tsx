@@ -102,23 +102,32 @@ export function useInboxes() {
               error
             );
             // Handle error state appropriately
-            setAgentInboxes([]);
-            updateQueryParams(NO_INBOXES_FOUND_PARAM, "true");
-            return;
+            currentInboxes = [];
           }
-        } else {
-          logger.log("No inboxes in localStorage for selection logic");
-          setAgentInboxes([]);
-          updateQueryParams(NO_INBOXES_FOUND_PARAM, "true");
-          return;
         }
       }
 
       if (!currentInboxes.length) {
-        logger.log("No current inboxes to process selection logic");
-        setAgentInboxes([]);
-        updateQueryParams(NO_INBOXES_FOUND_PARAM, "true");
-        return;
+        logger.log("No current inboxes. Injecting defaults.");
+        currentInboxes = [
+          {
+            id: uuidv4(),
+            name: "Omni Post Generator",
+            graphId: "generate_post",
+            deploymentUrl: "https://siddiq262001-my-social-agent.hf.space",
+            selected: true,
+            createdAt: new Date().toISOString(),
+          },
+          {
+            id: uuidv4(),
+            name: "Omni Supervisor",
+            graphId: "supervisor",
+            deploymentUrl: "https://siddiq262001-my-social-agent.hf.space",
+            selected: false,
+            createdAt: new Date().toISOString(),
+          }
+        ];
+        setItem(AGENT_INBOXES_LOCAL_STORAGE_KEY, JSON.stringify(currentInboxes));
       }
 
       // Ensure each agent inbox has an ID, and if not, add one
