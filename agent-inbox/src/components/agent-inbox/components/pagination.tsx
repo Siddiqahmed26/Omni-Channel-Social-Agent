@@ -29,10 +29,10 @@ function DisplayLimitSelect() {
         updateQueryParams(LIMIT_PARAM, v);
       }}
     >
-      <SelectTrigger className="w-[180px] h-8">
+      <SelectTrigger className="w-[180px] h-8 bg-white/5 border-white/10 text-white hover:bg-white/10 transition-colors">
         <SelectValue>{fetchLimitParam}</SelectValue>
       </SelectTrigger>
-      <SelectContent>
+      <SelectContent className="bg-slate-900/80 backdrop-blur-2xl border-white/10 text-white shadow-2xl">
         <SelectGroup>
           <SelectLabel>Display Limit</SelectLabel>
           {fetchLimitOptions.map((option) => (
@@ -101,7 +101,7 @@ export function Pagination() {
       <div className="flex gap-1 items-center">
         <Button
           size="sm"
-          className="flex gap-1 items-center"
+          className="flex gap-1 items-center bg-white/5 border-white/10 text-slate-300 hover:text-white hover:bg-white/10 disabled:opacity-50"
           variant="outline"
           disabled={isPreviousDisabled}
           onClick={handleClickPrevious}
@@ -111,7 +111,7 @@ export function Pagination() {
         </Button>
         <Button
           size="sm"
-          className="flex gap-1 items-center"
+          className="flex gap-1 items-center bg-white/5 border-white/10 text-slate-300 hover:text-white hover:bg-white/10 disabled:opacity-50"
           variant="outline"
           disabled={isNextDisabled}
           onClick={handleClickNext}

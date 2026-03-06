@@ -111,14 +111,14 @@ export function SettingsPopover() {
       <PopoverTrigger asChild>
         <PillButton
           variant="outline"
-          className="flex gap-2 items-center justify-center text-gray-800 w-fit"
+          className="flex gap-2 items-center justify-center text-slate-300 border-white/10 hover:bg-white/5 hover:text-white w-fit"
           size="lg"
         >
           <Settings />
           <span>Settings</span>
         </PillButton>
       </PopoverTrigger>
-      <PopoverContent className="w-80">
+      <PopoverContent className="w-80 bg-slate-900/80 backdrop-blur-2xl border-white/10 text-white shadow-2xl">
         <div className="grid gap-4">
           <div className="space-y-2">
             <h4 className="font-medium leading-none">Settings</h4>
