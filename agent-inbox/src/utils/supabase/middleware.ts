@@ -40,7 +40,12 @@ export async function updateSession(request: NextRequest) {
         request.nextUrl.pathname.startsWith('/signup') ||
         request.nextUrl.pathname.startsWith('/forgot-password');
 
-    if (!user && !isAuthRoute && !request.nextUrl.pathname.startsWith('/api') && !request.nextUrl.pathname.startsWith('/_next')) {
+    if (!user &&
+        !isAuthRoute &&
+        !request.nextUrl.pathname.startsWith('/auth') &&
+        !request.nextUrl.pathname.startsWith('/api') &&
+        !request.nextUrl.pathname.startsWith('/_next') &&
+        !request.nextUrl.pathname.startsWith('/static')) {
         // no user, potentially respond by redirecting the user to the login page
         const url = request.nextUrl.clone()
         url.pathname = '/login'
