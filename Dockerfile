@@ -8,12 +8,17 @@ WORKDIR /app
 COPY package.json yarn.lock* ./
 RUN yarn install --frozen-lockfile
 
-# 3. Copy the rest of the application
-COPY . .
+# 3. Copy the application folders explicitly (ensures they are not skipped)
+COPY src ./src
+COPY scripts ./scripts
+COPY static ./static
+COPY langgraph.json .
+COPY pyproject.toml .
+COPY README.md .
 
-# DEBUG: Root of the container and current dir (viewable in HF logs)
-RUN pwd && ls -la
-RUN ls -la src/ || echo "src folder NOT found"
+# DEBUG: Verify the copy (viewable in HF logs)
+RUN ls -d src/agents/ingest-data
+RUN ls -la src/agents/ingest-data/ingest-data-graph.ts
 
 # 4. Install only Chromium (Saves time and space)
 RUN npx playwright install chromium
