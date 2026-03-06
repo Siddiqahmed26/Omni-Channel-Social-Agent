@@ -43,6 +43,15 @@ graph TD
 
 ---
 
+## 📁 Project Structure
+
+This repository contains both the AI Backend and the Frontend UI for a seamless experience:
+
+-   **/ (Root)**: The LangGraph backend (The Brain).
+-   **/agent-inbox**: The Next.js frontend (The UI).
+
+---
+
 ## ✨ Key Features
 
 -   **🌐 Omni-Channel Ingestion**: Automatically handles GitHub Repos, Twitter Threads, YouTube Videos, and standard web pages.
