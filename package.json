@@ -4,7 +4,7 @@
   "description": "A highly versatile social media agent capable of processing any content and adapting to any tone.",
   "packageManager": "yarn@1.22.22",
   "main": "my_app/graph.ts",
-  "author": "Abrar",
+  "author": "Siddiq Ahmed",
   "license": "MIT",
   "private": true,
   "type": "module",

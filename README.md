@@ -39,7 +39,7 @@ graph TD
 ```
 
 ### High-Level Visual
-![Detailed Architecture Overview](/C:/Users/abrar/.gemini/antigravity/brain/326294dd-6c0e-4219-88be-6a2b6e2f7ce9/labeled_architecture_diagram_1772761883342.png)
+![Detailed Architecture Overview](./static/architecture.png)
 
 ---
 
@@ -91,4 +91,4 @@ To make the agent yours, modify the files in `src/agents/generate-post/prompts/`
 
 ## 📜 License
 
-MIT License - Built with ❤️ by Abrar.
+MIT License - Built with ❤️ by Siddiq Ahmed.
