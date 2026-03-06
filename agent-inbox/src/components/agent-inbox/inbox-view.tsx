@@ -205,6 +205,8 @@ export function AgentInboxView<
             />
           );
         })}
+        {noThreadsFound && !loading && (
+          <div className="w-full flex items-center justify-center p-8">
             <div className="flex gap-2 items-center justify-center text-slate-500 mb-4">
               <InboxIcon className="w-6 h-6 opacity-20" />
               <p className="font-medium">No threads found</p>
@@ -223,6 +225,6 @@ export function AgentInboxView<
       <div className="flex justify-start w-full p-5">
         <Pagination />
       </div>
-    </div >
+    </div>
   );
 }
