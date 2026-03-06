@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { login } from '../actions'
+import { login, signInWithGoogle, signInWithGithub } from '../actions'
 import { Lock, Mail, ArrowRight } from 'lucide-react'
 
 export default async function LoginPage(props: {
@@ -94,12 +94,16 @@ export default async function LoginPage(props: {
                     </div>
 
                     <div className="grid grid-cols-2 gap-3">
-                        <Button variant="outline" type="button" className="h-10 bg-white/5 border-white/10 text-slate-300 hover:bg-white/10 hover:text-white rounded-lg transition-colors">
-                            Google
-                        </Button>
-                        <Button variant="outline" type="button" className="h-10 bg-white/5 border-white/10 text-slate-300 hover:bg-white/10 hover:text-white rounded-lg transition-colors">
-                            GitHub
-                        </Button>
+                        <form action={signInWithGoogle}>
+                            <Button type="submit" variant="outline" className="w-full h-10 bg-white/5 border-white/10 text-slate-300 hover:bg-white/10 hover:text-white rounded-lg transition-colors">
+                                Google
+                            </Button>
+                        </form>
+                        <form action={signInWithGithub}>
+                            <Button type="submit" variant="outline" className="w-full h-10 bg-white/5 border-white/10 text-slate-300 hover:bg-white/10 hover:text-white rounded-lg transition-colors">
+                                GitHub
+                            </Button>
+                        </form>
                     </div>
 
                     <p className="mt-4 text-sm text-center text-slate-400">
