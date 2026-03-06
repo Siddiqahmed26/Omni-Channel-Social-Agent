@@ -28,7 +28,7 @@ export default async function LoginPage(props: {
                     </p>
                 </div>
 
-                <form className="flex flex-col gap-5">
+                <form className="flex flex-col gap-5" action={login}>
                     {searchParams?.message && (
                         <div className="p-3 text-sm text-green-400 bg-green-400/10 border border-green-400/20 rounded-lg text-center">
                             {searchParams.message}
@@ -81,8 +81,8 @@ export default async function LoginPage(props: {
                     </div>
 
                     <Button
+                        type="submit"
                         className="w-full h-11 mt-2 text-md font-medium rounded-xl bg-white text-black hover:bg-slate-200 transition-all shadow-[0_0_20px_rgba(255,255,255,0.1)] group"
-                        formAction={login}
                     >
                         Sign in
                         <ArrowRight className="w-4 h-4 ml-2 opacity-50 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
