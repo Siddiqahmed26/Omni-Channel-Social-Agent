@@ -11,8 +11,9 @@ RUN yarn install --frozen-lockfile
 # 3. Copy the rest of the application
 COPY . .
 
-# DEBUG: Verify file structure (viewable in HF logs)
-RUN ls -R src/agents/ingest-data
+# DEBUG: Locate the missing files (viewable in HF logs)
+RUN find . -maxdepth 4 -name "ingest-data-graph.ts"
+RUN ls -d src/agents/*
 
 # 4. Install only Chromium (Saves time and space)
 RUN npx playwright install chromium
