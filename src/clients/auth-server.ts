@@ -73,12 +73,13 @@ export class SocialAuthServer {
       throw new Error("Twitter API credentials are not configured");
     }
 
+    const baseUrl = process.env.DEPLOYMENT_URL || `http://localhost:${this.port}`;
     passport.use(
       new TwitterStrategy(
         {
           consumerKey: process.env.TWITTER_API_KEY,
           consumerSecret: process.env.TWITTER_API_KEY_SECRET,
-          callbackURL: `http://localhost:${this.port}/auth/twitter/callback`,
+          callbackURL: `${baseUrl}/auth/twitter/callback`,
         },
         (
           token: string,
@@ -138,12 +139,13 @@ export class SocialAuthServer {
       const authUrl = new URL(
         "https://www.linkedin.com/oauth/v2/authorization",
       );
+      const baseUrl = process.env.DEPLOYMENT_URL || `http://localhost:${this.port}`;
       authUrl.searchParams.append("response_type", "code");
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       authUrl.searchParams.append("client_id", process.env.LINKEDIN_CLIENT_ID!);
       authUrl.searchParams.append(
         "redirect_uri",
-        "http://localhost:3000/auth/linkedin/callback",
+        `${baseUrl}/auth/linkedin/callback`,
       );
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       authUrl.searchParams.append("state", process.env.SESSION_SECRET!);
@@ -188,7 +190,7 @@ export class SocialAuthServer {
                 client_id: process.env.LINKEDIN_CLIENT_ID!,
                 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                 client_secret: process.env.LINKEDIN_CLIENT_SECRET!,
-                redirect_uri: "http://localhost:3000/auth/linkedin/callback",
+                redirect_uri: `${process.env.DEPLOYMENT_URL || `http://localhost:${this.port}`}/auth/linkedin/callback`,
               }),
             },
           );
