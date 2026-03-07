@@ -1,4 +1,4 @@
-import { ChatAnthropic } from "@langchain/anthropic";
+import { getModel } from "../../shared/nodes/llm.js";
 import { SupervisorState } from "../supervisor-state.js";
 import { z } from "zod";
 
@@ -46,8 +46,8 @@ Please take your time, and identify the best type of post to generate for this r
   return `Here are all of the key details & reports I've written for this post:
 <key-details-and-reports>
   ${report.reports
-    .map(
-      (r, index) => `
+      .map(
+        (r, index) => `
   <report index="${index}">
     ${r}
   </report>
@@ -56,8 +56,8 @@ Please take your time, and identify the best type of post to generate for this r
     ${report.keyDetails[index] || "no key details"}
   </key-details>
   `,
-    )
-    .join("\n")}
+      )
+      .join("\n")}
 </key-details-and-reports>
 
 Please take your time, and identify the best type of post to generate for these reports, and why! Thank you!`;
@@ -66,8 +66,7 @@ Please take your time, and identify the best type of post to generate for these 
 export async function determinePostType(
   state: SupervisorState,
 ): Promise<Partial<SupervisorState>> {
-  const model = new ChatAnthropic({
-    model: "claude-sonnet-4-5",
+  const model = getModel({
     temperature: 0,
   }).withStructuredOutput(postTypeSchema, {
     name: "postType",

@@ -1,4 +1,4 @@
-import { ChatAnthropic } from "@langchain/anthropic";
+import { getModel } from "../../shared/nodes/llm.js";
 import { getPrompts } from "../../generate-post/prompts/index.js";
 import { RepurposerState } from "../types.js";
 import { z } from "zod";
@@ -95,16 +95,11 @@ export async function generatePosts(
       ),
   });
 
-  const model = new ChatAnthropic({
-    model: "claude-sonnet-4-5",
+  const model = getModel({
     temperature: 0.5,
-  }).bindTools([
-    {
-      name: `write_${postOrPosts}`,
-      description: `Write ${numPosts} LinkedIn/Twitter ${postOrPosts} based on the marketing report and post campaign plan provided.`,
-      schema: postsSchema,
-    },
-  ]);
+  }).withStructuredOutput(postsSchema, {
+    name: `write_${postOrPosts}`,
+  });
 
   const formattedSystemPrompt = GENERATE_POST_PROMPT.replaceAll(
     "{NUM_POSTS}",
@@ -128,12 +123,11 @@ export async function generatePosts(
     },
   ]);
 
+  const { posts } = result as z.infer<typeof postsSchema>;
   return {
-    posts: (result.tool_calls?.[0].args?.posts as string[]).map(
-      (content, index) => ({
-        content,
-        index,
-      }),
-    ),
+    posts: posts.map((content, index) => ({
+      content,
+      index,
+    })),
   };
 }
