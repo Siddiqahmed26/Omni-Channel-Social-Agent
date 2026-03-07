@@ -42,11 +42,15 @@ export function MemoryView() {
             } else {
                 setReflections("");
             }
-        } catch (error) {
+        } catch (error: any) {
             logger.error("Error fetching reflections", error);
+            const isAuthError = error.status === 401 || error.status === 403 ||
+                (error.message && (error.message.includes("401") || error.message.includes("403")));
             toast({
-                title: "Error",
-                description: "Failed to load AI memories. Please ensure your backend is running.",
+                title: "Connection Issue",
+                description: isAuthError
+                    ? "Authentication failed. Please check your LangSmith API Key in Settings."
+                    : "Could not reach the AI Brain. Ensure your backend is running and the URL is correct.",
                 variant: "destructive",
             });
         } finally {
