@@ -1,5 +1,3 @@
-import { Client } from "@langchain/langgraph-sdk";
-import { getLangGraphClient } from "../langgraph-client.js";
 import { LangGraphRunnableConfig } from "@langchain/langgraph";
 import { BaseGeneratePostState, BaseGeneratePostUpdate } from "./types.js";
 import { getModel } from "../llm.js";
@@ -20,32 +18,6 @@ The original post you wrote is as follows:
 
 Listen to your boss closely, and make the necessary changes to the post. You should respond ONLY with the updated post, with no additional information, or text before or after the post.`;
 
-interface RunReflectionsArgs {
-  originalPost: string;
-  newPost: string;
-  userResponse: string;
-}
-
-/**
- * Kick off a new run to generate reflections.
- * @param param0
- */
-async function runReflections({
-  originalPost,
-  newPost,
-  userResponse,
-}: RunReflectionsArgs) {
-  const client = getLangGraphClient();
-
-  const thread = await client.threads.create();
-  await client.runs.create(thread.thread_id, "reflection", {
-    input: {
-      originalPost,
-      newPost,
-      userResponse,
-    },
-  });
-}
 
 export async function rewritePost<
   State extends BaseGeneratePostState = BaseGeneratePostState,
@@ -84,15 +56,8 @@ export async function rewritePost<
     },
   ]);
 
-  await runReflections({
-    originalPost: state.post,
-    newPost: revisePostResponse.content as string,
-    userResponse: state.userResponse,
-  });
-
   return {
     post: revisePostResponse.content as string,
     next: undefined,
-    userResponse: undefined,
   } as Update;
 }

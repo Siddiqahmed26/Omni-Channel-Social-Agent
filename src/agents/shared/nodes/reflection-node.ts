@@ -79,5 +79,7 @@ User Feedback:
         console.error("Reflection failed", e);
     }
 
-    return {};
+    return {
+        userResponse: undefined,
+    };
 }
