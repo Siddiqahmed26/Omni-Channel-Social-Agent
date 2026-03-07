@@ -1,4 +1,5 @@
 import { Client } from "@langchain/langgraph-sdk";
+import { getLangGraphClient } from "../langgraph-client.js";
 import { LangGraphRunnableConfig } from "@langchain/langgraph";
 import { BaseGeneratePostState, BaseGeneratePostUpdate } from "./types.js";
 import { getModel } from "../llm.js";
@@ -34,10 +35,7 @@ async function runReflections({
   newPost,
   userResponse,
 }: RunReflectionsArgs) {
-  const client = new Client({
-    apiUrl: process.env.LANGGRAPH_API_URL || "http://localhost:54367",
-    apiKey: process.env.LANGCHAIN_API_KEY,
-  });
+  const client = getLangGraphClient();
 
   const thread = await client.threads.create();
   await client.runs.create(thread.thread_id, "reflection", {

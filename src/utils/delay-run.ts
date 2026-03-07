@@ -1,4 +1,5 @@
 import { Client, Run } from "@langchain/langgraph-sdk";
+import { getLangGraphClient } from "../agents/shared/nodes/langgraph-client.js";
 
 interface DelayRunInputs {
   /**
@@ -48,9 +49,7 @@ export async function delayRun({
   state,
   configurable,
 }: DelayRunInputs): Promise<Run> {
-  const client = new Client({
-    apiUrl: process.env.LANGGRAPH_API_URL || "http://localhost:54367",
-  });
+  const client = getLangGraphClient();
 
   const newRun = await client.runs.create(threadId, assistantId, {
     input: {},

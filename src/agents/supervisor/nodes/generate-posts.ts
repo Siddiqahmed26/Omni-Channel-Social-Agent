@@ -1,4 +1,5 @@
 import { Client } from "@langchain/langgraph-sdk";
+import { getLangGraphClient } from "../../shared/nodes/langgraph-client.js";
 import { SupervisorState } from "../supervisor-state.js";
 import { extractUrls } from "../../utils.js";
 import { SlackClient } from "../../../clients/slack/client.js";
@@ -6,10 +7,7 @@ import { SlackClient } from "../../../clients/slack/client.js";
 export async function generatePosts(
   state: SupervisorState,
 ): Promise<Partial<SupervisorState>> {
-  const client = new Client({
-    apiUrl: process.env.LANGGRAPH_API_URL || "http://localhost:54367",
-    apiKey: process.env.LANGCHAIN_API_KEY,
-  });
+  const client = getLangGraphClient();
 
   const idsAndTypes: Array<{
     type: "thread" | "post";

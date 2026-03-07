@@ -6,6 +6,7 @@ import {
 } from "@langchain/langgraph";
 import { ingestSlackMessages } from "./nodes/ingest-slack.js";
 import { Client } from "@langchain/langgraph-sdk";
+import { getLangGraphClient } from "../shared/nodes/langgraph-client.js";
 import { POST_TO_LINKEDIN_ORGANIZATION } from "../generate-post/constants.js";
 import { shouldPostToLinkedInOrg } from "../utils.js";
 import {
@@ -19,10 +20,7 @@ async function generatePostsFromMessages(
   state: IngestRepurposedDataState,
   config: LangGraphRunnableConfig,
 ) {
-  const client = new Client({
-    apiUrl: process.env.LANGGRAPH_API_URL || "http://localhost:54367",
-    apiKey: process.env.LANGCHAIN_API_KEY,
-  });
+  const client = getLangGraphClient();
 
   const postToLinkedInOrg = shouldPostToLinkedInOrg(config);
 

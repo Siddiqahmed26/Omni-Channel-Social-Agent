@@ -1,13 +1,11 @@
 import { Client } from "@langchain/langgraph-sdk";
+import { getLangGraphClient } from "../../shared/nodes/langgraph-client.js";
 import { RepurposerState, RepurposerUpdate } from "../types.js";
 
 export async function startInterruptGraphRuns(
   state: RepurposerState,
 ): Promise<RepurposerUpdate> {
-  const client = new Client({
-    apiUrl: process.env.LANGGRAPH_API_URL || "http://localhost:54367",
-    apiKey: process.env.LANGCHAIN_API_KEY,
-  });
+  const client = getLangGraphClient();
 
   const runsPromise = await Promise.all(
     state.posts.map(async (post, index) => {

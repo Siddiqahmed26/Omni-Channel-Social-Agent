@@ -10,6 +10,7 @@ import {
 } from "./ingest-data-state.js";
 import { ingestSlackData } from "./nodes/ingest-slack.js";
 import { Client } from "@langchain/langgraph-sdk";
+import { getLangGraphClient } from "../shared/nodes/langgraph-client.js";
 import {
   POST_TO_LINKEDIN_ORGANIZATION,
   SKIP_CONTENT_RELEVANCY_CHECK,
@@ -28,10 +29,7 @@ async function generatePostFromMessages(
   state: typeof IngestDataAnnotation.State,
   config: LangGraphRunnableConfig,
 ) {
-  const client = new Client({
-    apiUrl: process.env.LANGGRAPH_API_URL || "http://localhost:54367",
-    apiKey: process.env.LANGCHAIN_API_KEY,
-  });
+  const client = getLangGraphClient();
 
   const linkAndDelay = getAfterSecondsFromLinks(state.links);
   const isTextOnlyMode = isTextOnly(config);
