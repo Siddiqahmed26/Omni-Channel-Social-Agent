@@ -1,4 +1,4 @@
-import { ChatVertexAI } from "@langchain/google-vertexai-web";
+import { getModel } from "../../shared/nodes/llm.js";
 import { getPrompts } from "../../generate-post/prompts/index.js";
 import {
   getChannelInfo,
@@ -20,8 +20,8 @@ For context, this report will be used to generate a Tweet and LinkedIn post prom
 Ensure to include in your report if this video is relevant to your company's products, and if so, include content in your report on what the video covered in relation to your company's products.`;
 
 async function generateVideoSummary(url: string): Promise<string> {
-  const model = new ChatVertexAI({
-    model: "gemini-2.5-pro",
+  const model = getModel({
+    modelName: "gpt-4o",
     temperature: 0,
   });
 
@@ -48,7 +48,10 @@ async function generateVideoSummary(url: string): Promise<string> {
         role: "system",
         content: GENERATE_REPORT_PROMPT,
       },
-      mediaMessage,
+      {
+        role: "user",
+        content: `Please generate a summary report for this YouTube video: ${url.startsWith("https://") ? url : `https://${url}`}`,
+      },
     ]);
   return summaryResult.content as string;
 }

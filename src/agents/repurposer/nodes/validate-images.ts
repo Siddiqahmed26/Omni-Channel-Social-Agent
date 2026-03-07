@@ -1,5 +1,5 @@
 import { traceable } from "langsmith/traceable";
-import { ChatVertexAI } from "@langchain/google-vertexai-web";
+import { getModel } from "../../shared/nodes/llm.js";
 import { chunkArray, imageUrlToBuffer, isValidUrl } from "../../utils.js";
 import { RepurposerState } from "../types.js";
 import { getImageMessageContents } from "../../../utils/image-message.js";
@@ -169,8 +169,8 @@ export async function validateImages(state: RepurposerState): Promise<{
 }> {
   const { imageOptions, originalContent } = state;
 
-  const model = new ChatVertexAI({
-    model: "gemini-2.5-pro",
+  const model = getModel({
+    modelName: "gpt-4o",
     temperature: 0,
   });
 

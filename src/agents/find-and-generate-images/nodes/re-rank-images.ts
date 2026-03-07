@@ -1,4 +1,4 @@
-import { ChatVertexAI } from "@langchain/google-vertexai-web";
+import { getModel } from "../../shared/nodes/llm.js";
 import { FindAndGenerateImagesAnnotation } from "../find-and-generate-images-graph.js";
 import { chunkArray, getMimeTypeFromUrl } from "../../utils.js";
 import { getImageMessageContents } from "../../../utils/image-message.js";
@@ -66,15 +66,15 @@ export async function reRankImages(
       imageOptions: state.imageOptions,
       image_candidates: state.imageOptions?.[0]
         ? {
-            imageUrl: state.imageOptions[0],
-            mimeType: getMimeTypeFromUrl(state.imageOptions[0]),
-          }
+          imageUrl: state.imageOptions[0],
+          mimeType: getMimeTypeFromUrl(state.imageOptions[0]),
+        }
         : [],
     };
   }
 
-  const model = new ChatVertexAI({
-    model: "gemini-2.5-pro",
+  const model = getModel({
+    modelName: "gpt-4o",
     temperature: 0,
   });
 
@@ -139,9 +139,9 @@ export async function reRankImages(
       imageOptions: state.imageOptions,
       image_candidates: state.imageOptions?.length
         ? state.imageOptions.map((url) => ({
-            imageUrl: url,
-            mimeType: getMimeTypeFromUrl(url),
-          }))
+          imageUrl: url,
+          mimeType: getMimeTypeFromUrl(url),
+        }))
         : [],
     };
   }
@@ -154,11 +154,11 @@ export async function reRankImages(
     imageOptions: imageOptionsInOrder,
     image_candidates: imageOptionsInOrder.length
       ? imageOptionsInOrder
-          .filter((url): url is string => url !== undefined)
-          .map((url) => ({
-            imageUrl: url,
-            mimeType: getMimeTypeFromUrl(url),
-          }))
+        .filter((url): url is string => url !== undefined)
+        .map((url) => ({
+          imageUrl: url,
+          mimeType: getMimeTypeFromUrl(url),
+        }))
       : undefined,
   };
 }
