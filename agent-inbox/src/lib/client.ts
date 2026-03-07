@@ -7,10 +7,14 @@ export const createClient = ({
   deploymentUrl: string;
   langchainApiKey: string | undefined;
 }) => {
+  // Use the provided key, or the master key from environment variables
+  const masterKey = process.env.NEXT_PUBLIC_LANGCHAIN_API_KEY;
+  const finalKey = langchainApiKey || masterKey;
+
   return new Client({
     apiUrl: deploymentUrl,
     defaultHeaders: {
-      ...(langchainApiKey && { "x-api-key": langchainApiKey }),
+      ...(finalKey && { "x-api-key": finalKey }),
     },
   });
 };

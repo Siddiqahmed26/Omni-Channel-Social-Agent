@@ -23,7 +23,6 @@ import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   AGENT_INBOX_GITHUB_README_URL,
-  LANGCHAIN_API_KEY_LOCAL_STORAGE_KEY,
 } from "../agent-inbox/constants";
 import {
   Tooltip,
@@ -32,7 +31,6 @@ import {
   TooltipTrigger,
 } from "../ui/tooltip";
 import { AddAgentInboxDialog } from "../agent-inbox/components/add-agent-inbox-dialog";
-import { useLocalStorage } from "../agent-inbox/hooks/use-local-storage";
 import { DropdownDialogMenu } from "../agent-inbox/components/dropdown-and-dialog";
 import { QuickGenerateDialog } from "../agent-inbox/components/quick-generate-dialog";
 import { logout } from "@/app/actions";
@@ -41,30 +39,7 @@ import { LogOut } from "lucide-react";
 export function AppSidebar() {
   const { agentInboxes, changeAgentInbox, deleteAgentInbox } =
     useThreadsContext();
-  const [langchainApiKey, setLangchainApiKey] = React.useState("");
-  const { getItem, setItem } = useLocalStorage();
 
-  React.useEffect(() => {
-    try {
-      if (typeof window === "undefined" || langchainApiKey) {
-        return;
-      }
-
-      const langchainApiKeyLS = getItem(LANGCHAIN_API_KEY_LOCAL_STORAGE_KEY);
-      if (langchainApiKeyLS) {
-        setLangchainApiKey(langchainApiKeyLS);
-      }
-    } catch (e) {
-      console.error("Error getting/setting LangSmith API key", e);
-    }
-  }, [langchainApiKey]);
-
-  const handleChangeLangChainApiKey = (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    setLangchainApiKey(e.target.value);
-    setItem(LANGCHAIN_API_KEY_LOCAL_STORAGE_KEY, e.target.value);
-  };
 
   return (
     <Sidebar className="border-r border-white/5 bg-black/20 backdrop-blur-3xl">
@@ -154,11 +129,7 @@ export function AppSidebar() {
                 })}
 
                 <div className="mt-4 px-2">
-                  <AddAgentInboxDialog
-                    hideTrigger={false}
-                    langchainApiKey={langchainApiKey}
-                    handleChangeLangChainApiKey={handleChangeLangChainApiKey}
-                  />
+                  <AddAgentInboxDialog hideTrigger={false} />
                 </div>
               </div>
 
