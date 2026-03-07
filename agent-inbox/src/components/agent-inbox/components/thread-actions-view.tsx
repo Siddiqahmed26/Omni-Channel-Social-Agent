@@ -262,10 +262,10 @@ export function ThreadActionsView<
   if (threadData.invalidSchema) {
     return (
       <div className="flex flex-col min-h-full w-full">
-        <div className="p-12 gap-9 flex flex-col w-full">
+        <div className="p-4 sm:p-8 md:p-12 gap-4 sm:gap-6 md:gap-9 flex flex-col w-full">
           {/* Header (minimal) */}
           <div className="flex flex-wrap items-center justify-between w-full gap-3">
-            <div className="flex items-center justify-start gap-3">
+            <div className="flex items-center justify-start gap-2 flex-wrap">
               <TooltipIconButton
                 tooltip="Back to inbox"
                 variant="ghost"
@@ -283,7 +283,7 @@ export function ThreadActionsView<
               <ThreadIdCopyable threadId={threadData.thread.thread_id} />
             </div>
             {/* Right-side controls with ButtonGroup */}
-            <div className="flex flex-row gap-2 items-center justify-start">
+            <div className="flex flex-row flex-wrap gap-2 items-center justify-start">
               {deploymentUrl && (
                 <Button
                   size="sm"
@@ -336,10 +336,10 @@ export function ThreadActionsView<
     threadData.interrupts.length === 0
   ) {
     return (
-      <div className="flex flex-col min-h-full w-full p-12 gap-9">
+      <div className="flex flex-col min-h-full w-full p-4 sm:p-8 md:p-12 gap-4 sm:gap-6 md:gap-9">
         {/* Header */}
         <div className="flex flex-wrap items-center justify-between w-full gap-3">
-          <div className="flex items-center justify-start gap-3">
+          <div className="flex items-center justify-start gap-2 flex-wrap">
             <TooltipIconButton
               tooltip="Back to inbox"
               variant="ghost"
@@ -361,7 +361,7 @@ export function ThreadActionsView<
             </div>
             <ThreadIdCopyable threadId={threadData.thread.thread_id} />
           </div>
-          <div className="flex flex-row gap-2 items-center justify-start">
+          <div className="flex flex-row flex-wrap gap-2 items-center justify-start">
             {deploymentUrl && (
               <Button
                 size="sm"
@@ -460,10 +460,10 @@ export function ThreadActionsView<
   // Handle Valid Interrupted Threads
   //////////////////////////////////////////////////////////
   return (
-    <div className="flex flex-col min-h-full w-full p-12 gap-9">
+    <div className="flex flex-col min-h-full w-full p-4 sm:p-8 md:p-12 gap-4 sm:gap-6 md:gap-9">
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between w-full gap-3">
-        <div className="flex items-center justify-start gap-3">
+        <div className="flex items-center justify-start gap-2 flex-wrap">
           <TooltipIconButton
             tooltip="Back to inbox"
             variant="ghost"
@@ -481,7 +481,7 @@ export function ThreadActionsView<
           </div>
           <ThreadIdCopyable threadId={threadData.thread.thread_id} />
         </div>
-        <div className="flex flex-row gap-2 items-center justify-start">
+        <div className="flex flex-row flex-wrap gap-2 items-center justify-start">
           {deploymentUrl && (
             <Button
               size="sm"
