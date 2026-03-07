@@ -60,7 +60,7 @@ export function MemoryView() {
 
     useEffect(() => {
         fetchReflections();
-    }, [fetchReflections]);
+    }, [selectedInbox?.id, fetchReflections]);
 
     const handleSave = async () => {
         if (!selectedInbox) return;
