@@ -16,7 +16,7 @@ import { logger } from "../utils/logger";
 import { createClient } from "@/lib/client";
 import { createClient as createSupabaseClient } from "@/utils/supabase/client";
 
-export function QuickGenerateDialog() {
+export function QuickGenerateDialog({ iconOnly = false }: { iconOnly?: boolean }) {
     const { toast } = useToast();
     const [open, setOpen] = React.useState(false);
     const [url, setUrl] = React.useState("");
@@ -51,7 +51,7 @@ export function QuickGenerateDialog() {
             });
 
             toast({
-                title: "Success! ??",
+                title: "Success! 🚀",
                 description: "Agent has started generating your post. It should appear in the 'Omni Post Generator' inbox shortly.",
                 duration: 5000,
             });
@@ -76,10 +76,17 @@ export function QuickGenerateDialog() {
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button className="w-[85%] mx-auto mt-4 mb-2 flex gap-2 border border-white/20 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white shadow-[0_0_20px_rgba(59,130,246,0.3)] hover:shadow-[0_0_30px_rgba(168,85,247,0.4)] transition-all rounded-xl">
-                    <PlusCircle className="w-5 h-5" />
-                    Generate Post
-                </Button>
+                {iconOnly ? (
+                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-full bg-slate-800 text-slate-300 hover:text-white border border-white/10">
+                        <PlusCircle className="w-4 h-4" />
+                        <span className="sr-only">Generate Post</span>
+                    </Button>
+                ) : (
+                    <Button className="w-[85%] mx-auto mt-4 mb-2 flex gap-2 border border-white/20 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white shadow-[0_0_20px_rgba(59,130,246,0.3)] hover:shadow-[0_0_30px_rgba(168,85,247,0.4)] transition-all rounded-xl">
+                        <PlusCircle className="w-5 h-5" />
+                        Generate Post
+                    </Button>
+                )}
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px] bg-slate-900/80 backdrop-blur-2xl border-white/10 text-white shadow-2xl">
                 <DialogHeader>
