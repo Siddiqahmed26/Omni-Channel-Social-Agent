@@ -23,44 +23,53 @@ export function MemoryView() {
 
     const selectedInbox = agentInboxes.find(inbox => inbox.selected) || agentInboxes[0];
 
-    const fetchReflections = useCallback(async () => {
-        if (!selectedInbox) return;
-
-        setLoading(true);
-        try {
-            const langchainApiKey = getItem(LANGCHAIN_API_KEY_LOCAL_STORAGE_KEY) || undefined;
-            const client = createClient({
-                deploymentUrl: selectedInbox.deploymentUrl,
-                langchainApiKey
-            });
-
-            // Fetch from store: ["reflection_rules"], key "rules"
-            const result = await (client.store as any).getItem(["reflection_rules"], "rules");
-
-            if (result && result.value && result.value.prompt) {
-                setReflections(result.value.prompt);
-            } else {
-                setReflections("");
-            }
-        } catch (error: any) {
-            logger.error("Error fetching reflections", error);
-            const isAuthError = error.status === 401 || error.status === 403 ||
-                (error.message && (error.message.includes("401") || error.message.includes("403")));
-            toast({
-                title: "Connection Issue",
-                description: isAuthError
-                    ? "Authentication failed. Please check your LangSmith API Key in Settings."
-                    : "Could not reach the AI Brain. Ensure your backend is running and the URL is correct.",
-                variant: "destructive",
-            });
-        } finally {
-            setLoading(false);
-        }
-    }, [selectedInbox, getItem, toast]);
-
     useEffect(() => {
-        fetchReflections();
-    }, [selectedInbox?.id, fetchReflections]);
+        let isMounted = true;
+
+        const performFetch = async () => {
+            if (!selectedInbox?.deploymentUrl) return;
+
+            setLoading(true);
+            try {
+                const langchainApiKey = getItem(LANGCHAIN_API_KEY_LOCAL_STORAGE_KEY) || undefined;
+                const client = createClient({
+                    deploymentUrl: selectedInbox.deploymentUrl,
+                    langchainApiKey
+                });
+
+                // Fetch from store: ["reflection_rules"], key "rules"
+                const result = await (client.store as any).getItem(["reflection_rules"], "rules");
+
+                if (!isMounted) return;
+
+                if (result && result.value && result.value.prompt) {
+                    setReflections(result.value.prompt as string);
+                } else {
+                    setReflections("");
+                }
+            } catch (error: any) {
+                if (!isMounted) return;
+                logger.error("Error fetching reflections", error);
+                const isAuthError = error.status === 401 || error.status === 403 ||
+                    (error.message && (error.message.includes("401") || error.message.includes("403")));
+                toast({
+                    title: "Connection Issue",
+                    description: isAuthError
+                        ? "Authentication failed. Please check your LangSmith API Key in Settings."
+                        : "Could not reach the AI Brain. Ensure your backend is running and the URL is correct.",
+                    variant: "destructive",
+                });
+            } finally {
+                if (isMounted) setLoading(false);
+            }
+        };
+
+        performFetch();
+
+        return () => {
+            isMounted = false;
+        };
+    }, [selectedInbox?.id, selectedInbox?.deploymentUrl, getItem, toast]);
 
     const handleSave = async () => {
         if (!selectedInbox) return;
