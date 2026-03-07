@@ -193,20 +193,20 @@ export function MemoryView() {
                     <div className="bg-white/[0.02] border-b border-white/5 px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div className="flex items-center gap-3">
                             <Cpu className="w-5 h-5 text-blue-400" />
-                            <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">Learned Rule Engine</h2>
+                            <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-300">Learned Rule Engine</h2>
                         </div>
                     </div>
 
                     <div className="p-4 md:p-8 min-h-[400px] flex-1 flex flex-col">
                         <textarea
-                            disabled
+                            readOnly
                             value={reflections}
                             placeholder="No reflections learned yet. The agent will populate this automatically as you give it feedback on social media posts."
-                            className="flex-1 w-full bg-transparent border-none text-slate-400 font-mono text-sm leading-relaxed focus:ring-0 resize-none no-scrollbar placeholder:text-slate-700"
+                            className="flex-1 w-full bg-transparent border-none text-slate-200 font-mono text-sm leading-relaxed focus:ring-0 resize-none no-scrollbar placeholder:text-slate-400"
                         />
                     </div>
 
-                    <div className="px-8 py-4 bg-black/40 border-t border-white/5 text-[10px] text-slate-600 font-bold uppercase tracking-widest flex justify-between items-center">
+                    <div className="px-8 py-4 bg-black/40 border-t border-white/5 text-[10px] text-slate-400 font-bold uppercase tracking-widest flex justify-between items-center">
                         <span>Namespace: reflection_rules / rules</span>
                         <span className="truncate ml-4">{selectedInbox?.name}</span>
                     </div>
