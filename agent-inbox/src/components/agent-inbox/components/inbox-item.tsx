@@ -1,3 +1,5 @@
+"use client";
+
 import {
   ThreadData,
   ThreadStatusWithAll,
@@ -32,7 +34,7 @@ export function InboxItem<
           <InterruptedInboxItem
             threadData={interruptedData}
             isLast={isLast}
-            onThreadClick={onThreadClick || (() => {})}
+            onThreadClick={onThreadClick || (() => { })}
           />
         );
       } else {
@@ -73,7 +75,7 @@ export function InboxItem<
         <InterruptedInboxItem
           threadData={interruptedData}
           isLast={isLast}
-          onThreadClick={onThreadClick || (() => {})}
+          onThreadClick={onThreadClick || (() => { })}
         />
       );
     } else {
