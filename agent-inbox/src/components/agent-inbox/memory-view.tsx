@@ -35,7 +35,7 @@ export function MemoryView() {
             });
 
             // Fetch from store: ["reflection_rules"], key "rules"
-            const result = await client.store.get(["reflection_rules"], "rules");
+            const result = await (client.store as any).getItem(["reflection_rules"], "rules");
 
             if (result && result.value && result.value.prompt) {
                 setReflections(result.value.prompt);
@@ -69,7 +69,7 @@ export function MemoryView() {
                 langchainApiKey
             });
 
-            await client.store.put(["reflection_rules"], "rules", {
+            await (client.store as any).putItem(["reflection_rules"], "rules", {
                 prompt: reflections
             });
 
