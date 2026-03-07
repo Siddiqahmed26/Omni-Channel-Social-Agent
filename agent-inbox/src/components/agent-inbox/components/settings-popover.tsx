@@ -21,7 +21,7 @@ import { useToast } from "@/hooks/use-toast";
 import { logger } from "../utils/logger";
 import { cn } from "@/lib/utils";
 
-export function SettingsPopover() {
+export function SettingsPopover({ iconOnly = false }: { iconOnly?: boolean }) {
   const langchainApiKeyNotSet = React.useRef(true);
   const [open, setOpen] = React.useState(false);
   const [langchainApiKey, setLangchainApiKey] = React.useState("");
@@ -109,14 +109,21 @@ export function SettingsPopover() {
       }}
     >
       <PopoverTrigger asChild>
-        <PillButton
-          variant="outline"
-          className="flex gap-2 items-center justify-center text-slate-300 border-white/10 hover:bg-white/5 hover:text-white w-fit"
-          size="lg"
-        >
-          <Settings />
-          <span>Settings</span>
-        </PillButton>
+        {iconOnly ? (
+          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-full bg-slate-800 text-slate-300 hover:text-white border border-white/10">
+            <Settings className="w-4 h-4" />
+            <span className="sr-only">Settings</span>
+          </Button>
+        ) : (
+          <PillButton
+            variant="outline"
+            className="flex gap-2 items-center justify-center text-slate-300 border-white/10 hover:bg-white/5 hover:text-white w-fit"
+            size="lg"
+          >
+            <Settings />
+            <span>Settings</span>
+          </PillButton>
+        )}
       </PopoverTrigger>
       <PopoverContent className="w-80 bg-slate-900/80 backdrop-blur-2xl border-white/10 text-white shadow-2xl">
         <div className="grid gap-4">
