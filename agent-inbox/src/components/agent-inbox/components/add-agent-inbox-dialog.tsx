@@ -85,19 +85,6 @@ export function AddAgentInboxDialog({
           deploymentUrl
         );
 
-        // Get the LangChain API key from local storage or props
-        const storedApiKey =
-          getItem(LANGCHAIN_API_KEY_LOCAL_STORAGE_KEY) || undefined;
-        const apiKey = langchainApiKey || storedApiKey;
-
-        if (!apiKey && isDeployed) {
-          setErrorMessage(
-            "API key is required for deployed LangGraph instances"
-          );
-          setIsSubmitting(false);
-          return;
-        }
-
         // Fetch deployment info
         try {
           const deploymentInfo = await fetchDeploymentInfo(deploymentUrl);
@@ -273,29 +260,6 @@ export function AddAgentInboxDialog({
               onChange={(e) => setName(e.target.value)}
             />
           </div>
-          {showLangChainApiKeyField && (
-            <div className="flex flex-col items-start gap-2 w-full">
-              <div className="flex flex-col gap-1 w-full items-start">
-                <Label htmlFor="langchain-api-key">
-                  LangSmith API Key <span className="text-red-500">*</span>
-                </Label>
-                <p className="text-xs text-muted-foreground">
-                  This value is stored in your browser&apos;s local storage and
-                  is only used to authenticate requests sent to your LangGraph
-                  server.
-                </p>
-              </div>
-              <PasswordInput
-                id="langchain-api-key"
-                placeholder="lsv2_pt_..."
-                className="min-w-full"
-                required
-                value={langchainApiKey}
-                onChange={handleChangeLangChainApiKey}
-              />
-            </div>
-          )}
-
           {errorMessage && (
             <div className="text-red-500 text-sm w-full">{errorMessage}</div>
           )}

@@ -22,9 +22,7 @@ import { logger } from "../utils/logger";
 import { cn } from "@/lib/utils";
 
 export function SettingsPopover({ iconOnly = false }: { iconOnly?: boolean }) {
-  const langchainApiKeyNotSet = React.useRef(true);
   const [open, setOpen] = React.useState(false);
-  const [langchainApiKey, setLangchainApiKey] = React.useState("");
   const { getItem, setItem } = useLocalStorage();
   const { getSearchParam } = useQueryParams();
   const { fetchThreads } = useThreadsContext();
@@ -34,29 +32,8 @@ export function SettingsPopover({ iconOnly = false }: { iconOnly?: boolean }) {
 
   React.useEffect(() => {
     setBackfillCompleted(isBackfillCompleted());
+  }, []);
 
-    try {
-      if (typeof window === "undefined") {
-        return;
-      }
-      if (langchainApiKey) return;
-
-      const langchainApiKeyLS = getItem(LANGCHAIN_API_KEY_LOCAL_STORAGE_KEY);
-      if (langchainApiKeyLS) {
-        langchainApiKeyNotSet.current = false;
-        setLangchainApiKey(langchainApiKeyLS);
-      }
-    } catch (e) {
-      logger.error("Error getting/setting LangSmith API key", e);
-    }
-  }, [langchainApiKey]);
-
-  const handleChangeLangChainApiKey = (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    setLangchainApiKey(e.target.value);
-    setItem(LANGCHAIN_API_KEY_LOCAL_STORAGE_KEY, e.target.value);
-  };
 
   const handleRunBackfill = async () => {
     setIsRunningBackfill(true);
@@ -95,18 +72,7 @@ export function SettingsPopover({ iconOnly = false }: { iconOnly?: boolean }) {
   return (
     <Popover
       open={open}
-      onOpenChange={(c) => {
-        if (!c && langchainApiKey && langchainApiKeyNotSet.current) {
-          langchainApiKeyNotSet.current = false;
-          const inboxParam = getSearchParam(INBOX_PARAM) as
-            | ThreadStatusWithAll
-            | undefined;
-          if (inboxParam) {
-            void fetchThreads(inboxParam);
-          }
-        }
-        setOpen(c);
-      }}
+      onOpenChange={setOpen}
     >
       <PopoverTrigger asChild>
         {iconOnly ? (
@@ -132,52 +98,37 @@ export function SettingsPopover({ iconOnly = false }: { iconOnly?: boolean }) {
             <p className="text-[10px] text-slate-500 font-extrabold uppercase tracking-widest leading-none">Global Agent Parameters</p>
           </div>
           <div className="flex flex-col items-start gap-4 w-full">
-            <div className="flex flex-col items-start gap-3 w-full">
-              <div className="flex flex-col gap-2 w-full items-start">
-                <Label htmlFor="langchain-api-key" className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">
-                  LangSmith Signature <span className="text-blue-500">*</span>
-                </Label>
-                <div className="relative w-full group">
-                  <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-xl blur opacity-0 group-focus-within:opacity-100 transition duration-500" />
-                  <PasswordInput
-                    id="langchain-api-key"
-                    placeholder="lsv2_pt_..."
-                    className="relative z-10 bg-black/40 border-white/10 rounded-xl h-11 px-4 text-slate-200 placeholder:text-slate-600 focus:bg-black/60 transition-all font-medium text-sm shadow-inner"
-                    required
-                    value={langchainApiKey}
-                    onChange={handleChangeLangChainApiKey}
-                  />
-                </div>
-                <p className="text-[10px] text-slate-600 font-medium leading-relaxed px-1">
-                  Stored securely in local storage. Never transmitted off-device except for direct LangGraph authentication.
+            <div className="flex flex-col gap-1 w-full items-start px-1">
+              <h5 className="text-xs font-black text-white/90">Identity Management</h5>
+              <p className="text-[10px] text-slate-500 font-medium leading-relaxed">
+                Your account is automatically provisioned with a secure neural interface. No manual configuration required.
+              </p>
+            </div>
+          </div>
+          {!backfillCompleted && (
+            <div className="flex flex-col items-start gap-4 w-full border-t border-white/5 pt-6 mt-2">
+              <div className="flex flex-col gap-1 w-full items-start px-1">
+                <Label className="text-xs font-bold text-slate-300">Legacy Migration</Label>
+                <p className="text-[10px] text-slate-500 leading-relaxed font-medium">
+                  Upgrade your inbox indices to the modern global format for cross-device synchronization.
                 </p>
               </div>
+              <Button
+                onClick={handleRunBackfill}
+                disabled={isRunningBackfill}
+                variant="premium"
+                className="w-full h-11 rounded-xl text-xs font-bold shadow-lg"
+              >
+                <RefreshCw
+                  className={cn(
+                    "h-3.5 w-3.5 mr-2",
+                    isRunningBackfill && "animate-spin"
+                  )}
+                />
+                {isRunningBackfill ? "Synchronizing..." : "Migrate Identities"}
+              </Button>
             </div>
-            {!backfillCompleted && (
-              <div className="flex flex-col items-start gap-4 w-full border-t border-white/5 pt-6 mt-2">
-                <div className="flex flex-col gap-1 w-full items-start px-1">
-                  <Label className="text-xs font-bold text-slate-300">Legacy Migration</Label>
-                  <p className="text-[10px] text-slate-500 leading-relaxed font-medium">
-                    Upgrade your inbox indices to the modern global format for cross-device synchronization.
-                  </p>
-                </div>
-                <Button
-                  onClick={handleRunBackfill}
-                  disabled={isRunningBackfill}
-                  variant="premium"
-                  className="w-full h-11 rounded-xl text-xs font-bold shadow-lg"
-                >
-                  <RefreshCw
-                    className={cn(
-                      "h-3.5 w-3.5 mr-2",
-                      isRunningBackfill && "animate-spin"
-                    )}
-                  />
-                  {isRunningBackfill ? "Synchronizing..." : "Migrate Identities"}
-                </Button>
-              </div>
-            )}
-          </div>
+          )}
         </div>
       </PopoverContent>
     </Popover>
