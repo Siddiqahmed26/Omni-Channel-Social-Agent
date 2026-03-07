@@ -74,11 +74,6 @@ export function AgentInboxView<
 
       logger.log("Automatically refreshing inbox IDs...");
       await forceInboxBackfill();
-
-      // Small delay before reload to ensure storage is flushed
-      setTimeout(() => {
-        window.location.reload();
-      }, 500);
     };
 
     autoRefreshInboxes();

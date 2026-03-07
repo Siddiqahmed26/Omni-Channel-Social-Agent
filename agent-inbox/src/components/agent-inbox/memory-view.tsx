@@ -23,14 +23,21 @@ export function MemoryView() {
 
     const selectedInbox = agentInboxes.find(inbox => inbox.selected) || agentInboxes[0];
 
+    const lastFetchedRef = React.useRef<string>("");
+
     useEffect(() => {
         let isMounted = true;
 
         const performFetch = async () => {
             if (!selectedInbox?.deploymentUrl) return;
 
+            // Prevent redundant fetches if the context is the same
+            const fetchKey = `${selectedInbox.id}-${selectedInbox.deploymentUrl}`;
+            if (fetchKey === lastFetchedRef.current) return;
+
             setLoading(true);
             try {
+                lastFetchedRef.current = fetchKey;
                 // The master key is now handled internally by createClient
                 const client = createClient({
                     deploymentUrl: selectedInbox.deploymentUrl,
@@ -49,6 +56,7 @@ export function MemoryView() {
                 }
             } catch (error: any) {
                 if (!isMounted) return;
+                lastFetchedRef.current = ""; // Reset on error to allow retry
                 logger.error("Error fetching reflections", error);
                 toast({
                     title: "Connection Issue",

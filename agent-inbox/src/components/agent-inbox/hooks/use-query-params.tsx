@@ -10,6 +10,10 @@ export function useQueryParams() {
     (key: string | string[], value?: string | string[]) => {
       if (typeof window === "undefined") return;
 
+      const currentUrl = new URL(window.location.href);
+      const params = new URLSearchParams(currentUrl.search);
+      let hasChanged = false;
+
       if (Array.isArray(key)) {
         if (!Array.isArray(value) || key.length !== value.length) {
           throw new Error(
@@ -17,48 +21,55 @@ export function useQueryParams() {
           );
         }
 
-        const currentUrl = new URL(window.location.href);
-        const params = new URLSearchParams(currentUrl.search);
-
-        // Set each key-value pair
         key.forEach((k, index) => {
-          if (value[index]) {
-            params.set(k, value[index]);
+          const val = value[index];
+          if (val) {
+            if (params.get(k) !== val) {
+              params.set(k, val);
+              hasChanged = true;
+            }
           } else {
-            params.delete(k);
+            if (params.has(k)) {
+              params.delete(k);
+              hasChanged = true;
+            }
           }
         });
-
-        router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-        return;
-      }
-
-      if (Array.isArray(value)) {
-        throw new Error("When key is a string, value must also be a string");
-      }
-
-      // Get the most current params from the URL
-      const currentUrl = new URL(window.location.href);
-      const params = new URLSearchParams(currentUrl.search);
-
-      if (value) {
-        params.set(key, value);
       } else {
-        params.delete(key);
+        if (Array.isArray(value)) {
+          throw new Error("When key is a string, value must also be a string");
+        }
+
+        if (value) {
+          if (params.get(key) !== value) {
+            params.set(key, value);
+            hasChanged = true;
+          }
+        } else {
+          if (params.has(key)) {
+            params.delete(key);
+            hasChanged = true;
+          }
+        }
       }
 
-      // Use replace instead of push to avoid breaking the browser's history
-      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+      if (hasChanged) {
+        // Use replace instead of push to avoid breaking the browser's history
+        router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+      }
     },
     [router, pathname]
   );
 
-  const getSearchParam = (name: string): string | undefined => {
-    if (typeof window === "undefined") return;
-    const currentUrl = new URL(window.location.href);
-    const params = new URLSearchParams(currentUrl.search);
-    return params.get(name) || undefined;
-  };
+  const getSearchParam = React.useCallback(
+    (name: string): string | undefined => {
+      if (typeof window === "undefined") return;
+      const currentUrl = new URL(window.location.href);
+      const params = new URLSearchParams(currentUrl.search);
+      return params.get(name) || undefined;
+    },
+    []
+  );
 
   return { searchParams, updateQueryParams, getSearchParam };
 }

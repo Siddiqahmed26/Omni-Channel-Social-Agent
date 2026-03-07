@@ -73,6 +73,12 @@ export function useInboxes() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Use a ref to keep track of the latest inboxes for comparison in the stable callback
+  const agentInboxesRef = useRef<AgentInbox[]>([]);
+  useEffect(() => {
+    agentInboxesRef.current = agentInboxes;
+  }, [agentInboxes]);
+
   /**
    * Load agent inboxes from local storage and set up proper selection state
    * Accepts optional preloaded inboxes to avoid re-reading localStorage immediately after backfill.
@@ -89,10 +95,6 @@ export function useInboxes() {
         logger.log("Using preloaded inboxes for selection logic");
       } else {
         const agentInboxesStr = getItem(AGENT_INBOXES_LOCAL_STORAGE_KEY);
-        logger.log(
-          "Reading inboxes from localStorage for selection logic:",
-          agentInboxesStr
-        );
         if (agentInboxesStr && agentInboxesStr !== "[]") {
           try {
             currentInboxes = JSON.parse(agentInboxesStr);
@@ -101,14 +103,12 @@ export function useInboxes() {
               "Error parsing agent inboxes for selection logic",
               error
             );
-            // Handle error state appropriately
             currentInboxes = [];
           }
         }
       }
 
       if (!currentInboxes.length) {
-        logger.log("No current inboxes. Injecting defaults.");
         currentInboxes = [
           {
             id: uuidv4(),
@@ -130,99 +130,48 @@ export function useInboxes() {
         setItem(AGENT_INBOXES_LOCAL_STORAGE_KEY, JSON.stringify(currentInboxes));
       }
 
-      // Ensure each agent inbox has an ID, and if not, add one
-      currentInboxes = currentInboxes.map((inbox) => {
-        return {
-          ...inbox,
-          id: inbox.id || uuidv4(),
-        };
-      });
+      // Ensure each agent inbox has an ID
+      currentInboxes = currentInboxes.map((inbox) => ({
+        ...inbox,
+        id: inbox.id || uuidv4(),
+      }));
 
       const agentInboxSearchParam = getSearchParam(AGENT_INBOX_PARAM);
-      logger.log(
-        "Agent inbox search param for selection:",
-        agentInboxSearchParam
-      );
 
-      // If there is no agent inbox search param, or the search param does not match any inbox
-      // update search param and local storage
+      // If no search param exists, set defaults based on selection
       if (!agentInboxSearchParam) {
-        const selectedInbox = currentInboxes.find((inbox) => inbox.selected);
-        if (!selectedInbox) {
-          currentInboxes[0].selected = true;
-          updateQueryParams(
-            [AGENT_INBOX_PARAM, OFFSET_PARAM, LIMIT_PARAM, INBOX_PARAM],
-            [currentInboxes[0].id, "0", "10", "interrupted"]
-          );
-          setAgentInboxes(currentInboxes);
-          setItem(
-            AGENT_INBOXES_LOCAL_STORAGE_KEY,
-            JSON.stringify(currentInboxes)
-          );
-        } else {
-          updateQueryParams(
-            [AGENT_INBOX_PARAM, OFFSET_PARAM, LIMIT_PARAM, INBOX_PARAM],
-            [selectedInbox.id, "0", "10", "interrupted"]
-          );
-          setAgentInboxes(currentInboxes);
-          setItem(
-            AGENT_INBOXES_LOCAL_STORAGE_KEY,
-            JSON.stringify(currentInboxes)
-          );
-        }
+        const selectedInbox = currentInboxes.find((inbox) => inbox.selected) || currentInboxes[0];
+        updateQueryParams(
+          [AGENT_INBOX_PARAM, OFFSET_PARAM, LIMIT_PARAM, INBOX_PARAM],
+          [selectedInbox.id, "0", "10", "interrupted"]
+        );
 
-        // Mark initial load as complete
-        if (!initialLoadComplete.current) {
-          initialLoadComplete.current = true;
+        if (JSON.stringify(currentInboxes) !== JSON.stringify(agentInboxesRef.current)) {
+          setAgentInboxes(currentInboxes);
         }
-
         return;
       }
 
-      let finalSelectedInboxId: string | null = null;
+      // Sync selection with search param
+      let finalSelectedInboxId = agentInboxSearchParam;
+      const exists = currentInboxes.some(i => i.id === agentInboxSearchParam);
 
-      // Param exists: Find inbox by param ID
-      const selectedByParam = currentInboxes.find(
-        (inbox) => inbox.id === agentInboxSearchParam
-      );
-
-      if (selectedByParam) {
-        finalSelectedInboxId = selectedByParam.id;
-        logger.log("Found inbox by search param:", finalSelectedInboxId);
-      } else {
-        // Param exists but inbox not found: Select first
-        finalSelectedInboxId = currentInboxes[0]?.id || null;
-        logger.log(
-          "Inbox for search param not found, selecting first inbox:",
-          finalSelectedInboxId
-        );
-        if (finalSelectedInboxId) {
-          // Update URL to reflect the actual selection
-          updateQueryParams(AGENT_INBOX_PARAM, finalSelectedInboxId);
-        }
+      if (!exists) {
+        finalSelectedInboxId = currentInboxes[0].id;
+        updateQueryParams(AGENT_INBOX_PARAM, finalSelectedInboxId);
       }
 
-      // Apply the selection to the inboxes array
       const updatedInboxes = currentInboxes.map((inbox) => ({
         ...inbox,
         selected: inbox.id === finalSelectedInboxId,
       }));
 
-      // Update state only if it has changed to avoid loops
-      if (JSON.stringify(updatedInboxes) !== JSON.stringify(agentInboxes)) {
-        logger.log(
-          "Updating agentInboxes state with selection:",
-          updatedInboxes
-        );
+      // Update state only if it differs from the current ref
+      if (JSON.stringify(updatedInboxes) !== JSON.stringify(agentInboxesRef.current)) {
         setAgentInboxes(updatedInboxes);
       }
     },
-    [
-      getSearchParam,
-      getItem,
-      agentInboxes, // Include agentInboxes state to compare against
-      updateQueryParams,
-    ]
+    [getSearchParam, getItem, setItem, updateQueryParams]
   );
 
   /**
