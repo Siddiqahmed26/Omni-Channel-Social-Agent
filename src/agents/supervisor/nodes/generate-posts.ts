@@ -7,7 +7,7 @@ export async function generatePosts(
   state: SupervisorState,
 ): Promise<Partial<SupervisorState>> {
   const client = new Client({
-    apiUrl: process.env.LANGGRAPH_API_URL,
+    apiUrl: process.env.LANGGRAPH_API_URL || "http://localhost:54367",
     apiKey: process.env.LANGCHAIN_API_KEY,
   });
 
@@ -74,15 +74,15 @@ Number of individual posts: *${idsAndTypes.filter((x) => x.type === "post").leng
 
 Thread post IDs:
 ${idsAndTypes
-  .filter((x) => x.type === "thread")
-  .map((x) => `- *${x.thread_id}* : *${x.run_id}*`)
-  .join("\n")}
+      .filter((x) => x.type === "thread")
+      .map((x) => `- *${x.thread_id}* : *${x.run_id}*`)
+      .join("\n")}
   
 Single post IDs:
 ${idsAndTypes
-  .filter((x) => x.type === "post")
-  .map((x) => `- *${x.thread_id}* : *${x.run_id}*`)
-  .join("\n")}`;
+      .filter((x) => x.type === "post")
+      .map((x) => `- *${x.thread_id}* : *${x.run_id}*`)
+      .join("\n")}`;
 
   await slackClient.sendMessage(process.env.SLACK_CHANNEL_ID, messageText);
 

@@ -35,7 +35,7 @@ async function runReflections({
   userResponse,
 }: RunReflectionsArgs) {
   const client = new Client({
-    apiUrl: process.env.LANGGRAPH_API_URL,
+    apiUrl: process.env.LANGGRAPH_API_URL || "http://localhost:54367",
     apiKey: process.env.LANGCHAIN_API_KEY,
   });
 

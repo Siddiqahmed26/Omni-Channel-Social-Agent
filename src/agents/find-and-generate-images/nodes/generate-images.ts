@@ -433,6 +433,17 @@ export async function generateImageCandidatesForPost(
     image_candidates: existingCandidates,
   } = state;
 
+  if (!process.env.GOOGLE_VERTEX_AI_WEB_CREDENTIALS) {
+    console.warn(
+      "GOOGLE_VERTEX_AI_WEB_CREDENTIALS not set. Skipping image generation.",
+    );
+    return {
+      imageOptions: imageUrls,
+      image_candidates: existingCandidates,
+      image: undefined,
+    };
+  }
+
   if (!post) {
     throw new Error("No post content available to generate images");
   }

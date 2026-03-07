@@ -43,9 +43,10 @@ export async function getImageMessageContents(
           text: `The below image is index ${baseIndex + chunkIndex}`,
         },
         {
-          type: "media",
-          mimeType,
-          fileUri: cleanedFileUri,
+          type: "image_url",
+          image_url: {
+            url: cleanedFileUri,
+          },
         },
       ];
     },
