@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ChatAnthropic } from "@langchain/anthropic";
+import { getModel } from "../../shared/nodes/llm.js";
 
 const ROUTE_POST_PROMPT = `You're an advanced AI assistant, tasked with routing a user's response.
 The only route which can be taken is 'rewrite_post'. If the user is not asking to rewrite a post, then choose the 'unknown_response' route.
@@ -25,21 +25,12 @@ export async function routeResponse(
   post: string,
   userResponse: string,
 ): Promise<z.infer<typeof routeResponseSchema>> {
-  const model = new ChatAnthropic({
-    model: "claude-sonnet-4-5",
+  const model = getModel({
+    modelName: "gpt-4o",
     temperature: 0,
-  }).bindTools(
-    [
-      {
-        name: "route_response",
-        description: "Route the user's response to the appropriate route.",
-        schema: routeResponseSchema,
-      },
-    ],
-    {
-      tool_choice: "route_response",
-    },
-  );
+  }).withStructuredOutput(routeResponseSchema, {
+    name: "route_response",
+  });
 
   const formattedPrompt = ROUTE_POST_PROMPT.replace("{POST}", post).replace(
     "{USER_RESPONSE}",
@@ -48,5 +39,5 @@ export async function routeResponse(
 
   const response = await model.invoke(formattedPrompt);
 
-  return response.tool_calls?.[0].args as z.infer<typeof routeResponseSchema>;
+  return response as z.infer<typeof routeResponseSchema>;
 }

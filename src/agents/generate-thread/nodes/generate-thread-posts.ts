@@ -1,4 +1,4 @@
-import { ChatAnthropic } from "@langchain/anthropic";
+import { getModel } from "../../shared/nodes/llm.js";
 import {
   formatAllPostsForPrompt,
   formatBodyPostsForPrompt,
@@ -145,8 +145,8 @@ Once you've completed these steps, provide your tweet inside <tweet> tags. Do no
 export async function generateThreadPosts(
   state: GenerateThreadState,
 ): Promise<Partial<GenerateThreadState>> {
-  const model = new ChatAnthropic({
-    model: "claude-sonnet-4-5",
+  const model = getModel({
+    modelName: "gpt-4o",
     temperature: 0, // TODO: Eval different temperatures
   });
 

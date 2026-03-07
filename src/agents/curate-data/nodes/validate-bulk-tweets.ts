@@ -1,4 +1,4 @@
-import { ChatAnthropic } from "@langchain/anthropic";
+import { getModel } from "../../shared/nodes/llm.js";
 import { CurateDataState } from "../state.js";
 import { z } from "zod";
 import { chunkArray } from "../../utils.js";
@@ -143,8 +143,8 @@ function formatTweets(tweets: TweetV2[]): string {
 export async function validateBulkTweets(
   state: CurateDataState,
 ): Promise<Partial<CurateDataState>> {
-  const model = new ChatAnthropic({
-    model: "claude-sonnet-4-5",
+  const model = getModel({
+    modelName: "gpt-4o",
     temperature: 0,
   }).withStructuredOutput(answerSchema, { name: "answer" });
 
