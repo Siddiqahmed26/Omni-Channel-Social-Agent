@@ -23,12 +23,17 @@ The project follows a **Human-in-the-Loop (HITL)** orchestration pattern using L
 ```mermaid
 graph TD
     subgraph "1. Ingestion Layer"
-        URL[Input URL] --> FC[Firecrawl / YouTube API]
+        URL[Input URL] --> FC[Firecrawl Native SDK]
+        URL --> YT[YouTube API]
         FC --> Context[Raw Content Context]
+        YT --> Context
     end
 
     subgraph "2. Transformation Layer (The Brain)"
-        Context --> LLM{Anthropic Claude}
+        Context --> Factory[Centralized Model Factory]
+        Factory --> LLM{Gemini 2.0 Flash}
+        LLM -- "Fallback/Option" --> Claude[Anthropic Claude]
+        LLM -- "Fallback/Option" --> GPT[OpenAI GPT-4o]
         LLM --> Analysis[Content Analysis]
         Analysis --> Draft[Social Media Drafts]
         Draft --> Tone[Tone Adaptation]
@@ -55,10 +60,11 @@ graph TD
 
 ## ✨ Key Features
 
--   **🌐 Omni-Channel Ingestion**: Automatically handles GitHub Repos, Twitter Threads, YouTube Videos, and standard web pages.
+-   **🌐 Omni-Channel Ingestion**: Automatically handles GitHub Repos, Twitter Threads, YouTube Videos, and standard web pages via **Firecrawl Native SDK**.
+-   **🤖 Multi-Model Support**: Powered by a centralized model factory supporting **Google Gemini 2.0**, **Anthropic**, and **OpenAI**. Defaulted to Gemini for high-speed, cost-free generations.
 -   **🎭 Adaptive Persona**: Swap between a "Professional Executive", "Solo-Dev Tinkerer", or "Energetic Vlogger" tone with simple prompt configuration.
 -   **📥 Human-in-the-Loop**: Never post a hallucination! All drafts are sent to a private 3D-enhanced **Agent Inbox UI** for your final seal of approval.
--   **🔐 Secure Posting**: Integrated with **Arcade AI** for secure, programmatic access to your social accounts without managing complex OAuth flows.
+-   **🔐 Secure Posting**: Integrated with **Arcade AI** for secure, programmatic access to your social accounts.
 
 ---
 
@@ -79,14 +85,13 @@ Once you are satisfied, click **"Schedule"** or **"Approve"**. The agent will us
 
 ## 🛠️ Developer & Backend Guide
 
-If you are a developer looking to contribute or run the system locally:
-
 ### 1. Prerequisites
 You will need API keys for:
-- [Anthropic](https://console.anthropic.com/) (Brain)
+- [Google AI Studio](https://aistudio.google.com/) (**Gemini 2.0** - Default Brain)
 - [Firecrawl](https://www.firecrawl.dev/) (Web Scraping)
 - [Arcade](https://www.arcade.dev/) (Social Posting)
 - [LangSmith](https://smith.langchain.com/) (Orchestration & UI)
+- *Optional*: Anthropic / OpenAI keys for alternative model providers.
 
 ### 2. Local Setup
 ```bash
@@ -95,6 +100,9 @@ yarn install
 
 # Configure environment
 cp .env.quickstart.example .env
+
+# Set your provider in .env
+# MODEL_PROVIDER=google
 
 # Start the LangGraph server (Backend)
 yarn langgraph:in_mem:up
