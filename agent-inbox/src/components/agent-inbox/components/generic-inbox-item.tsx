@@ -96,49 +96,33 @@ export function GenericInboxItem<
         )
       }
       className={cn(
-        "grid grid-cols-12 w-full p-4 py-4.5 cursor-pointer hover:bg-white/5 transition-all ease-in-out h-[71px] group",
+        "flex flex-col sm:flex-row sm:items-center w-full p-3 sm:p-4 gap-2 sm:gap-0 cursor-pointer hover:bg-white/5 transition-all ease-in-out group",
         !isLast && "border-b border-white/5"
       )}
     >
-      <div className="col-span-1 flex justify-center items-center">
-        {/* Empty space for alignment with interrupted items */}
-      </div>
-
-      <div
-        className={cn(
-          "col-span-6 flex items-center justify-start gap-2",
-          !selectedInbox && "col-span-9"
-        )}
-      >
-        <p className="text-sm font-medium text-slate-400 group-hover:text-slate-300">Thread ID:</p>
+      {/* Thread ID */}
+      <div className="flex items-center gap-2 flex-1 min-w-0">
+        <p className="text-xs sm:text-sm font-medium text-slate-400 group-hover:text-slate-300 shrink-0">Thread:</p>
         <ThreadIdCopyable showUUID threadId={threadData.thread.thread_id} />
       </div>
 
-      {selectedInbox && (
-        <div className="col-span-2 flex items-center">
+      {/* Bottom row on mobile: studio button + status + date */}
+      <div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-4 shrink-0">
+        {selectedInbox && (
           <Button
             size="sm"
             variant="outline"
-            className="flex items-center gap-1 bg-white/5 border-white/10 text-slate-300 hover:bg-white/10 hover:text-white"
+            className="flex items-center gap-1 bg-white/5 border-white/10 text-xs text-slate-300 hover:bg-white/10 hover:text-white h-7 px-2"
             onClick={handleOpenInStudio}
           >
             Studio
           </Button>
-        </div>
-      )}
-
-      <div
-        className={cn(
-          "col-span-2 flex items-center",
-          !selectedInbox && "col-start-10"
         )}
-      >
         <InboxItemStatuses status={threadData.status} />
+        <p className="text-right text-xs text-slate-500 font-light italic whitespace-nowrap">
+          {updatedAtDateString}
+        </p>
       </div>
-
-      <p className="col-span-1 text-right text-xs text-slate-500 font-light pt-2 italic">
-        {updatedAtDateString}
-      </p>
     </div>
   );
 }

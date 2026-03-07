@@ -186,7 +186,7 @@ export function AgentInboxView<
   };
 
   return (
-    <div ref={containerRef} className="min-w-[1000px] h-full overflow-y-auto bg-transparent">
+    <div ref={containerRef} className="w-full h-full overflow-y-auto bg-transparent">
       <div className="pl-5 pt-4">
         <BackfillBanner />
         <InboxButtons changeInbox={changeInbox} />
