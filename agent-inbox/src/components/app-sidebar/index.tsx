@@ -10,7 +10,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { FileText, UploadCloud, House } from "lucide-react";
+import { FileText, UploadCloud, House, Brain } from "lucide-react";
 import { agentInboxSvg } from "../agent-inbox/components/agent-inbox-logo";
 import { SettingsPopover } from "../agent-inbox/components/settings-popover";
 import { PillButton } from "../ui/pill-button";
@@ -164,6 +164,16 @@ export function AppSidebar() {
 
               <div className="flex flex-col gap-3 mt-auto pt-6 border-t border-white/5 pb-2">
                 <SettingsPopover />
+
+                <NextLink href="/brain">
+                  <PillButton
+                    variant="outline"
+                    className="w-full flex gap-3 h-12 items-center justify-center text-slate-400 border-white/5 hover:bg-white/5 hover:text-white transition-all duration-300"
+                  >
+                    <Brain className="w-4 h-4" />
+                    <span className="text-sm font-medium">Brain</span>
+                  </PillButton>
+                </NextLink>
 
                 <NextLink
                   href={AGENT_INBOX_GITHUB_README_URL}

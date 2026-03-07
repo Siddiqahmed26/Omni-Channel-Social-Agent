@@ -15,11 +15,13 @@ import React from "react";
 import { useToast } from "@/hooks/use-toast";
 import { LoaderCircle, PlusCircle } from "lucide-react";
 import { logger } from "../utils/logger";
+import { useThreadsContext } from "../contexts/ThreadContext";
 import { createClient } from "@/lib/client";
 import { createClient as createSupabaseClient } from "@/utils/supabase/client";
 
 export function QuickGenerateDialog({ iconOnly = false }: { iconOnly?: boolean }) {
     const { toast } = useToast();
+    const { agentInboxes } = useThreadsContext();
     const [open, setOpen] = React.useState(false);
     const [url, setUrl] = React.useState("");
     const [isSubmitting, setIsSubmitting] = React.useState(false);
@@ -31,9 +33,10 @@ export function QuickGenerateDialog({ iconOnly = false }: { iconOnly?: boolean }
         setErrorMessage(null);
 
         try {
-            // Use the provided Hugging Face URL for the backend
-            const deploymentUrl = "https://siddiq262001-my-social-agent.hf.space";
-            const graphId = "generate_post";
+            // Use the selected inbox's deployment URL or fallback
+            const currentInbox = agentInboxes.find(i => i.selected) || agentInboxes[0];
+            const deploymentUrl = currentInbox?.deploymentUrl || "https://siddiq262001-my-social-agent.hf.space";
+            const graphId = currentInbox?.graphId || "generate_post";
 
             // Initialize the client
             const client = createClient({ deploymentUrl, langchainApiKey: undefined });
