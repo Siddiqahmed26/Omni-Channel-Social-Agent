@@ -1,4 +1,4 @@
-import { ChatAnthropic } from "@langchain/anthropic";
+import { getModel } from "./llm.js";
 import { z } from "zod";
 
 const ROUTE_RESPONSE_PROMPT = `You are an AI assistant tasked with routing a user's response to one of two possible routes based on their intention. The two possible routes are:
@@ -90,8 +90,8 @@ export async function routeResponse({
   dateOrPriority,
   userResponse,
 }: RouteResponseArgs) {
-  const model = new ChatAnthropic({
-    model: "claude-sonnet-4-5",
+  const model = getModel({
+    modelName: "gpt-4o",
     temperature: 0,
   });
 
