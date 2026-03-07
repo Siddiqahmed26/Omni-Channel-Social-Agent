@@ -13,7 +13,7 @@ import { haveArgsChanged, prettifyText } from "../utils";
 import { MarkdownText } from "@/components/ui/markdown-text";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
-import { CircleX, LoaderCircle, Undo2, Send, CheckCircle2, Edit3, MessageSquarePlus } from "lucide-react";
+import { CircleX, LoaderCircle, Undo2, Send, CheckCircle2, Edit3, MessageSquarePlus, Sparkles, Brain } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { logger } from "../utils/logger";
@@ -130,9 +130,9 @@ function ResponseComponent({
       <div className="flex items-center justify-between w-full relative z-10">
         <div className="flex items-center gap-3">
           <div className="p-2 rounded-lg bg-blue-500/20 text-blue-400 border border-blue-500/10">
-            <MessageSquarePlus className="w-5 h-5" />
+            <Sparkles className="w-5 h-5" />
           </div>
-          <h3 className="font-extrabold text-white text-lg tracking-tight">Post Human Response</h3>
+          <h3 className="font-extrabold text-white text-lg tracking-tight">Personality Feedback & Training</h3>
         </div>
         <ResetButton
           handleReset={() => {
@@ -148,7 +148,13 @@ function ResponseComponent({
       )}
 
       <div className="flex flex-col gap-3 items-start w-full relative z-10">
-        <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Input Stream</label>
+        <div className="flex items-center justify-between w-full ml-1">
+          <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Personality Training Input</label>
+          <span className="text-[9px] font-bold text-blue-400/60 uppercase tracking-widest flex items-center gap-1">
+            <Brain className="w-3 h-3" />
+            Agent learns from this
+          </span>
+        </div>
         <div className="relative w-full group/input">
           <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500/30 to-purple-500/30 rounded-2xl blur opacity-0 group-focus-within/input:opacity-100 transition duration-700" />
           <Textarea
@@ -158,7 +164,7 @@ function ResponseComponent({
             onKeyDown={handleKeyDown}
             rows={5}
             className="relative z-10 bg-black/40 border-white/10 rounded-2xl p-5 text-slate-200 placeholder:text-slate-600 focus:bg-black/60 transition-all font-medium text-[15px] resize-none"
-            placeholder="Document your feedback or instruction here..."
+            placeholder="Tell the agent how to improve (e.g. 'Use more professional tone', 'Add 2 emojis', 'Make it shorter')..."
           />
         </div>
       </div>
@@ -170,8 +176,8 @@ function ResponseComponent({
           onClick={handleSubmit}
           className="h-12 px-8 rounded-xl shadow-[0_10px_30px_rgba(59,130,246,0.3)] hover:shadow-[0_15px_40px_rgba(59,130,246,0.4)] transition-all active:scale-95"
         >
-          <Send className="w-4 h-4 mr-2" />
-          Transmit Response
+          <Brain className="w-4 h-4 mr-2" />
+          Send Feedback & Train AI
         </Button>
       </div>
     </motion.div>

@@ -103,50 +103,6 @@ export function AgentInbox<
     }
   }, [isStateViewOpen, restoreScrollPosition, navigationSignature]);
 
-  React.useEffect(() => {
-    try {
-      if (typeof window === "undefined") return;
-
-      const currentInbox = getSearchParam(INBOX_PARAM) as
-        | ThreadStatusWithAll
-        | undefined;
-      if (!currentInbox) {
-        // Set default inbox if none selected, and ensure offset, limit, and inbox (tab) are set
-        updateQueryParams(
-          [INBOX_PARAM, OFFSET_PARAM, LIMIT_PARAM],
-          ["interrupted", "0", "10"]
-        );
-      } else {
-        setSelectedInbox(currentInbox);
-
-        // Ensure offset and limit exist whenever inbox is changed
-        const offsetParam = getSearchParam(OFFSET_PARAM);
-        const limitParam = getSearchParam(LIMIT_PARAM);
-
-        if (!offsetParam || !limitParam) {
-          const paramsToUpdate = [];
-          const valuesToUpdate = [];
-
-          if (!offsetParam) {
-            paramsToUpdate.push(OFFSET_PARAM);
-            valuesToUpdate.push("0");
-          }
-
-          if (!limitParam) {
-            paramsToUpdate.push(LIMIT_PARAM);
-            valuesToUpdate.push("10");
-          }
-
-          if (paramsToUpdate.length > 0) {
-            updateQueryParams(paramsToUpdate, valuesToUpdate);
-          }
-        }
-      }
-    } catch (e) {
-      logger.error("Error updating query params & setting inbox", e);
-    }
-  }, [searchParams]);
-
   if (isStateViewOpen) {
     return <ThreadView threadId={selectedThreadIdParam} />;
   }

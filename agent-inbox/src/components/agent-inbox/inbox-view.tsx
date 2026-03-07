@@ -59,70 +59,30 @@ export function AgentInboxView<
   // Auto-refresh inbox IDs once when no threads are found
   React.useEffect(() => {
     const autoRefreshInboxes = async () => {
-      if (typeof window === "undefined") return;
+      if (typeof window === "undefined" || loading || threadData.length > 0 || agentInboxes.length === 0 || hasAttemptedRefresh) return;
 
       const sessionId = new Date().toDateString();
       const hasRefreshed = localStorage.getItem(`inbox-refreshed-${sessionId}`);
 
-      if (hasRefreshed === "true") return;
-
-      if (
-        !loading &&
-        !hasAttemptedRefresh &&
-        threadData.length === 0 &&
-        agentInboxes.length > 0
-      ) {
-        localStorage.setItem(`inbox-refreshed-${sessionId}`, "true");
+      if (hasRefreshed === "true") {
         setHasAttemptedRefresh(true);
-
-        logger.log("Automatically refreshing inbox IDs...");
-        await forceInboxBackfill();
-
-        setTimeout(() => {
-          window.location.reload();
-        }, 100);
+        return;
       }
+
+      localStorage.setItem(`inbox-refreshed-${sessionId}`, "true");
+      setHasAttemptedRefresh(true);
+
+      logger.log("Automatically refreshing inbox IDs...");
+      await forceInboxBackfill();
+
+      // Small delay before reload to ensure storage is flushed
+      setTimeout(() => {
+        window.location.reload();
+      }, 500);
     };
 
     autoRefreshInboxes();
-  }, [loading, threadData, agentInboxes, hasAttemptedRefresh]);
-
-  // Register scroll event listener
-  React.useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    const handleScroll = () => {
-      if (
-        scrollableContentRef.current &&
-        scrollableContentRef.current.scrollTop > 0
-      ) {
-        saveScrollPosition(scrollableContentRef.current);
-      } else if (containerRef.current && containerRef.current.scrollTop > 0) {
-        saveScrollPosition(containerRef.current);
-      } else if (window.scrollY > 0) {
-        saveScrollPosition();
-      }
-    };
-
-    let timeout: NodeJS.Timeout | null = null;
-    const throttledScrollHandler = () => {
-      if (!timeout) {
-        timeout = setTimeout(() => {
-          handleScroll();
-          timeout = null;
-        }, 300);
-      }
-    };
-
-    window.addEventListener("scroll", throttledScrollHandler, {
-      passive: true,
-    });
-
-    return () => {
-      window.removeEventListener("scroll", throttledScrollHandler);
-      if (timeout) clearTimeout(timeout);
-    };
-  }, [containerRef, saveScrollPosition]);
+  }, [loading, threadData.length, agentInboxes.length, hasAttemptedRefresh]);
 
   const changeInbox = async (inbox: ThreadStatusWithAll) => {
     clearThreadData();
@@ -131,22 +91,6 @@ export function AgentInboxView<
       [inbox, "0", "10"]
     );
   };
-
-  React.useEffect(() => {
-    try {
-      if (typeof window === "undefined") return;
-      const offsetQueryParam = getSearchParam(OFFSET_PARAM);
-      const limitQueryParam = getSearchParam(LIMIT_PARAM);
-      if (!offsetQueryParam) {
-        updateQueryParams(OFFSET_PARAM, "0");
-      }
-      if (!limitQueryParam) {
-        updateQueryParams(LIMIT_PARAM, "10");
-      }
-    } catch (e) {
-      logger.error("Error updating query params", e);
-    }
-  }, [searchParams]);
 
   const threadDataToRender = React.useMemo(
     () =>

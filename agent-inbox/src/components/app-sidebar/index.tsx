@@ -142,7 +142,7 @@ export function AppSidebar() {
                     className="w-full flex gap-3 h-12 items-center justify-center text-slate-400 border-white/5 hover:bg-white/5 hover:text-white transition-all duration-300"
                   >
                     <Brain className="w-4 h-4" />
-                    <span className="text-sm font-medium">Brain</span>
+                    <span className="text-sm font-medium">AI Style Brain</span>
                   </PillButton>
                 </NextLink>
 

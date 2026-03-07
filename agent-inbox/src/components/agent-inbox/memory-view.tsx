@@ -31,10 +31,10 @@ export function MemoryView() {
 
             setLoading(true);
             try {
-                const langchainApiKey = getItem(LANGCHAIN_API_KEY_LOCAL_STORAGE_KEY) || undefined;
+                // The master key is now handled internally by createClient
                 const client = createClient({
                     deploymentUrl: selectedInbox.deploymentUrl,
-                    langchainApiKey
+                    langchainApiKey: undefined
                 });
 
                 // Fetch from store: ["reflection_rules"], key "rules"
@@ -50,13 +50,9 @@ export function MemoryView() {
             } catch (error: any) {
                 if (!isMounted) return;
                 logger.error("Error fetching reflections", error);
-                const isAuthError = error.status === 401 || error.status === 403 ||
-                    (error.message && (error.message.includes("401") || error.message.includes("403")));
                 toast({
                     title: "Connection Issue",
-                    description: isAuthError
-                        ? "Authentication failed. Please check your LangSmith API Key in Settings."
-                        : "Could not reach the AI Brain. Ensure your backend is running and the URL is correct.",
+                    description: "Could not reach the AI Brain. Ensure your backend is running and the URL is correct.",
                     variant: "destructive",
                 });
             } finally {
@@ -69,17 +65,16 @@ export function MemoryView() {
         return () => {
             isMounted = false;
         };
-    }, [selectedInbox?.id, selectedInbox?.deploymentUrl, getItem, toast]);
+    }, [selectedInbox?.id, selectedInbox?.deploymentUrl, toast]);
 
     const handleSave = async () => {
         if (!selectedInbox) return;
 
         setSaving(true);
         try {
-            const langchainApiKey = getItem(LANGCHAIN_API_KEY_LOCAL_STORAGE_KEY) || undefined;
             const client = createClient({
                 deploymentUrl: selectedInbox.deploymentUrl,
-                langchainApiKey
+                langchainApiKey: undefined
             });
 
             await (client.store as any).putItem(["reflection_rules"], "rules", {
@@ -128,16 +123,19 @@ export function MemoryView() {
             className="p-6 md:p-12 max-w-6xl mx-auto w-full h-full flex flex-col"
         >
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
-                <div className="space-y-2">
+                <div className="space-y-4">
                     <div className="flex items-center gap-3">
                         <div className="p-3 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-blue-400">
                             <BrainCircuit className="w-8 h-8" />
                         </div>
-                        <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-white">AI Brain</h1>
+                        <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-white">AI Style Brain</h1>
                     </div>
-                    <p className="text-slate-400 max-w-xl font-medium leading-relaxed ml-1">
-                        Manage the deep reflections and patterns the agent has learned from your feedback. These rules influence every future post generation.
-                    </p>
+                    <div className="bg-white/[0.03] border border-white/5 p-4 rounded-2xl max-w-2xl">
+                        <p className="text-slate-300 text-sm font-medium leading-relaxed">
+                            <Sparkles className="w-4 h-4 inline-block mr-2 text-blue-400 mb-1" />
+                            This is your agent's **Long Term Memory**. As you give feedback on generated posts, the agent learns your preferences (e.g. tone, emojis, length) and writes them as "Rules" below. The agent reads these rules every time it generates a new post to ensure it sounds exactly like you.
+                        </p>
+                    </div>
                 </div>
 
                 <div className="flex items-center gap-3">
