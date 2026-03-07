@@ -8,17 +8,15 @@ WORKDIR /app
 COPY package.json yarn.lock* ./
 RUN yarn install
 
-# 3. Copy only essential application files
+# 3. Install only Chromium (Saves time and space)
+# We do this BEFORE copying src so it stays cached even when code changes!
+RUN npx playwright install chromium
+
+# 4. Copy only essential application files
 COPY src ./src
 COPY langgraph.json .
 COPY pyproject.toml .
 COPY README.md .
-
-# DEBUG: Verify the copy
-RUN ls -d src/agents/ingest-data
-
-# 4. Install only Chromium (Saves time and space)
-RUN npx playwright install chromium
 
 # 5. Expose the port
 EXPOSE 54367
