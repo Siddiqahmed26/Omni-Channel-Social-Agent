@@ -1,4 +1,4 @@
-import { FireCrawlLoader } from "@langchain/community/document_loaders/web/firecrawl";
+import { scrapeUrl } from "../../../utils/firecrawl.js";
 import { CurateDataState } from "../state.js";
 import { extractTweetId, extractUrls, getUrlType, sleep } from "../../utils.js";
 import { RedditPostsWithExternalData } from "../../verify-reddit-post/types.js";
@@ -29,17 +29,16 @@ export async function extractAINewsletterContent(
   const generalURLs: string[] = [];
 
   for await (const url of state.aiNewsPosts) {
-    const loader = new FireCrawlLoader({
-      url,
-      mode: "scrape",
-      params: {
-        formats: ["markdown"],
-      },
-    });
+    let content = "";
+    try {
+      const result = await scrapeUrl(url);
+      content = result.content;
+    } catch (e) {
+      console.error(`Failed to scrape newsletter ${url}:`, e);
+      continue;
+    }
 
-    const docs = await loader.load();
-
-    const docsText = docs.map((d) => d.pageContent).join("\n");
+    const docsText = content;
 
     const urls: string[] = [];
     // Content between these sections are from the AI Twitter Recap
