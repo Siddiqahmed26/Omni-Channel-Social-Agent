@@ -1,6 +1,6 @@
 # 1. Use the official Playwright image (Noble is Ubuntu 24.04)
 # This image comes with all browser dependencies pre-installed.
-FROM mcr.microsoft.com/playwright:v1.55.1-noble
+FROM mcr.microsoft.com/playwright:v1.58.2-noble
 
 WORKDIR /app
 
