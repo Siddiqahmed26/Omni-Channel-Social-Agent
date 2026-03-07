@@ -20,6 +20,7 @@ import { TooltipIconButton } from "../ui/assistant-ui/tooltip-icon-button";
 import { useThreadsContext } from "../agent-inbox/contexts/ThreadContext";
 import { prettifyText, isDeployedUrl } from "../agent-inbox/utils";
 import { cn } from "@/lib/utils";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   AGENT_INBOX_GITHUB_README_URL,
   LANGCHAIN_API_KEY_LOCAL_STORAGE_KEY,
@@ -66,96 +67,126 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar className="border-r border-white/5 bg-slate-900/50 backdrop-blur-xl">
-      <SidebarContent className="flex flex-col h-screen pb-9 pt-6">
-        <div className="flex items-center justify-between px-11">
-          <NextLink href="/" className="flex-shrink-0 w-full">
+    <Sidebar className="border-r border-white/5 bg-black/20 backdrop-blur-3xl">
+      <SidebarContent className="flex flex-col h-screen pb-9 pt-8 px-4">
+        <div className="flex items-center justify-between px-6 mb-8 group">
+          <NextLink href="/" className="flex-shrink-0 transition-transform duration-500 group-hover:scale-105">
             {agentInboxSvg}
           </NextLink>
-          <AppSidebarTrigger isOutside={false} className="mt-1" />
+          <AppSidebarTrigger isOutside={false} className="opacity-0 group-hover:opacity-100 transition-opacity" />
         </div>
-        <QuickGenerateDialog />
-        <SidebarGroup className="flex-1 overflow-y-auto pt-6">
+
+        <div className="px-2 mb-6">
+          <QuickGenerateDialog />
+        </div>
+
+        <SidebarGroup className="flex-1 overflow-y-auto px-2">
           <SidebarGroupContent className="h-full">
-            <SidebarMenu className="flex flex-col gap-2 justify-between h-full">
-              <div className="flex flex-col gap-2 pl-7">
+            <SidebarMenu className="flex flex-col gap-4 justify-between h-full">
+              <div className="flex flex-col gap-1">
                 {agentInboxes.map((item, idx) => {
                   const label = item.name || prettifyText(item.graphId);
                   const isDeployed = isDeployedUrl(item.deploymentUrl);
                   return (
                     <SidebarMenuItem
                       key={`graph-id-${item.graphId}-${idx}`}
-                      className={cn(
-                        "flex items-center w-full px-2",
-                        item.selected ? "bg-white/10 rounded-lg shadow-[0_0_15px_rgba(255,255,255,0.05)]" : ""
-                      )}
+                      className="relative group/item mb-1"
                     >
-                      <TooltipProvider>
-                        <Tooltip delayDuration={200}>
-                          <TooltipTrigger asChild>
-                            <SidebarMenuButton
-                              onClick={() => changeAgentInbox(item.id, true)}
-                            >
-                              {isDeployed ? (
-                                <UploadCloud className="w-5 h-5 text-blue-500" />
-                              ) : (
-                                <House className="w-5 h-5 text-green-500" />
-                              )}
-                              <span
-                                className={cn(
-                                  "truncate min-w-0 font-medium",
-                                  item.selected ? "text-white" : "text-slate-400"
-                                )}
-                              >
-                                {label}
-                              </span>
-                            </SidebarMenuButton>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            {label} - {isDeployed ? "Deployed" : "Local"}
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
+                      <AnimatePresence>
+                        {item.selected && (
+                          <motion.div
+                            layoutId="active-nav"
+                            className="absolute inset-0 bg-white/5 border border-white/10 rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.3)]"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                          />
+                        )}
+                      </AnimatePresence>
 
-                      <DropdownDialogMenu
-                        item={item}
-                        deleteAgentInbox={deleteAgentInbox}
-                      />
+                      <div className="relative z-10 flex items-center w-full group/btn">
+                        <TooltipProvider>
+                          <Tooltip delayDuration={200}>
+                            <TooltipTrigger asChild>
+                              <SidebarMenuButton
+                                className={cn(
+                                  "w-full px-4 py-6 flex items-center gap-3 transition-all duration-300 rounded-xl",
+                                  item.selected
+                                    ? "text-white"
+                                    : "text-slate-500 hover:text-slate-300 hover:bg-white/[0.02]"
+                                )}
+                                onClick={() => changeAgentInbox(item.id, true)}
+                              >
+                                <motion.div
+                                  whileHover={{ scale: 1.2, rotate: 5 }}
+                                  className={cn(
+                                    "p-2 rounded-lg",
+                                    item.selected ? "bg-purple-500/10 text-purple-400" : "bg-white/5 text-slate-500"
+                                  )}
+                                >
+                                  {isDeployed ? (
+                                    <UploadCloud className="w-4 h-4" />
+                                  ) : (
+                                    <House className="w-4 h-4" />
+                                  )}
+                                </motion.div>
+                                <span className="truncate font-medium text-sm tracking-tight">
+                                  {label}
+                                </span>
+                              </SidebarMenuButton>
+                            </TooltipTrigger>
+                            <TooltipContent side="right">
+                              {label} • {isDeployed ? "Cloud" : "Local"}
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+
+                        <div className="opacity-0 group-hover/btn:opacity-100 transition-opacity pr-2">
+                          <DropdownDialogMenu
+                            item={item}
+                            deleteAgentInbox={deleteAgentInbox}
+                          />
+                        </div>
+                      </div>
                     </SidebarMenuItem>
                   );
                 })}
-                <AddAgentInboxDialog
-                  hideTrigger={false}
-                  langchainApiKey={langchainApiKey}
-                  handleChangeLangChainApiKey={handleChangeLangChainApiKey}
-                />
+
+                <div className="mt-4 px-2">
+                  <AddAgentInboxDialog
+                    hideTrigger={false}
+                    langchainApiKey={langchainApiKey}
+                    handleChangeLangChainApiKey={handleChangeLangChainApiKey}
+                  />
+                </div>
               </div>
 
-              <div className="flex flex-col gap-3 pl-7">
+              <div className="flex flex-col gap-3 mt-auto pt-6 border-t border-white/5 pb-2">
                 <SettingsPopover />
+
                 <NextLink
                   href={AGENT_INBOX_GITHUB_README_URL}
                   target="_blank"
                   rel="noopener noreferrer"
+                  className="group/doc"
                 >
                   <PillButton
                     variant="outline"
-                    className="flex gap-2 items-center justify-center text-slate-300 border-white/10 hover:bg-white/5 hover:text-white"
-                    size="lg"
+                    className="w-full flex gap-3 h-12 items-center justify-center text-slate-400 border-white/5 hover:bg-white/5 hover:text-white transition-all duration-300"
                   >
-                    <FileText />
-                    <span>Documentation</span>
+                    <FileText className="w-4 h-4 group-hover/doc:rotate-3 transition-transform" />
+                    <span className="text-sm font-medium">Docs</span>
                   </PillButton>
                 </NextLink>
 
                 <form action={logout}>
                   <PillButton
                     variant="outline"
-                    className="flex gap-2 items-center justify-center border-red-500/20 text-red-400 hover:bg-red-500/10 hover:text-red-300 hover:border-red-500/30"
-                    size="lg"
+                    className="w-full flex gap-3 h-12 items-center justify-center border-red-500/10 text-red-500/60 hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/20 transition-all duration-300"
                   >
                     <LogOut className="w-4 h-4" />
-                    <span>Sign Out</span>
+                    <span className="text-sm font-medium">Exit</span>
                   </PillButton>
                 </form>
               </div>

@@ -97,33 +97,33 @@ export function BreadCrumb({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        "flex items-center justify-start gap-2 text-gray-500 text-sm",
+        "flex items-center justify-start gap-1 text-slate-500",
         className
       )}
     >
-      <NextLink href={constructBaseUrl()}>
-        <Button size="sm" className="text-gray-500" variant="link">
+      <NextLink href={constructBaseUrl()} className="group">
+        <span className="text-[11px] font-black uppercase tracking-[0.15em] text-slate-500 group-hover:text-white transition-colors">
           {agentInboxLabel}
-        </Button>
+        </span>
       </NextLink>
 
       {selectedInboxLabel && (
         <>
-          <ChevronRight className="h-[14px] w-[14px]" />
-          <NextLink href={constructInboxLink()}>
-            <Button size="sm" className="text-gray-500" variant="link">
+          <ChevronRight className="h-3 w-3 text-slate-700 mx-1" />
+          <NextLink href={constructInboxLink()} className="group">
+            <span className="text-[11px] font-black uppercase tracking-[0.15em] text-slate-500 group-hover:text-blue-400 transition-colors">
               {selectedInboxLabel}
-            </Button>
+            </span>
           </NextLink>
         </>
       )}
       {selectedThreadActionLabel && (
         <>
-          <ChevronRight className="h-[14px] w-[14px]" />
-          <NextLink href={window.location.pathname + window.location.search}>
-            <Button size="sm" className="text-gray-500" variant="link">
+          <ChevronRight className="h-4 w-4 text-blue-500/50 mx-1" />
+          <NextLink href={window.location.pathname + window.location.search} className="group">
+            <span className="text-sm font-extrabold tracking-tight text-white group-hover:text-blue-400 transition-colors">
               {selectedThreadActionLabel}
-            </Button>
+            </span>
           </NextLink>
         </>
       )}

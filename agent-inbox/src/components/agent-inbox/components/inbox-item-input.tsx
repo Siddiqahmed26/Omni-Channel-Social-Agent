@@ -11,26 +11,26 @@ import { haveArgsChanged, prettifyText } from "../utils";
 import { MarkdownText } from "@/components/ui/markdown-text";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
-import { CircleX, LoaderCircle, Undo2 } from "lucide-react";
+import { CircleX, LoaderCircle, Undo2, Send, CheckCircle2, Edit3, MessageSquarePlus } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { logger } from "../utils/logger";
 
 function ResetButton({ handleReset }: { handleReset: () => void }) {
   return (
-    <Button
+    <button
       onClick={handleReset}
-      variant="ghost"
-      className="flex items-center justify-center gap-2 text-gray-500 hover:text-red-500"
+      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-red-400 hover:bg-red-400/10 transition-all active:scale-95 group"
     >
-      <Undo2 className="w-4 h-4" />
-      <span>Reset</span>
-    </Button>
+      <Undo2 className="w-3 h-3 group-hover:-rotate-45 transition-transform" />
+      <span>Reset Alterations</span>
+    </button>
   );
 }
 
 function ArgsRenderer({ args }: { args: Record<string, any> }) {
   return (
-    <div className="flex flex-col gap-4 sm:gap-6 items-start w-full">
+    <div className="grid grid-cols-1 gap-4 w-full">
       {Object.entries(args).map(([k, v]) => {
         let value = "";
         if (["string", "number"].includes(typeof v)) {
@@ -40,15 +40,18 @@ function ArgsRenderer({ args }: { args: Record<string, any> }) {
         }
 
         return (
-          <div key={`args-${k}`} className="flex flex-col gap-1 items-start">
-            <p className="text-sm leading-[18px] text-gray-600 text-wrap">
-              {prettifyText(k)}:
+          <div key={`args-${k}`} className="flex flex-col gap-2 group/arg">
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 group-hover/arg:text-blue-400 transition-colors">
+              {prettifyText(k)}
             </p>
-            <span className="text-[13px] leading-[18px] text-black bg-zinc-100 rounded-xl p-3 w-full max-w-full">
-              <MarkdownText className="text-wrap break-all break-words whitespace-pre-wrap">
-                {value}
-              </MarkdownText>
-            </span>
+            <div className="relative group/val">
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-2xl blur opacity-0 group-hover/val:opacity-100 transition duration-500" />
+              <div className="relative text-[13px] leading-[1.6] text-slate-300 bg-white/[0.03] border border-white/5 rounded-2xl p-4 w-full backdrop-blur-sm shadow-inner overflow-hidden">
+                <MarkdownText className="text-wrap break-all break-words whitespace-pre-wrap">
+                  {value}
+                </MarkdownText>
+              </div>
+            </div>
           </div>
         );
       })}
@@ -113,11 +116,22 @@ function ResponseComponent({
   };
 
   return (
-    <div className="flex flex-col gap-4 p-4 sm:p-6 items-start w-full rounded-xl border-[1px] border-gray-300">
-      <div className="flex items-center justify-between w-full">
-        <p className="font-semibold text-black text-base">
-          Respond to assistant
-        </p>
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="flex flex-col gap-6 p-6 sm:p-8 items-start w-full rounded-3xl border border-white/10 bg-white/[0.02] backdrop-blur-xl shadow-2xl relative overflow-hidden group"
+    >
+      <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity pointer-events-none">
+        <MessageSquarePlus className="w-32 h-32 text-white" />
+      </div>
+
+      <div className="flex items-center justify-between w-full relative z-10">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-blue-500/20 text-blue-400 border border-blue-500/10">
+            <MessageSquarePlus className="w-5 h-5" />
+          </div>
+          <h3 className="font-extrabold text-white text-lg tracking-tight">Post Human Response</h3>
+        </div>
         <ResetButton
           handleReset={() => {
             onResponseChange("", res);
@@ -126,27 +140,39 @@ function ResponseComponent({
       </div>
 
       {showArgsInResponse && interruptValue?.action_request?.args && (
-        <ArgsRenderer args={interruptValue.action_request.args} />
+        <div className="w-full bg-black/20 p-6 rounded-2xl border border-white/5">
+          <ArgsRenderer args={interruptValue.action_request.args} />
+        </div>
       )}
 
-      <div className="flex flex-col gap-[6px] items-start w-full">
-        <p className="text-sm min-w-fit font-medium">Response</p>
-        <Textarea
-          disabled={streaming}
-          value={res.args}
-          onChange={(e) => onResponseChange(e.target.value, res)}
-          onKeyDown={handleKeyDown}
-          rows={4}
-          placeholder="Your response here..."
-        />
+      <div className="flex flex-col gap-3 items-start w-full relative z-10">
+        <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Input Stream</label>
+        <div className="relative w-full group/input">
+          <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500/30 to-purple-500/30 rounded-2xl blur opacity-0 group-focus-within/input:opacity-100 transition duration-700" />
+          <Textarea
+            disabled={streaming}
+            value={res.args}
+            onChange={(e) => onResponseChange(e.target.value, res)}
+            onKeyDown={handleKeyDown}
+            rows={5}
+            className="relative z-10 bg-black/40 border-white/10 rounded-2xl p-5 text-slate-200 placeholder:text-slate-600 focus:bg-black/60 transition-all font-medium text-[15px] resize-none"
+            placeholder="Document your feedback or instruction here..."
+          />
+        </div>
       </div>
 
-      <div className="flex items-center justify-end w-full gap-2">
-        <Button variant="brand" disabled={streaming} onClick={handleSubmit}>
-          Send Response
+      <div className="flex items-center justify-end w-full gap-4 relative z-10 pt-2">
+        <Button
+          variant="premium"
+          disabled={streaming}
+          onClick={handleSubmit}
+          className="h-12 px-8 rounded-xl shadow-[0_10px_30px_rgba(59,130,246,0.3)] hover:shadow-[0_15px_40px_rgba(59,130,246,0.4)] transition-all active:scale-95"
+        >
+          <Send className="w-4 h-4 mr-2" />
+          Transmit Response
         </Button>
       </div>
-    </div>
+    </motion.div>
   );
 }
 const Response = React.memo(ResponseComponent);
@@ -163,19 +189,36 @@ function AcceptComponent({
   ) => Promise<void>;
 }) {
   return (
-    <div className="flex flex-col gap-4 items-start w-full p-4 sm:p-6 rounded-lg border-[1px] border-gray-300">
+    <motion.div
+      initial={{ opacity: 0, scale: 0.98 }}
+      animate={{ opacity: 1, scale: 1 }}
+      className="flex flex-col gap-8 items-start w-full p-6 sm:p-10 rounded-3xl border border-white/10 bg-white/[0.02] backdrop-blur-xl shadow-2xl"
+    >
+      <div className="flex items-center gap-4 border-b border-white/5 pb-6 w-full">
+        <div className="p-3 rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/10 shadow-[0_0_20px_rgba(16,185,129,0.1)]">
+          <CheckCircle2 className="w-6 h-6" />
+        </div>
+        <div>
+          <h3 className="text-xl font-black text-white tracking-tight">Automated Validation</h3>
+          <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mt-0.5">Ready for signature</p>
+        </div>
+      </div>
+
       {actionRequestArgs && Object.keys(actionRequestArgs).length > 0 && (
-        <ArgsRenderer args={actionRequestArgs} />
+        <div className="w-full bg-black/20 p-6 rounded-2xl border border-white/5 inner-shadow">
+          <ArgsRenderer args={actionRequestArgs} />
+        </div>
       )}
+
       <Button
-        variant="brand"
+        variant="premium"
         disabled={streaming}
         onClick={handleSubmit}
-        className="w-full"
+        className="w-full h-14 rounded-2xl text-base font-bold shadow-[0_15px_35px_rgba(59,130,246,0.3)] hover:scale-[1.02] active:scale-[0.98] transition-all bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500"
       >
-        Accept
+        Authorize & Proceeed
       </Button>
-    </div>
+    </motion.div>
   );
 }
 
@@ -219,10 +262,10 @@ function EditAndOrAcceptComponent({
     }
     return null;
   }
-  const header = editResponse.acceptAllowed ? "Edit/Accept" : "Edit";
-  let buttonText = "Submit";
+  const header = editResponse.acceptAllowed ? "Review & Adjust" : "Manual Override";
+  let buttonText = "Submit Changes";
   if (editResponse.acceptAllowed && !editResponse.editsMade) {
-    buttonText = "Accept";
+    buttonText = "Authorize As Is";
   }
 
   const handleReset = () => {
@@ -234,7 +277,6 @@ function EditAndOrAcceptComponent({
     ) {
       return;
     }
-    // use initialValues to reset the text areas
     const keysToReset: string[] = [];
     const valuesToReset: string[] = [];
     Object.entries(initialValues).forEach(([k, v]) => {
@@ -260,55 +302,73 @@ function EditAndOrAcceptComponent({
   };
 
   return (
-    <div className="flex flex-col gap-4 items-start w-full p-4 sm:p-6 rounded-lg border-[1px] border-gray-300">
-      <div className="flex items-center justify-between w-full">
-        <p className="font-semibold text-black text-base">{header}</p>
+    <motion.div
+      initial={{ opacity: 0, y: 15 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="flex flex-col gap-10 items-start w-full p-6 sm:p-10 rounded-3xl border border-white/10 bg-white/[0.02] backdrop-blur-xl shadow-2xl relative overflow-hidden group"
+    >
+      <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity pointer-events-none">
+        <Edit3 className="w-40 h-40 text-white" />
+      </div>
+
+      <div className="flex items-center justify-between w-full relative z-10">
+        <div className="flex items-center gap-4">
+          <div className="p-3 rounded-2xl bg-amber-500/20 text-amber-500 border border-amber-500/10">
+            <Edit3 className="w-6 h-6" />
+          </div>
+          <div>
+            <h3 className="text-2xl font-black text-white tracking-tight">{header}</h3>
+            <p className="text-[10px] text-slate-500 font-extrabold uppercase tracking-widest mt-1">Direct Manipulation Protocol</p>
+          </div>
+        </div>
         <ResetButton handleReset={handleReset} />
       </div>
 
-      {Object.entries(editResponse.args.args).map(([k, v], idx) => {
-        const value = ["string", "number"].includes(typeof v)
-          ? v
-          : JSON.stringify(v, null);
-        // Calculate the default number of rows by the total length of the initial value divided by 30
-        // or 8, whichever is greater. Stored in a ref to prevent re-rendering.
-        if (
-          defaultRows.current[k as keyof typeof defaultRows.current] ===
-          undefined
-        ) {
-          defaultRows.current[k as keyof typeof defaultRows.current] = !v.length
-            ? 3
-            : Math.max(v.length / 30, 7);
-        }
-        const numRows =
-          defaultRows.current[k as keyof typeof defaultRows.current] || 8;
+      <div className="grid grid-cols-1 gap-12 w-full relative z-10">
+        {Object.entries(editResponse.args.args).map(([k, v], idx) => {
+          const value = ["string", "number"].includes(typeof v)
+            ? v
+            : JSON.stringify(v, null);
+          if (defaultRows.current[k] === undefined) {
+            defaultRows.current[k] = !v.length ? 4 : Math.max(v.length / 40, 6);
+          }
+          const numRows = defaultRows.current[k] || 6;
 
-        return (
-          <div
-            className="flex flex-col gap-1 items-start w-full h-full px-[1px]"
-            key={`allow-edit-args--${k}-${idx}`}
-          >
-            <div className="flex flex-col gap-[6px] items-start w-full">
-              <p className="text-sm min-w-fit font-medium">{prettifyText(k)}</p>
-              <Textarea
-                disabled={streaming}
-                className="h-full"
-                value={value}
-                onChange={(e) => onEditChange(e.target.value, editResponse, k)}
-                onKeyDown={handleKeyDown}
-                rows={numRows}
-              />
+          return (
+            <div
+              className="flex flex-col gap-4 items-start w-full group/field"
+              key={`allow-edit-args--${k}-${idx}`}
+            >
+              <p className="text-[11px] font-black uppercase tracking-[2.5px] text-slate-500 group-hover/field:text-blue-400 transition-colors ml-1">
+                {prettifyText(k)}
+              </p>
+              <div className="relative w-full group/input">
+                <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500/30 to-purple-500/30 rounded-2xl blur opacity-0 group-focus-within/input:opacity-100 transition duration-700" />
+                <Textarea
+                  disabled={streaming}
+                  className="relative z-10 bg-black/40 border-white/10 rounded-2xl p-6 text-slate-200 placeholder:text-slate-600 focus:bg-black/60 transition-all font-medium text-base resize-none shadow-2xl"
+                  value={value}
+                  onChange={(e) => onEditChange(e.target.value, editResponse, k)}
+                  onKeyDown={handleKeyDown}
+                  rows={numRows}
+                />
+              </div>
             </div>
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
 
-      <div className="flex items-center justify-end w-full gap-2">
-        <Button variant="brand" disabled={streaming} onClick={handleSubmit}>
+      <div className="flex items-center justify-end w-full gap-4 relative z-10 pt-4">
+        <Button
+          variant="premium"
+          disabled={streaming}
+          onClick={handleSubmit}
+          className="h-14 px-12 rounded-2xl text-base font-bold shadow-[0_20px_40px_rgba(59,130,246,0.3)] hover:scale-[1.02] active:scale-[0.98]"
+        >
           {buttonText}
         </Button>
       </div>
-    </div>
+    </motion.div>
   );
 }
 const EditAndOrAccept = React.memo(EditAndOrAcceptComponent);
@@ -513,10 +573,10 @@ export function InboxItemInput({
           handleSubmit={handleSubmit}
         />
         {supportsMultipleMethods ? (
-          <div className="flex gap-3 items-center w-full mt-3">
-            <Separator className="w-1/2" />
-            <p className="text-sm text-gray-500">Or</p>
-            <Separator className="w-1/2" />
+          <div className="flex gap-4 items-center w-full px-6 py-4">
+            <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent to-white/10" />
+            <p className="text-[10px] font-black text-slate-600 uppercase tracking-[0.3em]">Alternative Protocol Selection</p>
+            <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-white/10" />
           </div>
         ) : null}
         {isResponseAllowed && (
