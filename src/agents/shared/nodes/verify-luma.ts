@@ -1,10 +1,10 @@
 import { LangGraphRunnableConfig } from "@langchain/langgraph";
 import { z } from "zod";
-import { FireCrawlLoader } from "@langchain/community/document_loaders/web/firecrawl";
+import { scrapeUrl } from "../../../utils/firecrawl.js";
 import { getPrompts } from "../../generate-post/prompts/index.js";
 import { VerifyContentAnnotation } from "../shared-state.js";
 import { getPageText, skipContentRelevancyCheck } from "../../utils.js";
-import { getImagesFromFireCrawlMetadata } from "../../../utils/firecrawl.js";
+
 import { CurateDataState } from "../../curate-data/state.js";
 import { shouldExcludeGeneralContent } from "../../should-exclude.js";
 import { traceable } from "langsmith/traceable";
@@ -42,24 +42,7 @@ type UrlContents = {
 
 async function getUrlContentsFunc(url: string): Promise<UrlContents> {
   try {
-    const loader = new FireCrawlLoader({
-      url,
-      mode: "scrape",
-      params: {
-        formats: ["markdown", "screenshot"],
-      },
-    });
-    const docs = await loader.load();
-
-    const docsText = docs.map((d) => d.pageContent).join("\n");
-    if (docsText.length) {
-      return {
-        content: docsText,
-        imageUrls: docs.flatMap(
-          (d) => getImagesFromFireCrawlMetadata(d.metadata) || [],
-        ),
-      };
-    }
+    return await scrapeUrl(url);
   } catch (e) {
     console.error(`Failed to fetch content from ${url}\nError:\n`, e);
   }

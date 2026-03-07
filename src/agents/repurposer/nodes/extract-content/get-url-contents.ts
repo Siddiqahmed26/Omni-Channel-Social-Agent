@@ -5,42 +5,27 @@ import {
   extractAllImageUrlsFromMarkdown,
   getUrlType,
 } from "../../../utils.js";
-import { FireCrawlLoader } from "@langchain/community/document_loaders/web/firecrawl";
+import { scrapeUrl } from "../../../../utils/firecrawl.js";
 import {
   getFullThreadText,
   getMediaUrls,
   resolveAndReplaceTweetTextLinks,
 } from "../../../../clients/twitter/utils.js";
 import { getVideoSummary } from "../../../shared/youtube/video-summary.js";
-import { getImagesFromFireCrawlMetadata } from "../../../../utils/firecrawl.js";
+
 
 async function getGeneralContent(url: string): Promise<{
   contents: string;
   imageUrls: string[];
 }> {
   try {
-    const loader = new FireCrawlLoader({
-      url,
-      mode: "scrape",
-      params: {
-        formats: ["markdown"],
-      },
-    });
+    const { content, imageUrls } = await scrapeUrl(url);
 
-    const docs = await loader.load();
-
-    const metadataImageUrls = docs.flatMap(
-      (d) => getImagesFromFireCrawlMetadata(d.metadata) || [],
-    );
-    const imageUrlsFromText = extractAllImageUrlsFromMarkdown(
-      docs[0].pageContent,
-    );
+    const imageUrlsFromText = extractAllImageUrlsFromMarkdown(content);
 
     return {
-      contents: `<webpage-content url="${url}">\n${docs[0].pageContent}\n</webpage-content>`,
-      imageUrls: Array.from(
-        new Set([...metadataImageUrls, ...imageUrlsFromText]),
-      ),
+      contents: `<webpage-content url="${url}">\n${content}\n</webpage-content>`,
+      imageUrls: Array.from(new Set([...imageUrls, ...imageUrlsFromText])),
     };
   } catch (e) {
     throw new Error(`Failed to fetch content from ${url}.` + e);
