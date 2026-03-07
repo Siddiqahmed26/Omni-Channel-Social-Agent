@@ -24,17 +24,19 @@ export function MemoryView() {
     const selectedInbox = agentInboxes.find(inbox => inbox.selected) || agentInboxes[0];
 
     const lastFetchedRef = React.useRef<string>("");
+    const fetchingRef = React.useRef<boolean>(false);
 
     useEffect(() => {
         let isMounted = true;
 
         const performFetch = async () => {
-            if (!selectedInbox?.deploymentUrl) return;
+            if (!selectedInbox?.deploymentUrl || fetchingRef.current) return;
 
             // Prevent redundant fetches if the context is the same
             const fetchKey = `${selectedInbox.id}-${selectedInbox.deploymentUrl}`;
             if (fetchKey === lastFetchedRef.current) return;
 
+            fetchingRef.current = true;
             setLoading(true);
             try {
                 lastFetchedRef.current = fetchKey;
@@ -65,6 +67,7 @@ export function MemoryView() {
                 });
             } finally {
                 if (isMounted) setLoading(false);
+                fetchingRef.current = false;
             }
         };
 

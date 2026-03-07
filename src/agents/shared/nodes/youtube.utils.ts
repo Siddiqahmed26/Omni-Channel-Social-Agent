@@ -45,23 +45,41 @@ function parseDuration(duration: string): number {
 
 function getYouTubeClientFromUrl(): youtube_v3.Youtube {
   if (!process.env.GOOGLE_VERTEX_AI_WEB_CREDENTIALS) {
-    throw new Error("GOOGLE_VERTEX_AI_WEB_CREDENTIALS is not set");
+    console.warn("⚠️ GOOGLE_VERTEX_AI_WEB_CREDENTIALS is not set. YouTube features will be disabled.");
+    // Return a proxy that throws a helpful error when any method is called
+    return new Proxy({} as youtube_v3.Youtube, {
+      get() {
+        return () => {
+          throw new Error("YouTube integration requires GOOGLE_VERTEX_AI_WEB_CREDENTIALS environment variable to be set.");
+        };
+      },
+    });
   }
-  const parsedGoogleCredentials = JSON.parse(
-    process.env.GOOGLE_VERTEX_AI_WEB_CREDENTIALS,
-  );
 
-  const auth = new GoogleAuth({
-    credentials: parsedGoogleCredentials,
-    scopes: ["https://www.googleapis.com/auth/youtube.readonly"],
-  });
+  try {
+    const parsedGoogleCredentials = JSON.parse(
+      process.env.GOOGLE_VERTEX_AI_WEB_CREDENTIALS,
+    );
 
-  const youtubeClient = youtube({
-    version: "v3",
-    auth,
-  });
+    const auth = new GoogleAuth({
+      credentials: parsedGoogleCredentials,
+      scopes: ["https://www.googleapis.com/auth/youtube.readonly"],
+    });
 
-  return youtubeClient;
+    return youtube({
+      version: "v3",
+      auth,
+    });
+  } catch (error) {
+    console.error("❌ Failed to parse GOOGLE_VERTEX_AI_WEB_CREDENTIALS:", error);
+    return new Proxy({} as youtube_v3.Youtube, {
+      get() {
+        return () => {
+          throw new Error("YouTube integration failed: Invalid GOOGLE_VERTEX_AI_WEB_CREDENTIALS JSON format.");
+        };
+      },
+    });
+  }
 }
 
 /**
