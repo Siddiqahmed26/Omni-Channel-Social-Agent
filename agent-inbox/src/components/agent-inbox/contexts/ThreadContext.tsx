@@ -138,6 +138,7 @@ export function ThreadsProvider<
   const inboxParam = searchParams.get(INBOX_PARAM);
 
   const [user, setUser] = React.useState<any>(null);
+  const lastFetchKey = React.useRef<string>("");
 
   React.useEffect(() => {
     const supabase = createSupabaseClient();
@@ -154,15 +155,27 @@ export function ThreadsProvider<
       return;
     }
     const inboxSearchParam = getSearchParam(INBOX_PARAM) as ThreadStatusWithAll;
+    const selectedInboxId = agentInboxes.find(i => i.selected)?.id || agentInboxes[0]?.id;
+
+    // Create a unique key for the current fetch parameters
+    const fetchKey = `${inboxSearchParam}-${limitParam}-${offsetParam}-${selectedInboxId}-${user.id}`;
+
+    if (fetchKey === lastFetchKey.current) {
+      return;
+    }
+
     if (!inboxSearchParam) {
       return;
     }
+
+    lastFetchKey.current = fetchKey;
+
     try {
       fetchThreads(inboxSearchParam);
     } catch (e) {
       logger.error("Error occurred while fetching threads", e);
     }
-  }, [limitParam, offsetParam, inboxParam, agentInboxes]);
+  }, [limitParam, offsetParam, inboxParam, agentInboxes, user]);
 
   const fetchThreads = React.useCallback(
     async (inbox: ThreadStatusWithAll) => {
