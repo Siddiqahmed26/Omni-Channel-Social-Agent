@@ -139,6 +139,7 @@ export function ThreadsProvider<
 
   const [user, setUser] = React.useState<any>(null);
   const lastFetchKey = React.useRef<string>("");
+  const fetchingRef = React.useRef<boolean>(false);
 
   React.useEffect(() => {
     const supabase = createSupabaseClient();
@@ -157,6 +158,10 @@ export function ThreadsProvider<
     const inboxSearchParam = getSearchParam(INBOX_PARAM) as ThreadStatusWithAll;
     const selectedInboxId = agentInboxes.find(i => i.selected)?.id || agentInboxes[0]?.id;
 
+    if (!inboxSearchParam) {
+      return;
+    }
+
     // Create a unique key for the current fetch parameters
     const fetchKey = `${inboxSearchParam}-${limitParam}-${offsetParam}-${selectedInboxId}-${user.id}`;
 
@@ -164,21 +169,25 @@ export function ThreadsProvider<
       return;
     }
 
-    if (!inboxSearchParam) {
-      return;
-    }
+    // Use a small timeout to debounce rapid parameter changes
+    const timeoutId = setTimeout(() => {
+      if (fetchingRef.current) return;
 
-    lastFetchKey.current = fetchKey;
+      lastFetchKey.current = fetchKey;
+      try {
+        fetchThreads(inboxSearchParam);
+      } catch (e) {
+        logger.error("Error occurred while fetching threads", e);
+      }
+    }, 100);
 
-    try {
-      fetchThreads(inboxSearchParam);
-    } catch (e) {
-      logger.error("Error occurred while fetching threads", e);
-    }
-  }, [limitParam, offsetParam, inboxParam, agentInboxes, user]);
+    return () => clearTimeout(timeoutId);
+  }, [limitParam, offsetParam, inboxParam, agentInboxes, user, getSearchParam]);
 
   const fetchThreads = React.useCallback(
     async (inbox: ThreadStatusWithAll) => {
+      if (fetchingRef.current) return;
+      fetchingRef.current = true;
       setLoading(true);
 
       const client = getClient({
@@ -186,8 +195,10 @@ export function ThreadsProvider<
         getItem,
         toast,
       });
+
       if (!client) {
         setLoading(false);
+        fetchingRef.current = false;
         return;
       }
 
@@ -323,8 +334,10 @@ export function ThreadsProvider<
         setHasMoreThreads(threads.length === limit);
       } catch (e) {
         logger.error("Failed to fetch threads", e);
+      } finally {
+        setLoading(false);
+        fetchingRef.current = false;
       }
-      setLoading(false);
     },
     [agentInboxes, getItem, getSearchParam, toast]
   );
