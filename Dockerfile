@@ -6,7 +6,7 @@ WORKDIR /app
 
 # 2. Copy package files and install dependencies
 COPY package.json yarn.lock* ./
-RUN yarn install --frozen-lockfile
+RUN yarn install
 
 # 3. Copy only essential application files
 COPY src ./src
