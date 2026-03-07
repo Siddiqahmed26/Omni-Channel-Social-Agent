@@ -1,2 +1,13 @@
 node_modules
 dist
+.git
+.github
+.vscode
+.langgraph_api
+agent-inbox
+*.bat
+scripts
+uv.lock
+yarn-error.log
+.env*
+! .env.example
