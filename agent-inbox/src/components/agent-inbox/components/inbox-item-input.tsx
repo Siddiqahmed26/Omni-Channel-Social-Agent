@@ -30,7 +30,7 @@ function ResetButton({ handleReset }: { handleReset: () => void }) {
 
 function ArgsRenderer({ args }: { args: Record<string, any> }) {
   return (
-    <div className="flex flex-col gap-6 items-start w-full">
+    <div className="flex flex-col gap-4 sm:gap-6 items-start w-full">
       {Object.entries(args).map(([k, v]) => {
         let value = "";
         if (["string", "number"].includes(typeof v)) {
@@ -113,7 +113,7 @@ function ResponseComponent({
   };
 
   return (
-    <div className="flex flex-col gap-4 p-6 items-start w-full rounded-xl border-[1px] border-gray-300">
+    <div className="flex flex-col gap-4 p-4 sm:p-6 items-start w-full rounded-xl border-[1px] border-gray-300">
       <div className="flex items-center justify-between w-full">
         <p className="font-semibold text-black text-base">
           Respond to assistant
@@ -163,7 +163,7 @@ function AcceptComponent({
   ) => Promise<void>;
 }) {
   return (
-    <div className="flex flex-col gap-4 items-start w-full p-6 rounded-lg border-[1px] border-gray-300">
+    <div className="flex flex-col gap-4 items-start w-full p-4 sm:p-6 rounded-lg border-[1px] border-gray-300">
       {actionRequestArgs && Object.keys(actionRequestArgs).length > 0 && (
         <ArgsRenderer args={actionRequestArgs} />
       )}
@@ -260,7 +260,7 @@ function EditAndOrAcceptComponent({
   };
 
   return (
-    <div className="flex flex-col gap-4 items-start w-full p-6 rounded-lg border-[1px] border-gray-300">
+    <div className="flex flex-col gap-4 items-start w-full p-4 sm:p-6 rounded-lg border-[1px] border-gray-300">
       <div className="flex items-center justify-between w-full">
         <p className="font-semibold text-black text-base">{header}</p>
         <ResetButton handleReset={handleReset} />
@@ -407,13 +407,13 @@ export function InboxItemInput({
           args:
             Array.isArray(change) && Array.isArray(key)
               ? {
-                  ...response.args.args,
-                  ...Object.fromEntries(key.map((k, i) => [k, change[i]])),
-                }
+                ...response.args.args,
+                ...Object.fromEntries(key.map((k, i) => [k, change[i]])),
+              }
               : {
-                  ...response.args.args,
-                  [key as string]: change as string,
-                },
+                ...response.args.args,
+                [key as string]: change as string,
+              },
         },
       };
       if (
