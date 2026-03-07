@@ -112,12 +112,12 @@ export function AgentInboxView<
 
   return (
     <div ref={containerRef} className="w-full h-full overflow-y-auto bg-transparent flex flex-col">
-      <div className="px-6 pt-6 pb-2">
+      <div className="px-4 md:px-6 pt-4 md:pt-6 pb-2">
         <BackfillBanner />
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between mb-4 md:mb-8">
           <div className="flex flex-col">
-            <h1 className="text-3xl font-extrabold text-white tracking-tight">Agent Inboxes</h1>
-            <p className="text-slate-500 text-sm mt-1 font-medium italic">Manage and respond to cross-platform messages in real-time.</p>
+            <h1 className="text-2xl md:text-3xl font-extrabold text-white tracking-tight">Agent Inboxes</h1>
+            <p className="text-slate-500 text-xs md:text-sm mt-1 font-medium italic max-w-[280px] md:max-w-none">Manage and respond to cross-platform messages in real-time.</p>
           </div>
         </div>
         <InboxButtons changeInbox={changeInbox} />

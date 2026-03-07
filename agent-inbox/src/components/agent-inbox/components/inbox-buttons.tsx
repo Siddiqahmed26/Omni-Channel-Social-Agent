@@ -82,32 +82,34 @@ export function InboxButtons({
   const selectedInbox = searchParams.get(INBOX_PARAM) || "interrupted";
 
   return (
-    <div className="flex w-full p-1.5 gap-1 items-center justify-start overflow-x-auto no-scrollbar bg-white/[0.03] backdrop-blur-md border border-white/5 rounded-full max-w-fit shadow-inner shadow-black/20">
-      <InboxButton
-        label="All"
-        selectedInbox={selectedInbox}
-        onClick={() => changeInbox("all")}
-      />
-      <InboxButton
-        label="Interrupted"
-        selectedInbox={selectedInbox}
-        onClick={() => changeInbox("interrupted")}
-      />
-      <InboxButton
-        label="Idle"
-        selectedInbox={selectedInbox}
-        onClick={() => changeInbox("idle")}
-      />
-      <InboxButton
-        label="Busy"
-        selectedInbox={selectedInbox}
-        onClick={() => changeInbox("busy")}
-      />
-      <InboxButton
-        label="Error"
-        selectedInbox={selectedInbox}
-        onClick={() => changeInbox("error")}
-      />
+    <div className="w-full overflow-x-auto no-scrollbar pb-2">
+      <div className="flex w-fit p-1.5 gap-1 items-center justify-start bg-white/[0.03] backdrop-blur-md border border-white/5 rounded-full shadow-inner shadow-black/20 min-h-[50px]">
+        <InboxButton
+          label="All"
+          selectedInbox={selectedInbox}
+          onClick={() => changeInbox("all")}
+        />
+        <InboxButton
+          label="Interrupted"
+          selectedInbox={selectedInbox}
+          onClick={() => changeInbox("interrupted")}
+        />
+        <InboxButton
+          label="Idle"
+          selectedInbox={selectedInbox}
+          onClick={() => changeInbox("idle")}
+        />
+        <InboxButton
+          label="Busy"
+          selectedInbox={selectedInbox}
+          onClick={() => changeInbox("busy")}
+        />
+        <InboxButton
+          label="Error"
+          selectedInbox={selectedInbox}
+          onClick={() => changeInbox("error")}
+        />
+      </div>
     </div>
   );
 }

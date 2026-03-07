@@ -174,7 +174,7 @@ function ResponseComponent({
           variant="premium"
           disabled={streaming}
           onClick={handleSubmit}
-          className="h-12 px-8 rounded-xl shadow-[0_10px_30px_rgba(59,130,246,0.3)] hover:shadow-[0_15px_40px_rgba(59,130,246,0.4)] transition-all active:scale-95"
+          className="h-[44px] md:h-12 px-6 md:px-8 rounded-xl shadow-[0_10px_30px_rgba(59,130,246,0.3)] hover:shadow-[0_15px_40px_rgba(59,130,246,0.4)] transition-all active:scale-95 font-bold text-xs uppercase tracking-widest"
         >
           <Brain className="w-4 h-4 mr-2" />
           Send Feedback & Train AI
@@ -222,7 +222,7 @@ function AcceptComponent({
         variant="premium"
         disabled={streaming}
         onClick={handleSubmit}
-        className="w-full h-14 rounded-2xl text-base font-bold shadow-[0_15px_35px_rgba(59,130,246,0.3)] hover:scale-[1.02] active:scale-[0.98] transition-all bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500"
+        className="w-full h-[54px] md:h-14 rounded-2xl text-base font-bold shadow-[0_15px_35px_rgba(59,130,246,0.3)] hover:scale-[1.02] active:scale-[0.98] transition-all bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500"
       >
         Authorize & Proceeed
       </Button>

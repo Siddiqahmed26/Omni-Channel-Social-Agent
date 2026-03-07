@@ -76,7 +76,7 @@ export function SettingsPopover({ iconOnly = false }: { iconOnly?: boolean }) {
     >
       <PopoverTrigger asChild>
         {iconOnly ? (
-          <Button variant="ghost" size="sm" className="h-10 w-10 p-0 rounded-2xl bg-white/[0.05] text-slate-400 hover:text-white border border-white/5 hover:border-white/20 transition-all shadow-lg active:scale-90">
+          <Button variant="ghost" size="sm" className="h-[44px] w-[44px] p-0 rounded-2xl bg-white/[0.05] text-slate-400 hover:text-white border border-white/5 hover:border-white/20 transition-all shadow-lg active:scale-90">
             <Settings className="w-5 h-5" />
             <span className="sr-only">Settings</span>
           </Button>
