@@ -1,4 +1,4 @@
-import { ChatVertexAI } from "@langchain/google-vertexai-web";
+import { getModel } from "../../shared/nodes/llm.js";
 import { FindAndGenerateImagesAnnotation } from "../find-and-generate-images-graph.js";
 import { chunkArray, imageUrlToBuffer, isValidUrl } from "../../utils.js";
 import { getImageMessageContents } from "../../../utils/image-message.js";
@@ -132,8 +132,8 @@ export async function validateImages(
 }> {
   const { imageOptions, report, post } = state;
 
-  const model = new ChatVertexAI({
-    model: "gemini-2.5-pro",
+  const model = getModel({
+    modelName: "gpt-4o",
     temperature: 0,
   });
 
