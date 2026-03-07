@@ -144,7 +144,7 @@ export function MemoryView() {
                     <div className="bg-white/[0.03] border border-white/5 p-4 rounded-2xl max-w-2xl">
                         <p className="text-slate-300 text-sm font-medium leading-relaxed">
                             <Sparkles className="w-4 h-4 inline-block mr-2 text-blue-400 mb-1" />
-                            This is your agent's **Long Term Memory**. As you give feedback on generated posts, the agent learns your preferences (e.g. tone, emojis, length) and writes them as "Rules" below. The agent reads these rules every time it generates a new post to ensure it sounds exactly like you.
+                            This is your agent's <strong className="text-white font-black">Long Term Memory</strong>. As you give feedback on generated posts, the agent learns your preferences (e.g. tone, emojis, length) and writes them as "Rules" below. The agent reads these rules every time it generates a new post to ensure it sounds exactly like you.
                         </p>
                     </div>
                 </div>
