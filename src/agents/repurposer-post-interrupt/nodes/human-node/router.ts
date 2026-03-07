@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { getModel } from "../../shared/nodes/llm.js";
+import { getModel } from "../../../shared/nodes/llm.js";
 
 const ROUTE_POST_PROMPT = `You're an advanced AI assistant, tasked with routing a user's response.
 The only route which can be taken is 'rewrite_post'. If the user is not asking to rewrite a post, then choose the 'unknown_response' route.
