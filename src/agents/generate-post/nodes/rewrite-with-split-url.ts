@@ -3,7 +3,7 @@ import {
   GeneratePostState,
   GeneratePostUpdate,
 } from "../generate-post-state.js";
-import { ChatAnthropic } from "@langchain/anthropic";
+import { getModel } from "../../shared/nodes/llm.js";
 
 const postSchema = z.object({
   main_post: z
@@ -37,22 +37,11 @@ Please split it into the two unique posts. Ensure the ONLY modification you make
 export async function rewritePostWithSplitUrl(
   state: GeneratePostState,
 ): Promise<GeneratePostUpdate> {
-  const postModel = new ChatAnthropic({
-    model: "claude-sonnet-4-5",
+  const postModel = getModel({
     temperature: 0,
-  }).bindTools(
-    [
-      {
-        name: "rewrite_post",
-        description:
-          "Rewrite the post with the split URL from the main post content to the reply",
-        schema: postSchema,
-      },
-    ],
-    {
-      tool_choice: "rewrite_post",
-    },
-  );
+  }).withStructuredOutput(postSchema, {
+    name: "rewrite_post",
+  });
 
   const formattedPrompt = REWRITE_WITH_SPLIT_URL_PROMPT.replace(
     "{POST}",
@@ -66,7 +55,7 @@ export async function rewritePostWithSplitUrl(
     },
   ]);
 
-  const rewrittenPost = result.tool_calls?.[0].args as
+  const rewrittenPost = result as
     | z.infer<typeof postSchema>
     | undefined;
 

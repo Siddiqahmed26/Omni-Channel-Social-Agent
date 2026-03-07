@@ -1,4 +1,4 @@
-import { ChatAnthropic } from "@langchain/anthropic";
+import { getModel } from "../../shared/nodes/llm.js";
 import { z } from "zod";
 import { formatReportForPrompt } from "../../repurposer/utils.js";
 import {
@@ -48,21 +48,11 @@ export async function rewritePost(
     throw new Error("Can not rewrite posts without user response");
   }
 
-  const model = new ChatAnthropic({
-    model: "claude-sonnet-4-5",
+  const model = getModel({
     temperature: 0,
-  }).bindTools(
-    [
-      {
-        name: "update_post",
-        schema: updatePostsPrompt,
-        description: "Update the post based on the user's requests.",
-      },
-    ],
-    {
-      tool_choice: "update_post",
-    },
-  );
+  }).withStructuredOutput(updatePostsPrompt, {
+    name: "update_post",
+  });
 
   const formattedPrompt = REWRITE_POST_PROMPT.replace(
     "{POST_TO_UPDATE}",
@@ -88,7 +78,7 @@ export async function rewritePost(
     },
   ]);
 
-  const toolCall = response.tool_calls?.[0].args as z.infer<
+  const toolCall = response as z.infer<
     typeof updatePostsPrompt
   >;
 

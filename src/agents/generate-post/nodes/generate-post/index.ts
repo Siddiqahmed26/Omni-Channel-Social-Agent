@@ -1,6 +1,6 @@
 import { LangGraphRunnableConfig } from "@langchain/langgraph";
 import { GeneratePostAnnotation } from "../../generate-post-state.js";
-import { ChatAnthropic } from "@langchain/anthropic";
+import { getModel } from "../../../shared/nodes/llm.js";
 import { GENERATE_POST_PROMPT } from "./prompts.js";
 import { formatPrompt, parseGeneration } from "./utils.js";
 import { ALLOWED_TIMES } from "../../constants.js";
@@ -20,8 +20,7 @@ export async function generatePost(
   if (!state.relevantLinks?.length) {
     throw new Error("No relevant links found");
   }
-  const postModel = new ChatAnthropic({
-    model: "claude-sonnet-4-5",
+  const postModel = getModel({
     temperature: 0.5,
   });
 

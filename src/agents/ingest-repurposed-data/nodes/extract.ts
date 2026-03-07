@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { IngestRepurposedDataState, RepurposedContent } from "../types.js";
-import { ChatAnthropic } from "@langchain/anthropic";
+import { getModel } from "../../shared/nodes/llm.js";
 import { isValidUrl } from "../../utils.js";
 import { traceable } from "langsmith/traceable";
 import { DEFAULT_POST_QUANTITY } from "../constants.js";
@@ -55,21 +55,11 @@ const extractionSchema = z.object({
 async function extractContentsFunc(
   messageText: string,
 ): Promise<Omit<RepurposedContent, "attachmentUrls"> | undefined> {
-  const model = new ChatAnthropic({
-    model: "claude-sonnet-4-5",
+  const model = getModel({
     temperature: 0,
-  }).bindTools(
-    [
-      {
-        name: "extract_content",
-        description: "Extract content from a Slack message.",
-        schema: extractionSchema,
-      },
-    ],
-    {
-      tool_choice: "extract_content",
-    },
-  );
+  }).withStructuredOutput(extractionSchema, {
+    name: "extract_content",
+  });
 
   const formattedPrompt = EXTRACT_CONTENT_PROMPT.replace(
     "{SLACK_MESSAGE}",
@@ -77,7 +67,7 @@ async function extractContentsFunc(
   );
 
   const result = await model.invoke(formattedPrompt);
-  const args = result.tool_calls?.[0]?.args as z.infer<typeof extractionSchema>;
+  const args = result as z.infer<typeof extractionSchema>;
 
   if (!isValidUrl(args?.original_link)) {
     return undefined;
@@ -115,9 +105,9 @@ export async function extract(
       typeof message.content === "string"
         ? message.content
         : message.content
-            .filter((c) => c.type === "text" && "text" in c)
-            .map((c: MessageContentText) => c.text)
-            .join(" ");
+          .filter((c) => c.type === "text" && "text" in c)
+          .map((c: MessageContentText) => c.text)
+          .join(" ");
     const content = await extractContents(messageText);
     if (content) {
       // TODO: Update Slack message handler to include fileIds
