@@ -9,7 +9,9 @@ import {
   getReflectionsPrompt,
   putReflectionsPrompt,
 } from "../../utils/reflections.js";
-import { Client } from "@langchain/langgraph-sdk";
+import { getModel } from "../shared/nodes/llm.js";
+import { ChatPromptTemplate } from "@langchain/core/prompts";
+import { BaseMessage } from "@langchain/core/messages";
 
 const ReflectionAnnotation = Annotation.Root({
   /**
@@ -57,38 +59,43 @@ async function reflection(
     throw new Error("No store provided");
   }
 
-  const langMemClient = new Client({
-    apiUrl:
-      "https://langmem-v0-544fccf4898a5e3c87bdca29b5f9ab21.us.langgraph.app",
-    apiKey: process.env.LANGCHAIN_API_KEY,
-  });
-
   const existingRules = await getReflectionsPrompt(config);
 
-  const conversation = [{ role: "assistant", content: state.originalPost }];
-  const feedback = {
-    user_feedback: state.userResponse,
-  };
-  const threads = [[conversation, feedback]];
-
-  const result = await langMemClient.runs.wait(null, "optimize_prompts", {
-    input: {
-      prompts: [
-        {
-          name: "Update Prompt",
-          prompt: existingRules,
-          when_to_update: WHEN_TO_UPDATE_INSTRUCTIONS,
-          update_instructions: UPDATE_INSTRUCTIONS,
-        },
-      ],
-      threads,
-    },
-    config: {
-      configurable: { model: "claude-sonnet-4-5", kind: "metaprompt" },
-    },
+  const model = getModel({
+    modelName: "gpt-4o",
+    temperature: 0,
   });
 
-  const updated = (result as Record<string, any>).updated_prompts[0].prompt;
+  const prompt = ChatPromptTemplate.fromMessages([
+    ["system", UPDATE_INSTRUCTIONS],
+    [
+      "user",
+      `Current rules:
+<current_prompt>
+{current_prompt}
+</current_prompt>
+
+Session:
+<session>
+{session}
+</session>
+
+Feedback:
+<feedback>
+{feedback}
+</feedback>`,
+    ],
+  ]);
+
+  const chain = prompt.pipe(model);
+
+  const response = (await chain.invoke({
+    current_prompt: existingRules,
+    session: state.originalPost,
+    feedback: state.userResponse,
+  })) as BaseMessage;
+
+  const updated = response.content as string;
 
   await putReflectionsPrompt(config, updated);
 
