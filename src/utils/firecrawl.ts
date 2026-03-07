@@ -28,7 +28,7 @@ export async function scrapeUrl(url: string) {
 
   const app = new (FirecrawlApp as any)({ apiKey });
 
-  const result = await app.scrapeUrl(url, {
+  const result = await app.v1.scrapeUrl(url, {
     formats: ["markdown", "screenshot"],
   });
 
