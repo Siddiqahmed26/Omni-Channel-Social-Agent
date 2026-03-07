@@ -77,72 +77,78 @@ export function QuickGenerateDialog({ iconOnly = false }: { iconOnly?: boolean }
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
                 {iconOnly ? (
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-full bg-slate-800 text-slate-300 hover:text-white border border-white/10">
-                        <PlusCircle className="w-4 h-4" />
+                    <Button variant="ghost" size="sm" className="h-10 w-10 p-0 rounded-2xl bg-white/[0.05] text-slate-400 hover:text-white border border-white/5 hover:border-white/20 transition-all shadow-lg active:scale-90">
+                        <PlusCircle className="w-5 h-5" />
                         <span className="sr-only">Generate Post</span>
                     </Button>
                 ) : (
-                    <Button className="w-[85%] mx-auto mt-4 mb-2 flex gap-2 border border-white/20 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white shadow-[0_0_20px_rgba(59,130,246,0.3)] hover:shadow-[0_0_30px_rgba(168,85,247,0.4)] transition-all rounded-xl">
+                    <Button variant="premium" className="w-[85%] mx-auto mt-6 mb-4 flex gap-3 h-12 rounded-2xl shadow-[0_10px_30px_rgba(59,130,246,0.2)] hover:shadow-[0_15px_40px_rgba(59,130,246,0.3)] transition-all active:scale-[0.98]">
                         <PlusCircle className="w-5 h-5" />
-                        Generate Post
+                        <span className="font-bold tracking-tight">Generate Post</span>
                     </Button>
                 )}
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px] bg-slate-900/80 backdrop-blur-2xl border-white/10 text-white shadow-2xl">
-                <DialogHeader>
-                    <DialogTitle className="text-xl">Generate a New Post</DialogTitle>
-                    <DialogDescription asChild>
-                        <div className="pt-2">
-                            Paste any GitHub repository, blog post, or article link here. The Omni Social Agent will instantly read the content and draft a viral social media post for you!
+            <DialogContent className="sm:max-w-[480px] bg-black/60 backdrop-blur-3xl border border-white/10 text-white shadow-[0_40px_100px_rgba(0,0,0,0.7)] rounded-[32px] overflow-hidden p-0">
+                <div className="absolute inset-0 pointer-events-none bg-gradient-to-br from-blue-500/10 via-transparent to-purple-500/10 opacity-50" />
+                <div className="relative z-10 p-8">
+                    <DialogHeader className="mb-8">
+                        <DialogTitle className="text-3xl font-black tracking-tighter mb-2">Generate Magic</DialogTitle>
+                        <DialogDescription className="text-slate-400 text-sm leading-relaxed font-medium">
+                            Paste any GitHub repository or article link. Our AI will synthesize it into a high-impact social media narrative instantly.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <form
+                        className="flex flex-col items-center justify-center gap-4 py-4 w-full"
+                        onSubmit={handleSubmit}
+                    >
+                        <div className="flex flex-col gap-3 items-start justify-start w-full">
+                            <Label htmlFor="url" className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">
+                                Content Origin <span className="text-blue-500">*</span>
+                            </Label>
+                            <div className="relative w-full group">
+                                <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-2xl blur opacity-0 group-focus-within:opacity-100 transition duration-500" />
+                                <Input
+                                    id="url"
+                                    placeholder="https://github.com/..."
+                                    className="relative z-10 bg-black/40 border-white/10 rounded-2xl h-14 px-5 text-slate-200 placeholder:text-slate-600 focus:bg-black/60 transition-all font-medium text-base shadow-inner"
+                                    required
+                                    value={url}
+                                    onChange={(e) => setUrl(e.target.value)}
+                                />
+                            </div>
                         </div>
-                    </DialogDescription>
-                </DialogHeader>
-                <form
-                    className="flex flex-col items-center justify-center gap-4 py-4 w-full"
-                    onSubmit={handleSubmit}
-                >
-                    <div className="flex flex-col gap-2 items-start justify-start w-full">
-                        <Label htmlFor="url">
-                            Content Link <span className="text-red-500">*</span>
-                        </Label>
-                        <Input
-                            id="url"
-                            placeholder="https://github.com/... or https://blog..."
-                            className="w-full text-base py-6 px-4 rounded-xl"
-                            required
-                            value={url}
-                            onChange={(e) => setUrl(e.target.value)}
-                        />
-                    </div>
 
-                    {errorMessage && (
-                        <div className="text-red-500 text-sm w-full font-medium p-2 bg-red-50 rounded-md">{errorMessage}</div>
-                    )}
+                        {errorMessage && (
+                            <div className="text-red-400 text-xs w-full font-bold p-4 bg-red-400/10 border border-red-400/20 rounded-2xl animate-shake">{errorMessage}</div>
+                        )}
 
-                    <div className="grid grid-cols-2 gap-4 w-full mt-2">
-                        <Button
-                            className="w-full"
-                            type="submit"
-                            disabled={isSubmitting || !url}
-                        >
-                            {isSubmitting ? (
-                                <>
-                                    <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
-                                    Generating...
-                                </>
-                            ) : (
-                                "Start Magic ?"
-                            )}
-                        </Button>
-                        <Button
-                            variant="outline"
-                            type="button"
-                            onClick={() => setOpen(false)}
-                        >
-                            Cancel
-                        </Button>
-                    </div>
-                </form>
+                        <div className="flex flex-col sm:flex-row-reverse gap-4 w-full mt-4">
+                            <Button
+                                variant="premium"
+                                className="flex-1 h-14 rounded-2xl text-base font-bold shadow-[0_15px_30px_rgba(59,130,246,0.3)] transition-all active:scale-95"
+                                type="submit"
+                                disabled={isSubmitting || !url}
+                            >
+                                {isSubmitting ? (
+                                    <>
+                                        <LoaderCircle className="mr-2 h-5 w-5 animate-spin" />
+                                        Synchronizing...
+                                    </>
+                                ) : (
+                                    "Initiate Growth"
+                                )}
+                            </Button>
+                            <Button
+                                variant="ghost"
+                                type="button"
+                                className="flex-1 h-14 rounded-2xl text-slate-400 font-bold hover:text-white hover:bg-white/5 transition-all"
+                                onClick={() => setOpen(false)}
+                            >
+                                Abort
+                            </Button>
+                        </div>
+                    </form>
+                </div>
             </DialogContent>
         </Dialog>
     );

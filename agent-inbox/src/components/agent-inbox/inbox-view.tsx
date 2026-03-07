@@ -10,6 +10,7 @@ import { InboxButtons } from "./components/inbox-buttons";
 import { BackfillBanner } from "./components/backfill-banner";
 import { forceInboxBackfill } from "./utils/backfill";
 import { logger } from "./utils/logger";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface AgentInboxViewProps<
   _ThreadValues extends Record<string, any> = Record<string, any>,
@@ -17,6 +18,21 @@ interface AgentInboxViewProps<
   saveScrollPosition: (element?: HTMLElement | null) => void;
   containerRef: React.RefObject<HTMLDivElement>;
 }
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.08,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 },
+};
 
 export function AgentInboxView<
   ThreadValues extends Record<string, any> = Record<string, any>,
@@ -54,14 +70,12 @@ export function AgentInboxView<
         threadData.length === 0 &&
         agentInboxes.length > 0
       ) {
-        // Mark that we've attempted a refresh for this session
         localStorage.setItem(`inbox-refreshed-${sessionId}`, "true");
         setHasAttemptedRefresh(true);
 
         logger.log("Automatically refreshing inbox IDs...");
         await forceInboxBackfill();
 
-        // Add a small delay before reloading to allow state to settle
         setTimeout(() => {
           window.location.reload();
         }, 100);
@@ -71,45 +85,37 @@ export function AgentInboxView<
     autoRefreshInboxes();
   }, [loading, threadData, agentInboxes, hasAttemptedRefresh]);
 
-  // Register scroll event listener to automatically save scroll position whenever user scrolls
+  // Register scroll event listener
   React.useEffect(() => {
     if (typeof window === "undefined") return;
 
-    // Define the scroll handler that will save the current scroll position
     const handleScroll = () => {
-      // Find the element that's actually scrolling
       if (
         scrollableContentRef.current &&
         scrollableContentRef.current.scrollTop > 0
       ) {
-        // First check the inner container (thread list)
         saveScrollPosition(scrollableContentRef.current);
       } else if (containerRef.current && containerRef.current.scrollTop > 0) {
-        // Then check the outer container
         saveScrollPosition(containerRef.current);
       } else if (window.scrollY > 0) {
-        // Finally check the window
         saveScrollPosition();
       }
     };
 
-    // We need to throttle the handler to avoid performance issues
     let timeout: NodeJS.Timeout | null = null;
     const throttledScrollHandler = () => {
       if (!timeout) {
         timeout = setTimeout(() => {
           handleScroll();
           timeout = null;
-        }, 300); // Only call every 300ms
+        }, 300);
       }
     };
 
-    // Add the event listener
     window.addEventListener("scroll", throttledScrollHandler, {
       passive: true,
     });
 
-    // Don't forget to clean up
     return () => {
       window.removeEventListener("scroll", throttledScrollHandler);
       if (timeout) clearTimeout(timeout);
@@ -117,10 +123,7 @@ export function AgentInboxView<
   }, [containerRef, saveScrollPosition]);
 
   const changeInbox = async (inbox: ThreadStatusWithAll) => {
-    // Clear threads from state
     clearThreadData();
-
-    // Update query params
     updateQueryParams(
       [INBOX_PARAM, OFFSET_PARAM, LIMIT_PARAM],
       [inbox, "0", "10"]
@@ -145,7 +148,7 @@ export function AgentInboxView<
 
   const threadDataToRender = React.useMemo(
     () =>
-      threadData.filter((t) => {
+      threadData.filter((t: any) => {
         if (selectedInbox === "all") return true;
         return t.status === selectedInbox;
       }),
@@ -153,76 +156,89 @@ export function AgentInboxView<
   );
   const noThreadsFound = !threadDataToRender.length;
 
-  // Correct way to save scroll position before navigation
   const handleThreadClick = () => {
-    // First try the inner scrollable div
     if (
       scrollableContentRef.current &&
       scrollableContentRef.current.scrollTop > 0
     ) {
       saveScrollPosition(scrollableContentRef.current);
-    }
-    // Then try the outer container
-    else if (containerRef.current && containerRef.current.scrollTop > 0) {
+    } else if (containerRef.current && containerRef.current.scrollTop > 0) {
       saveScrollPosition(containerRef.current);
-    }
-    // Finally try window
-    else if (window.scrollY > 0) {
+    } else if (window.scrollY > 0) {
       saveScrollPosition();
-    }
-    // If none have scroll, find scrollable elements as fallback
-    else {
-      const scrollableElements = document.querySelectorAll(
-        '[class*="overflow"]'
-      );
-      scrollableElements.forEach((el) => {
-        const htmlEl = el as HTMLElement;
-        if (htmlEl.scrollTop > 0) {
-          saveScrollPosition(htmlEl);
-          return;
-        }
-      });
     }
   };
 
   return (
-    <div ref={containerRef} className="w-full h-full overflow-y-auto bg-transparent">
-      <div className="px-5 pt-4">
+    <div ref={containerRef} className="w-full h-full overflow-y-auto bg-transparent flex flex-col">
+      <div className="px-6 pt-6 pb-2">
         <BackfillBanner />
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex flex-col">
+            <h1 className="text-3xl font-extrabold text-white tracking-tight">Agent Inboxes</h1>
+            <p className="text-slate-500 text-sm mt-1 font-medium italic">Manage and respond to cross-platform messages in real-time.</p>
+          </div>
+        </div>
         <InboxButtons changeInbox={changeInbox} />
       </div>
+
       <div
         ref={scrollableContentRef}
-        className="flex flex-col items-start w-full max-h-fit h-full border-y border-white/5 overflow-y-auto scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent mt-3"
+        className="flex-1 flex flex-col items-start w-full px-6 py-4 overflow-y-auto no-scrollbar scroll-smooth"
       >
-        {threadDataToRender.map((threadData, idx) => {
-          return (
-            <InboxItem<ThreadValues>
-              key={`inbox-item-${threadData.thread.thread_id}`}
-              threadData={threadData}
-              isLast={idx === threadDataToRender.length - 1}
-              onThreadClick={handleThreadClick}
-            />
-          );
-        })}
-        {noThreadsFound && !loading && (
-          <div className="w-full flex items-center justify-center p-8">
-            <div className="flex gap-2 items-center justify-center text-slate-500 mb-4">
-              <InboxIcon className="w-6 h-6 opacity-20" />
-              <p className="font-medium">No threads found</p>
+        <AnimatePresence mode="wait">
+          {!loading && !noThreadsFound ? (
+            <motion.div
+              variants={containerVariants}
+              initial="hidden"
+              animate="show"
+              className="w-full"
+            >
+              {threadDataToRender.map((thread: any, idx) => (
+                <motion.div key={thread.thread.thread_id} variants={itemVariants}>
+                  <InboxItem<ThreadValues>
+                    threadData={thread}
+                    isLast={idx === threadDataToRender.length - 1}
+                    onThreadClick={handleThreadClick}
+                  />
+                </motion.div>
+              ))}
+            </motion.div>
+          ) : noThreadsFound && !loading ? (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="w-full flex-1 flex flex-col items-center justify-center p-12 min-h-[400px]"
+            >
+              <div className="relative group">
+                <div className="absolute inset-0 bg-blue-500/20 blur-3xl rounded-full group-hover:bg-purple-500/20 transition-colors" />
+                <div className="relative p-8 rounded-3xl bg-white/[0.03] border border-white/10 backdrop-blur-md shadow-2xl">
+                  <InboxIcon className="w-16 h-16 text-slate-700 opacity-50 mb-4 mx-auto group-hover:text-blue-400 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500" />
+                  <div className="text-center">
+                    <h3 className="text-xl font-bold text-white mb-2">Inbox is clear!</h3>
+                    <p className="text-slate-500 max-w-[240px] text-sm leading-relaxed px-2">
+                      No threads found in <span className="text-blue-400 font-bold capitalize">{selectedInbox}</span>.
+                      Time to relax or switch filters.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          ) : (
+            <div className="w-full h-full flex flex-col items-center justify-center p-12 min-h-[400px]">
+              <div className="flex flex-col items-center gap-4">
+                <div className="relative">
+                  <LoaderCircle className="w-12 h-12 animate-spin text-blue-500" />
+                  <div className="absolute inset-0 bg-blue-500/10 blur-xl animate-pulse" />
+                </div>
+                <p className="text-slate-400 font-bold tracking-widest uppercase text-[10px] animate-pulse">Syncing Threads...</p>
+              </div>
             </div>
-          </div>
-        )}
-        {noThreadsFound && loading && (
-          <div className="w-full flex items-center justify-center p-8">
-            <div className="flex gap-2 items-center justify-center text-slate-400">
-              <p className="font-medium italic">Scanning for your tasks...</p>
-              <LoaderCircle className="w-6 h-6 animate-spin text-blue-500" />
-            </div>
-          </div>
-        )}
+          )}
+        </AnimatePresence>
       </div>
-      <div className="flex justify-start w-full p-5">
+
+      <div className="flex justify-start w-full px-6 py-8 border-t border-white/5 bg-black/10 backdrop-blur-sm">
         <Pagination />
       </div>
     </div>

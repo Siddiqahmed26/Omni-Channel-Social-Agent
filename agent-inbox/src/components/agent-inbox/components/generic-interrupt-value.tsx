@@ -19,68 +19,60 @@ const renderCollapsedValue = (
   isComplex: boolean
 ): React.ReactNode => {
   if (value === null) {
-    return <span className="text-gray-500">null</span>;
+    return <span className="text-slate-500 italic font-medium">null</span>;
   }
   if (typeof value === "boolean") {
-    return <span className="text-blue-600">{String(value)}</span>;
+    return <span className="text-sky-400 font-bold">{String(value)}</span>;
   }
   if (typeof value === "number") {
-    return <span className="text-green-600">{String(value)}</span>;
+    return <span className="text-emerald-400 font-bold">{String(value)}</span>;
   }
   if (typeof value === "string") {
-    // Apply truncation only to strings directly, not stringified complex types here
     return (
-      <span className="text-purple-600">
+      <span className="text-indigo-300 font-medium">
         &quot;{truncateString(value)}&quot;
       </span>
     );
   }
   if (isComplex) {
-    // Render truncated complex value for collapsed view
     try {
-      // Show limited items/keys for preview
       let previewValue: any;
       if (Array.isArray(value)) {
-        previewValue = value.slice(0, 3); // Show first 3 items
+        previewValue = value.slice(0, 3);
         if (value.length > 3) previewValue.push("...");
       } else {
         const keys = Object.keys(value);
         previewValue = {};
         keys.slice(0, 3).forEach((key) => {
-          previewValue[key] = value[key]; // Show first 3 keys/values
+          previewValue[key] = value[key];
         });
         if (keys.length > 3) previewValue["..."] = "...";
       }
-      const strValue = JSON.stringify(previewValue, null, 2); // Pretty print preview
+      const strValue = JSON.stringify(previewValue, null, 2);
       return (
-        <code className="rounded bg-gray-50 px-2 py-1 font-mono text-sm whitespace-pre-wrap block">
-          {/* Truncate the stringified preview if it's still too long */}
+        <code className="rounded-xl bg-black/40 border border-white/5 px-3 py-2 font-mono text-xs text-blue-300/80 whitespace-pre-wrap block shadow-inner">
           {truncateString(strValue, 200)}
         </code>
       );
     } catch (_) {
-      return <span className="text-red-500">Error creating preview</span>;
+      return <span className="text-red-400">Error creating preview</span>;
     }
   }
-  // Fallback for other unexpected types
   return String(value);
 };
 
-// Helper to render the value within a table cell, stringifying complex types as needed
 const renderTableCellValue = (value: any): React.ReactNode => {
   if (isComplexValue(value)) {
     try {
-      // Stringify nested objects/arrays within the table
       return (
-        <code className="rounded bg-gray-50 px-2 py-1 font-mono text-sm whitespace-pre-wrap block">
+        <code className="rounded-xl bg-black/30 border border-white/5 px-3 py-2 font-mono text-xs text-blue-300/80 whitespace-pre-wrap block shadow-inner">
           {JSON.stringify(value, null, 2)}
         </code>
       );
     } catch (_) {
-      return <span className="text-red-500">Error stringifying</span>;
+      return <span className="text-red-400">Error stringifying</span>;
     }
   }
-  // Use renderCollapsedValue logic for primitive types for consistent styling
   return renderCollapsedValue(value, false);
 };
 
@@ -126,18 +118,18 @@ export function GenericInterruptValue({
   const displayEntries = complex ? processEntries() : [];
 
   return (
-    <div className="overflow-hidden rounded-lg border border-gray-200">
+    <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.02] shadow-2xl backdrop-blur-md transition-all duration-500 hover:border-white/20">
       {/* Header */}
-      <div className="border-b border-gray-200 bg-gray-50 px-4 py-2">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <h3 className="font-medium text-gray-900 flex flex-wrap items-center justify-center gap-2">
-            Interrupt <ThreadIdCopyable showUUID threadId={id} />
+      <div className="border-b border-white/5 bg-black/20 px-5 py-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h3 className="text-sm font-extrabold text-white flex flex-wrap items-center gap-2 uppercase tracking-widest">
+            <span className="w-1.5 h-4 bg-blue-500 rounded-full mr-1" />
+            Node Payload <ThreadIdCopyable showUUID threadId={id} />
           </h3>
-          {/* Simple Toggle Button in Header */}
           {complex && shouldShowExpandButton && (
             <button
               onClick={() => setIsExpanded(!isExpanded)}
-              className="text-gray-500 hover:text-gray-700 p-1 rounded hover:bg-gray-200"
+              className="text-slate-500 hover:text-white p-2 rounded-xl hover:bg-white/5 transition-all active:scale-95 shadow-lg border border-transparent hover:border-white/10"
               aria-label={isExpanded ? "Collapse details" : "Expand details"}
             >
               {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
@@ -148,95 +140,82 @@ export function GenericInterruptValue({
 
       {/* Body Content */}
       <motion.div
-        className="bg-gray-100"
+        className="bg-transparent"
         initial={false}
-        animate={{ height: "auto" }} // Let content dictate height
-        transition={{ duration: 0.3, ease: "easeInOut" }}
+        animate={{ height: "auto" }}
+        transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
       >
         <AnimatePresence mode="wait" initial={false}>
-          {
-            // Determine rendering mode
-            (() => {
-              const showTable =
-                complex && (!shouldShowExpandButton || isExpanded);
-              const showCollapsedPreview =
-                complex && shouldShowExpandButton && !isExpanded;
-              const showSimpleValue = !complex;
+          {(() => {
+            const showTable = complex && (!shouldShowExpandButton || isExpanded);
+            const showCollapsedPreview = complex && shouldShowExpandButton && !isExpanded;
+            const showSimpleValue = !complex;
 
-              return (
-                <motion.div
-                  key={showTable ? "table" : "preview"} // Key based on what's visible
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  transition={{ duration: 0.2, ease: "easeInOut" }}
-                  style={{ overflow: "hidden" }} // Important for height animation
-                >
-                  {showSimpleValue && (
-                    <div className="px-4 py-2 text-sm">
-                      {renderCollapsedValue(interrupt, false)}
-                    </div>
-                  )}
-                  {showCollapsedPreview && (
-                    <div className="px-4 py-2 text-sm">
-                      {renderCollapsedValue(interrupt, true)}{" "}
-                      {/* Render the preview */}
-                    </div>
-                  )}
-                  {showTable && (
-                    // Render expanded table
-                    <div
-                      className="overflow-x-auto"
-                      style={{
-                        maxHeight:
-                          "500px" /* Limit height for very long tables */,
-                      }}
-                    >
-                      <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50 sticky top-0 z-10">
-                          {" "}
-                          {/* Sticky header */}
+            return (
+              <motion.div
+                key={showTable ? "table" : "preview"}
+                initial={{ opacity: 0, y: -5 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 5 }}
+                transition={{ duration: 0.3 }}
+                className="overflow-hidden"
+              >
+                {showSimpleValue && (
+                  <div className="px-6 py-4 text-sm font-medium">
+                    {renderCollapsedValue(interrupt, false)}
+                  </div>
+                )}
+                {showCollapsedPreview && (
+                  <div className="px-6 py-4 text-sm">
+                    {renderCollapsedValue(interrupt, true)}
+                  </div>
+                )}
+                {showTable && (
+                  <div
+                    className="overflow-x-auto no-scrollbar"
+                    style={{ maxHeight: "600px" }}
+                  >
+                    <table className="min-w-full divide-y divide-white/5">
+                      <thead className="bg-black/40 sticky top-0 z-10">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">
+                            {Array.isArray(interrupt) ? "Index" : "Property"}
+                          </th>
+                          <th className="px-6 py-3 text-left text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">
+                            Value Context
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-white/5 bg-transparent">
+                        {displayEntries.length === 0 && (
                           <tr>
-                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              {Array.isArray(interrupt) ? "Index" : "Key"}
-                            </th>
-                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              Value
-                            </th>
+                            <td
+                              colSpan={2}
+                              className="px-6 py-10 text-center text-sm text-slate-500 font-medium italic"
+                            >
+                              {Array.isArray(interrupt)
+                                ? "Collection is empty"
+                                : "No properties defined"}
+                            </td>
                           </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-200 bg-white">
-                          {displayEntries.length === 0 && (
-                            <tr>
-                              <td
-                                colSpan={2}
-                                className="px-4 py-4 text-center text-sm text-gray-500"
-                              >
-                                {Array.isArray(interrupt)
-                                  ? "Array is empty"
-                                  : "Object is empty"}
-                              </td>
-                            </tr>
-                          )}
-                          {displayEntries.map(([key, value]) => (
-                            <tr key={key}>
-                              <td className="px-4 py-2 text-sm font-medium whitespace-nowrap text-gray-900 align-top">
-                                {key}
-                              </td>
-                              <td className="px-4 py-2 text-sm text-gray-500 align-top">
-                                {/* Render cell value using the helper */}
-                                {renderTableCellValue(value)}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
-                </motion.div>
-              );
-            })()
-          }
+                        )}
+                        {displayEntries.map(([key, value]) => (
+                          <tr key={key} className="group/row hover:bg-white/[0.02] transition-colors">
+                            <td className="px-6 py-4 text-xs font-bold whitespace-nowrap text-slate-400 align-top group-hover/row:text-blue-400 transition-colors">
+                              {key}
+                            </td>
+                            <td className="px-6 py-4 text-sm text-slate-300 align-top">
+                              {renderTableCellValue(value)}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </motion.div>
+            );
+          })()}
         </AnimatePresence>
       </motion.div>
     </div>
