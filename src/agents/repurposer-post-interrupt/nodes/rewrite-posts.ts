@@ -84,7 +84,6 @@ export async function rewritePost(
 
   return {
     next: undefined,
-    userResponse: undefined,
     post: toolCall.post,
   };
 }
