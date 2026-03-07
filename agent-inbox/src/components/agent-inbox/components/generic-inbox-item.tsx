@@ -1,3 +1,5 @@
+"use client";
+
 import { cn } from "@/lib/utils";
 import { Thread } from "@langchain/langgraph-sdk";
 import { ThreadIdCopyable } from "./thread-id";

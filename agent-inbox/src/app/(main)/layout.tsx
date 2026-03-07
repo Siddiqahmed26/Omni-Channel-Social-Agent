@@ -1,3 +1,5 @@
+"use client";
+
 import { ThreadsProvider } from "@/components/agent-inbox/contexts/ThreadContext";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar, AppSidebarTrigger } from "@/components/app-sidebar";

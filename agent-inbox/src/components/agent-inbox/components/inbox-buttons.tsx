@@ -1,3 +1,5 @@
+"use client";
+
 import { useQueryParams } from "../hooks/use-query-params";
 import { Layers, Loader, TriangleAlert, ZapOff } from "lucide-react";
 import { cn } from "@/lib/utils";

@@ -1,3 +1,5 @@
+"use client";
+
 import { cn } from "@/lib/utils";
 import { InterruptedThreadData } from "../types";
 import React from "react";

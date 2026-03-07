@@ -1,3 +1,5 @@
+"use client";
+
 import { useThreadsContext } from "@/components/agent-inbox/contexts/ThreadContext";
 import { InboxItem } from "./components/inbox-item";
 import React from "react";
