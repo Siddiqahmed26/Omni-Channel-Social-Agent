@@ -39,7 +39,12 @@ export function BreadCrumb({ className }: { className?: string }) {
       const selectedInboxParam = searchParams.get(INBOX_PARAM) as
         | ThreadStatusWithAll
         | undefined;
-      if (selectedInboxParam) {
+
+      const isBrainPage = typeof window !== "undefined" && window.location.pathname.includes("/brain");
+
+      if (isBrainPage) {
+        setSelectedInboxLabel("AI Style Brain");
+      } else if (selectedInboxParam) {
         setSelectedInboxLabel(prettifyText(selectedInboxParam));
       } else {
         setSelectedInboxLabel(undefined);
