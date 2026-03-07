@@ -5,6 +5,7 @@ import {
   ComplexPost,
 } from "./types.js";
 import { Client } from "@langchain/langgraph-sdk";
+import { getLangGraphClient } from "../langgraph-client.js";
 import {
   getScheduledDateSeconds,
   getFutureDate,
@@ -88,10 +89,7 @@ export async function schedulePost<
   const isTextOnlyMode = isTextOnly(config);
   const postToLinkedInOrg = shouldPostToLinkedInOrg(config);
 
-  const client = new Client({
-    apiUrl: process.env.LANGGRAPH_API_URL || "http://localhost:54367",
-    apiKey: process.env.LANGCHAIN_API_KEY,
-  });
+  const client = getLangGraphClient();
 
   let afterSeconds: number | undefined;
   if (state.scheduleDate) {

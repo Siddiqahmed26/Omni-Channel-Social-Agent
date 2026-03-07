@@ -1,4 +1,5 @@
 import { Client } from "@langchain/langgraph-sdk";
+import { getLangGraphClient } from "../../shared/nodes/langgraph-client.js";
 import { CurateDataState } from "../state.js";
 import { getTweetLink } from "../../../clients/twitter/utils.js";
 import { POST_TO_LINKEDIN_ORGANIZATION } from "../../generate-post/constants.js";
@@ -115,10 +116,7 @@ export async function generatePostsSubgraph(
 ): Promise<Partial<CurateDataState>> {
   const postToLinkedInOrg = shouldPostToLinkedInOrg(config);
 
-  const client = new Client({
-    apiUrl: process.env.LANGGRAPH_API_URL || "http://localhost:54367",
-    apiKey: process.env.LANGCHAIN_API_KEY,
-  });
+  const client = getLangGraphClient();
 
   const afterSecondsList = getAfterSeconds(state);
 

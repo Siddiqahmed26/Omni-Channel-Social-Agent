@@ -28,6 +28,7 @@ import { humanNode } from "../shared/nodes/generate-post/human-node.js";
 import { schedulePost } from "../shared/nodes/generate-post/schedule-post.js";
 import { rewritePost } from "../shared/nodes/generate-post/rewrite-post.js";
 import { Client } from "@langchain/langgraph-sdk";
+import { getLangGraphClient } from "../shared/nodes/langgraph-client.js";
 import { POST_TO_LINKEDIN_ORGANIZATION } from "./constants.js";
 import { rewritePostWithSplitUrl } from "./nodes/rewrite-with-split-url.js";
 
@@ -133,10 +134,7 @@ async function routeToCuratedInterruptOrContinue(
 ): Promise<"humanNode" | typeof END> {
   if (config.configurable?.origin === "curate-data") {
     const postToLinkedInOrg = shouldPostToLinkedInOrg(config);
-    const client = new Client({
-      apiUrl: process.env.LANGGRAPH_API_URL || "http://localhost:54367",
-      apiKey: process.env.LANGCHAIN_API_KEY,
-    });
+    const client = getLangGraphClient();
 
     const { thread_id } = await client.threads.create();
     await client.runs.create(thread_id, "curated_post_interrupt", {
