@@ -49,8 +49,7 @@ export async function delayRun({
   configurable,
 }: DelayRunInputs): Promise<Run> {
   const client = new Client({
-    apiUrl:
-      process.env.LANGGRAPH_API_URL || `http://localhost:${process.env.PORT}`,
+    apiUrl: process.env.LANGGRAPH_API_URL || "http://localhost:54367",
   });
 
   const newRun = await client.runs.create(threadId, assistantId, {
