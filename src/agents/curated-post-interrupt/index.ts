@@ -10,11 +10,13 @@ import { humanNode } from "../shared/nodes/generate-post/human-node.js";
 import { schedulePost } from "../shared/nodes/generate-post/schedule-post.js";
 import { rewritePost } from "../shared/nodes/generate-post/rewrite-post.js";
 
-function rewriteOrEndConditionalEdge(
+import { reflectionNode } from "../shared/nodes/reflection-node.js";
+
+function routingEdge(
   state: CuratedPostInterruptState,
 ):
   | "rewritePost"
-  | "schedulePost"
+  | "reflection"
   | "humanNode"
   | "updateScheduleDate"
   | typeof END {
@@ -23,10 +25,23 @@ function rewriteOrEndConditionalEdge(
   }
 
   if (state.next === "unknownResponse") {
-    // If the user's response is unknown, we should route back to the human node.
     return "humanNode";
   }
+
+  if (state.next === "schedulePost") {
+    return "reflection";
+  }
+
   return state.next;
+}
+
+function reflectionRouting(
+  state: CuratedPostInterruptState,
+): "schedulePost" | "humanNode" {
+  if (state.next === "schedulePost") {
+    return "schedulePost";
+  }
+  return "humanNode";
 }
 
 const workflow = new StateGraph(
@@ -50,19 +65,21 @@ const workflow = new StateGraph(
   )
   // Updated the scheduled date from the natural language response from the user.
   .addNode("updateScheduleDate", updateScheduledDate)
+  .addNode("reflection", reflectionNode)
   .addEdge(START, "humanNode")
-  .addConditionalEdges("humanNode", rewriteOrEndConditionalEdge, [
+  .addConditionalEdges("humanNode", routingEdge, [
     "rewritePost",
-    "schedulePost",
+    "reflection",
     "updateScheduleDate",
     "humanNode",
     END,
   ])
-  // Always route back to `humanNode` if the post was re-written or date was updated.
-  .addEdge("rewritePost", "humanNode")
+  .addEdge("rewritePost", "reflection")
+  .addConditionalEdges("reflection", reflectionRouting, [
+    "schedulePost",
+    "humanNode",
+  ])
   .addEdge("updateScheduleDate", "humanNode")
-
-  // Always end after scheduling the post.
   .addEdge("schedulePost", END);
 
 export const curatedPostInterruptGraph = workflow.compile();
