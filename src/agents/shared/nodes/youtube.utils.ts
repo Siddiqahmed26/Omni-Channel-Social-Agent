@@ -43,43 +43,47 @@ function parseDuration(duration: string): number {
   return hours * 3600 + minutes * 60 + seconds;
 }
 
+function createMissingAuthProxy(message: string): any {
+  const throwError = () => {
+    throw new Error(message);
+  };
+
+  const proxy: any = new Proxy(throwError, {
+    get: (_target, prop) => {
+      if (prop === "then") return undefined;
+      return proxy;
+    },
+    apply: () => {
+      throwError();
+    }
+  });
+
+  return proxy;
+}
+
 function getYouTubeClientFromUrl(): youtube_v3.Youtube {
-  if (!process.env.GOOGLE_VERTEX_AI_WEB_CREDENTIALS) {
-    console.warn("⚠️ GOOGLE_VERTEX_AI_WEB_CREDENTIALS is not set. YouTube features will be disabled.");
-    // Return a proxy that throws a helpful error when any method is called
-    return new Proxy({} as youtube_v3.Youtube, {
-      get() {
-        return () => {
-          throw new Error("YouTube integration requires GOOGLE_VERTEX_AI_WEB_CREDENTIALS environment variable to be set.");
-        };
-      },
-    });
+  const vertexCreds = process.env.GOOGLE_VERTEX_AI_WEB_CREDENTIALS || process.env.GOOGLE_WEB_CREDENTIALS;
+  const apiKey = process.env.GOOGLE_API_KEY;
+
+  if (vertexCreds) {
+    try {
+      const parsedGoogleCredentials = JSON.parse(vertexCreds);
+      const auth = new GoogleAuth({
+        credentials: parsedGoogleCredentials,
+        scopes: ["https://www.googleapis.com/auth/youtube.readonly"],
+      });
+      return youtube({ version: "v3", auth });
+    } catch (error) {
+      console.error("❌ Failed to parse Google credentials:", error);
+    }
   }
 
-  try {
-    const parsedGoogleCredentials = JSON.parse(
-      process.env.GOOGLE_VERTEX_AI_WEB_CREDENTIALS,
-    );
-
-    const auth = new GoogleAuth({
-      credentials: parsedGoogleCredentials,
-      scopes: ["https://www.googleapis.com/auth/youtube.readonly"],
-    });
-
-    return youtube({
-      version: "v3",
-      auth,
-    });
-  } catch (error) {
-    console.error("❌ Failed to parse GOOGLE_VERTEX_AI_WEB_CREDENTIALS:", error);
-    return new Proxy({} as youtube_v3.Youtube, {
-      get() {
-        return () => {
-          throw new Error("YouTube integration failed: Invalid GOOGLE_VERTEX_AI_WEB_CREDENTIALS JSON format.");
-        };
-      },
-    });
+  if (apiKey) {
+    return youtube({ version: "v3", auth: apiKey });
   }
+
+  console.warn("⚠️ YouTube API credentials not found. YouTube features will be disabled.");
+  return createMissingAuthProxy("YouTube integration requires GOOGLE_API_KEY or GOOGLE_VERTEX_AI_WEB_CREDENTIALS.");
 }
 
 /**

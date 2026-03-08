@@ -320,21 +320,25 @@ export async function generateImageWithNanoBananaPro(
   variationIndex: number = 0,
 ): Promise<{ data: string; mimeType: string }> {
   const client = (() => {
-    if (!process.env.GOOGLE_VERTEX_AI_WEB_CREDENTIALS) {
-      throw new Error("GOOGLE_VERTEX_AI_WEB_CREDENTIALS is not set");
+    const vertexCreds = process.env.GOOGLE_VERTEX_AI_WEB_CREDENTIALS || process.env.GOOGLE_WEB_CREDENTIALS;
+    const apiKey = process.env.GOOGLE_API_KEY;
+
+    if (vertexCreds) {
+      const credentials = JSON.parse(vertexCreds);
+      return new GoogleGenAI({
+        vertexai: true,
+        project: credentials.project_id,
+        googleAuthOptions: {
+          credentials,
+        },
+      });
     }
 
-    const credentials = JSON.parse(
-      process.env.GOOGLE_VERTEX_AI_WEB_CREDENTIALS,
-    );
+    if (apiKey) {
+      return new GoogleGenAI({ apiKey });
+    }
 
-    return new GoogleGenAI({
-      vertexai: true,
-      project: credentials.project_id,
-      googleAuthOptions: {
-        credentials,
-      },
-    });
+    throw new Error("Neither Google credentials nor GOOGLE_API_KEY is set for image generation.");
   })();
 
   const styleVariation =
@@ -433,9 +437,9 @@ export async function generateImageCandidatesForPost(
     image_candidates: existingCandidates,
   } = state;
 
-  if (!process.env.GOOGLE_VERTEX_AI_WEB_CREDENTIALS) {
+  if (!process.env.GOOGLE_VERTEX_AI_WEB_CREDENTIALS && !process.env.GOOGLE_WEB_CREDENTIALS && !process.env.GOOGLE_API_KEY) {
     console.warn(
-      "GOOGLE_VERTEX_AI_WEB_CREDENTIALS not set. Skipping image generation.",
+      "Google credentials or GOOGLE_API_KEY not set. Skipping image generation.",
     );
     return {
       imageOptions: imageUrls,
