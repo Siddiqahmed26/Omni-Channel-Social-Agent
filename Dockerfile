@@ -6,7 +6,7 @@ WORKDIR /app
 
 # 2. Copy package files and install dependencies
 COPY package.json yarn.lock* ./
-RUN yarn install
+RUN yarn install && yarn global add @langchain/langgraph-cli
 
 # 3. Copy application files
 COPY src ./src
@@ -18,4 +18,4 @@ COPY README.md .
 EXPOSE 54367
 
 # 6. Start the LangGraph server
-CMD ["npx", "@langchain/langgraph-cli", "dev", "--host", "0.0.0.0", "--port", "54367"]
+CMD ["langgraph", "dev", "--host", "0.0.0.0", "--port", "54367"]
