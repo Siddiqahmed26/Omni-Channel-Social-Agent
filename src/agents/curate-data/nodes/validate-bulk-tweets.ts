@@ -1,7 +1,7 @@
 import { getModel } from "../../shared/nodes/llm.js";
 import { CurateDataState } from "../state.js";
 import { z } from "zod";
-import { chunkArray } from "../../utils.js";
+import { chunkArray, truncateText } from "../../utils.js";
 import { TweetV2 } from "twitter-api-v2";
 
 const EXAMPLES = `<example index="0">
@@ -119,7 +119,7 @@ function formatTweets(tweets: TweetV2[]): string {
   return tweets
     .map((t, index) => {
       const fullText = t.note_tweet?.text || t.text || "";
-      return `<tweet index="${index}">\n${fullText}\n</tweet>`;
+      return `<tweet index="${index}">\n${truncateText(fullText, 2000)}\n</tweet>`;
     })
     .join("\n");
 }
@@ -146,6 +146,7 @@ export async function validateBulkTweets(
   const model = getModel({
     modelName: "gpt-4o",
     temperature: 0,
+    preferMini: true,
   }).withStructuredOutput(answerSchema, { name: "answer" });
 
   // Chunk the tweets into groups of 25

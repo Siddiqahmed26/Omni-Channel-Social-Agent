@@ -5,7 +5,6 @@ import {
   getVideoThumbnailUrl,
   getYouTubeVideoDuration,
 } from "../nodes/youtube.utils.js";
-import { HumanMessage } from "@langchain/core/messages";
 import { shouldExcludeYouTubeContent } from "../../should-exclude.js";
 
 const GENERATE_REPORT_PROMPT = `You are a highly regarded marketing employee at a large software company.
@@ -21,23 +20,10 @@ Ensure to include in your report if this video is relevant to your company's pro
 
 async function generateVideoSummary(url: string): Promise<string> {
   const model = getModel({
-    modelName: "gpt-4o",
     temperature: 0,
+    preferMini: true,
   });
 
-  const mediaMessage = new HumanMessage({
-    content: [
-      {
-        type: "text",
-        text: "Here is the YouTube video",
-      },
-      {
-        type: "media",
-        mimeType: "video/mp4",
-        fileUri: url.startsWith("https://") ? url : `https://${url}`,
-      },
-    ],
-  });
 
   const summaryResult = await model
     .withConfig({
