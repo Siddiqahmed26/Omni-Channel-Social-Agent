@@ -1,4 +1,4 @@
-import { ChatOpenAI } from "@langchain/openai";
+import { getModel } from "../../shared/nodes/llm.js";
 import { GenerateReportState } from "../state.js";
 import { EXTRACT_KEY_DETAILS_PROMPT } from "../prompts.js";
 import { TweetsGroupedByContent } from "../../curate-data/types.js";
@@ -15,11 +15,11 @@ const formatKeyDetailsPrompt = (
 ${tweetGroup.explanation}
 
 ${tweetGroup.tweets
-  .map((tweet) => {
-    const tweetText = tweet.note_tweet?.text || tweet.text || "";
-    return `<tweet>\n${tweetText}\n</tweet>`;
-  })
-  .join("\n\n")}
+        .map((tweet) => {
+          const tweetText = tweet.note_tweet?.text || tweet.text || "";
+          return `<tweet>\n${tweetText}\n</tweet>`;
+        })
+        .join("\n\n")}
 </tweet-group>
 `;
   }
@@ -27,11 +27,11 @@ ${tweetGroup.tweets
   const pageContentsText =
     pageContents.length > 0
       ? pageContents
-          .map(
-            (content, index) =>
-              `<Content index={${index + 1}}>\n${content}\n</Content>`,
-          )
-          .join("\n\n")
+        .map(
+          (content, index) =>
+            `<Content index={${index + 1}}>\n${content}\n</Content>`,
+        )
+        .join("\n\n")
       : "";
 
   if (pageContentsText.length > 0) {
@@ -57,9 +57,8 @@ export async function extractKeyDetails(
     state.tweetGroup,
   );
 
-  const model = new ChatOpenAI({
-    model: "o1",
-    streaming: false,
+  const model = getModel({
+    modelName: "o1",
   });
 
   const imageMessage = state.imageOptions?.length

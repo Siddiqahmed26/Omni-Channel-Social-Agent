@@ -1,4 +1,4 @@
-import { ChatOpenAI } from "@langchain/openai";
+import { getModel } from "../../../shared/nodes/llm.js";
 import { CurateDataState } from "../../state.js";
 import { GROUP_BY_CONTENT_CRITERIA } from "./prompts.js";
 import { TweetV2WithURLs, TweetsGroupedByContent } from "../../types.js";
@@ -78,8 +78,8 @@ function formatUserPrompt(
 ): string {
   return `<all-groups>
 ${tweetsGroupedByContent
-  .map((group, index) => {
-    return `<group index="${index}">
+      .map((group, index) => {
+        return `<group index="${index}">
 <description>
 ${group.explanation}
 </description>
@@ -87,15 +87,15 @@ ${group.explanation}
 ${formatTweetsInGroup(group.tweets)}
 </tweets>
 </group>`;
-  })
-  .join("\n")}
+      })
+      .join("\n")}
 </all-groups>`;
 }
 
 export async function reflectOnTweetGroups(
   state: CurateDataState,
 ): Promise<Partial<CurateDataState>> {
-  const model = new ChatOpenAI({ model: "o1", streaming: false });
+  const model = getModel({ modelName: "o1" });
 
   const formattedUserPrompt = `Hi! Here are all of the groups I put together:
 ${formatUserPrompt(state.tweetsGroupedByContent)}

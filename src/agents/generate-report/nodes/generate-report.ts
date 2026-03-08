@@ -1,4 +1,4 @@
-import { ChatOpenAI } from "@langchain/openai";
+import { getModel } from "../../shared/nodes/llm.js";
 import { GenerateReportState } from "../state.js";
 import { GENERATE_REPORT_PROMPT_O1 } from "../prompts.js";
 import { TweetsGroupedByContent } from "../../curate-data/types.js";
@@ -36,11 +36,11 @@ ${tweetGroup.explanation}
 Please review the content${pageContentsText.length > 0 ? ", along with the page contents above," : ""} and generate a report on it
 </context>
 ${tweetGroup.tweets
-  .map((tweet, index) => {
-    const tweetText = tweet.note_tweet?.text || tweet.text || "";
-    return `<tweet index={${index + 1}}>\n${tweetText}\n</tweet>`;
-  })
-  .join("\n")}
+        .map((tweet, index) => {
+          const tweetText = tweet.note_tweet?.text || tweet.text || "";
+          return `<tweet index={${index + 1}}>\n${tweetText}\n</tweet>`;
+        })
+        .join("\n")}
 </tweet-group>`;
   }
 
@@ -78,9 +78,8 @@ export async function generateReport(
     tweetGroup: state.tweetGroup,
   });
 
-  const reportO1Model = new ChatOpenAI({
-    model: "o1",
-    streaming: false,
+  const reportO1Model = getModel({
+    modelName: "o1",
   });
 
   const formattedReportPrompt = GENERATE_REPORT_PROMPT_O1.replace(

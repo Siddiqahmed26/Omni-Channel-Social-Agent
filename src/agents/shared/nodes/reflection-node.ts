@@ -39,7 +39,7 @@ export async function reflectionNode(
     const existingRules = await getReflectionsPrompt(config);
 
     const model = getModel({
-        modelName: "gpt-4o",
+        preferMini: false,
         temperature: 0,
     });
 
