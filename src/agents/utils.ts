@@ -670,6 +670,36 @@ export interface RetryWithTimeoutOptions {
 }
 
 /**
+ * Truncates text to a maximum length while attempting to preserve word boundaries.
+ * @param text The text to truncate
+ * @param maxChars The maximum number of characters
+ * @returns The truncated text
+ */
+export function truncateText(text: string, maxChars: number): string {
+  if (text.length <= maxChars) return text;
+  const truncated = text.slice(0, maxChars);
+  const lastSpace = truncated.lastIndexOf(" ");
+  if (lastSpace > maxChars * 0.8) {
+    return truncated.slice(0, lastSpace) + "... [truncated]";
+  }
+  return truncated + "... [truncated]";
+}
+
+/**
+ * Truncates an array of strings to fit within a total character budget.
+ * @param items Array of strings
+ * @param totalMaxChars Total character budget
+ * @returns Truncated array of strings
+ */
+export function truncateArrayToBudget(
+  items: string[],
+  totalMaxChars: number,
+): string[] {
+  const perItemBudget = Math.floor(totalMaxChars / items.length);
+  return items.map((item) => truncateText(item, perItemBudget));
+}
+
+/**
  * Executes a callback with exponential retry backoff and timeout.
  *
  * @param callback - The async function to execute

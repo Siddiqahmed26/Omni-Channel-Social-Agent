@@ -1,6 +1,7 @@
 import { getModel } from "../../shared/nodes/llm.js";
 import { SupervisorState } from "../supervisor-state.js";
 import { z } from "zod";
+import { truncateText } from "../../utils.js";
 
 const DETERMINE_POST_TYPE_PROMPT = `You're a highly skilled marketer, working to craft new social media content for your Twitter & LinkedIn pages.
 You're given a report (or reports) on a technical AI topic. Based on the report(s), you should determine if this report should be used to generate a long form 'thread' like post, or a shorter, more concise and straightforward post.
@@ -68,6 +69,7 @@ export async function determinePostType(
 ): Promise<Partial<SupervisorState>> {
   const model = getModel({
     temperature: 0,
+    preferMini: true,
   }).withStructuredOutput(postTypeSchema, {
     name: "postType",
   });
@@ -80,9 +82,12 @@ export async function determinePostType(
   }[] = [];
 
   for await (const report of state.groupedReports) {
+    const truncatedReports = report.reports.map((r) => truncateText(r, 10000));
+    const truncatedKeyDetails = report.keyDetails.map((kd) => truncateText(kd, 2000));
+
     const result = (await model.invoke([
       ["system", DETERMINE_POST_TYPE_PROMPT],
-      ["user", formatReportUserPrompt(report)],
+      ["user", formatReportUserPrompt({ ...report, reports: truncatedReports, keyDetails: truncatedKeyDetails })],
     ])) as z.infer<typeof postTypeSchema>;
 
     reportAndPostType.push({

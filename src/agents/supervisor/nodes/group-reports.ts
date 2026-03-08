@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { SupervisorState } from "../supervisor-state.js";
 import { getModel } from "../../shared/nodes/llm.js";
+import { truncateText } from "../../utils.js";
 
 const IDENTIFY_SIMILAR_REPORTS_PROMPT = `You are an advanced AI assistant tasked with identifying similar reports based on key details.
 
@@ -25,7 +26,7 @@ function formatReportKeyDetails(
   return reports
     .map(
       (report, index) =>
-        `<report index="${index}">\n${report.keyDetails}\n</report>`,
+        `<report index="${index}">\n${truncateText(report.keyDetails, 5000)}\n</report>`,
     )
     .join("\n");
 }
@@ -94,6 +95,7 @@ export async function groupReports(
   const model = getModel({
     modelName: "gpt-4o",
     temperature: 0,
+    preferMini: true,
   }).withStructuredOutput(responseSchema, {
     name: "groupSimilarReports",
   });

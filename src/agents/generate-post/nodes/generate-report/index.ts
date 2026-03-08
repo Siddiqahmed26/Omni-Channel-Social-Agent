@@ -2,6 +2,7 @@ import { LangGraphRunnableConfig } from "@langchain/langgraph";
 import { GeneratePostAnnotation } from "../../generate-post-state.js";
 import { getModel } from "../../../shared/nodes/llm.js";
 import { GENERATE_REPORT_PROMPT } from "./prompts.js";
+import { truncateArrayToBudget } from "../../../utils.js";
 
 /**
  * Parse the LLM generation to extract the report from inside the <report> tag.
@@ -38,6 +39,7 @@ export async function generateContentReport(
 
   const reportModel = getModel({
     temperature: 0,
+    preferMini: true,
   });
 
   const result = await reportModel.invoke([
@@ -47,7 +49,7 @@ export async function generateContentReport(
     },
     {
       role: "user",
-      content: formatReportPrompt(state.pageContents),
+      content: formatReportPrompt(truncateArrayToBudget(state.pageContents, 60000)),
     },
   ]);
 
