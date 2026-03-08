@@ -1,4 +1,4 @@
-import { ChatOpenAI } from "@langchain/openai";
+import { getModel } from "../../shared/nodes/llm.js";
 import { RepurposerState } from "../types.js";
 import { formatReportForPrompt } from "../utils.js";
 
@@ -72,9 +72,8 @@ some details text here
 export async function generateCampaignPlan(
   state: RepurposerState,
 ): Promise<Partial<RepurposerState>> {
-  const model = new ChatOpenAI({
-    model: "o1",
-    streaming: false,
+  const model = getModel({
+    modelName: "o1",
   });
 
   const formattedUserPrompt = GENERATE_CAMPAIGN_PLAN_PROMPT.replace(

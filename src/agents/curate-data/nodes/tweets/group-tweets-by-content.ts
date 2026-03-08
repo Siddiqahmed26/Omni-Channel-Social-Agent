@@ -1,4 +1,4 @@
-import { ChatOpenAI } from "@langchain/openai";
+import { getModel } from "../../../shared/nodes/llm.js";
 import { CurateDataState } from "../../state.js";
 import { GROUP_BY_CONTENT_CRITERIA } from "./prompts.js";
 
@@ -66,19 +66,19 @@ function parseGeneration(
 export async function groupTweetsByContent(
   state: CurateDataState,
 ): Promise<Partial<CurateDataState>> {
-  const model = new ChatOpenAI({ model: "o1", streaming: false });
+  const model = getModel({ modelName: "o1" });
 
   const formattedUserPrompt = `Here are the tweets you should inspect, and group:
 <all-tweets>
 ${state.validatedTweets
-  .map((twt, index) => {
-    const tweetText = twt.note_tweet?.text || twt.text || "";
-    if (!tweetText) return "";
-    return `<tweet index="${index}">
+      .map((twt, index) => {
+        const tweetText = twt.note_tweet?.text || twt.text || "";
+        if (!tweetText) return "";
+        return `<tweet index="${index}">
 ${tweetText}
 </tweet>`;
-  })
-  .join("\n")}
+      })
+      .join("\n")}
 </all-tweets>`;
 
   const result = await model.invoke([

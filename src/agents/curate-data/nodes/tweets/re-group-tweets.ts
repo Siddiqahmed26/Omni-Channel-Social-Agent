@@ -1,4 +1,4 @@
-import { ChatOpenAI } from "@langchain/openai";
+import { getModel } from "../../../shared/nodes/llm.js";
 import { CurateDataState } from "../../state.js";
 import { GROUP_BY_CONTENT_CRITERIA } from "./prompts.js";
 import { TweetsGroupedByContent, TweetV2WithURLs } from "../../types.js";
@@ -43,13 +43,13 @@ ${text}
 function formatGroupsPrompt(tweetsGroupedByContent: TweetsGroupedByContent[]) {
   return `<groups-to-inspect>
 ${tweetsGroupedByContent
-  .map(
-    (group, index) => `<group index="${index}">
+      .map(
+        (group, index) => `<group index="${index}">
 <explanation>${group.explanation}</explanation>
 ${formatTweetsInGroup(group.tweets)}
 </group>`,
-  )
-  .join("\n")}
+      )
+      .join("\n")}
 </groups-to-inspect>`;
 }
 
@@ -135,7 +135,7 @@ export async function reGroupTweets(
     return {};
   }
 
-  const model = new ChatOpenAI({ model: "o1", streaming: false });
+  const model = getModel({ modelName: "o1" });
 
   const { include, review } = splitGroups(
     state.tweetsGroupedByContent,
