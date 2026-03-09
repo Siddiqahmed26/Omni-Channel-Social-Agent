@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Force port 7860
-TARGET_PORT=${PORT:-7860}
+TARGET_PORT=7860
 export PORT=$TARGET_PORT
 export LANGGRAPH_PORT=$TARGET_PORT
 
