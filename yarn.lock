@@ -667,10 +667,10 @@
     minimatch "^3.1.2"
     strip-json-comments "^3.1.1"
 
-"@eslint/eslintrc@^3.1.0":
-  version "3.3.4"
-  resolved "https://registry.npmjs.org/@eslint/eslintrc/-/eslintrc-3.3.4.tgz"
-  integrity sha512-4h4MVF8pmBsncB60r0wSJiIeUKTSD4m7FmTFThG8RHlsg9ajqckLm9OraguFGZE4vVdpiI1Q4+hFnisopmG6gQ==
+"@eslint/eslintrc@^3.3.5":
+  version "3.3.5"
+  resolved "https://registry.yarnpkg.com/@eslint/eslintrc/-/eslintrc-3.3.5.tgz#c131793cfc1a7b96f24a83e0a8bbd4b881558c60"
+  integrity sha512-4IlJx0X0qftVsN5E+/vGujTRIFtwuLbNsVUe7TO6zYPDR1O6nFwvwhIKEKSrl6dZchmYBITazxKoUYOjdtjlRg==
   dependencies:
     ajv "^6.14.0"
     debug "^4.3.2"
@@ -679,7 +679,7 @@
     ignore "^5.2.0"
     import-fresh "^3.2.1"
     js-yaml "^4.1.1"
-    minimatch "^3.1.3"
+    minimatch "^3.1.5"
     strip-json-comments "^3.1.1"
 
 "@eslint/js@8.57.1":
@@ -692,10 +692,10 @@
   resolved "https://registry.npmjs.org/@eslint/js/-/js-9.15.0.tgz"
   integrity sha512-tMTqrY+EzbXmKJR5ToI8lxu7jaN5EdmrBFJpQk5JmSlyLsx6o4t27r883K5xsLuCYCpfKBCGswMSWXsM+jB7lg==
 
-"@google/genai@^1.31.0":
-  version "1.42.0"
-  resolved "https://registry.npmjs.org/@google/genai/-/genai-1.42.0.tgz"
-  integrity sha512-+3nlMTcrQufbQ8IumGkOphxD5Pd5kKyJOzLcnY0/1IuE8upJk5aLmoexZ2BJhBp1zAjRJMEB4a2CJwKI9e2EYw==
+"@google/genai@^1.44.0":
+  version "1.44.0"
+  resolved "https://registry.yarnpkg.com/@google/genai/-/genai-1.44.0.tgz#f533e69b3488f0ff3a29dbf7b5175c0f863671e2"
+  integrity sha512-kRt9ZtuXmz+tLlcNntN/VV4LRdpl6ZOu5B1KbfNgfR65db15O6sUQcwnwLka8sT/V6qysD93fWrgJHF2L7dA9A==
   dependencies:
     google-auth-library "^10.3.0"
     p-retry "^4.6.2"
@@ -1355,12 +1355,13 @@
   dependencies:
     js-tiktoken "^1.0.12"
 
-"@mendable/firecrawl-js@^4.13.0":
-  version "4.13.0"
-  resolved "https://registry.npmjs.org/@mendable/firecrawl-js/-/firecrawl-js-4.13.0.tgz"
-  integrity sha512-8Y2+jjol4/ZXjxyf/5VUGCeOeGYWOOp03HZoyULWU5/adyUjnNL1DkI0/96wHs1aGL5/+JCq/hDfkXMUFBVYfQ==
+"@mendable/firecrawl-js@^4.15.4":
+  version "4.15.4"
+  resolved "https://registry.yarnpkg.com/@mendable/firecrawl-js/-/firecrawl-js-4.15.4.tgz#1481b4b473ebb1b6a29ef249dff93553cb0b8ab3"
+  integrity sha512-uUjMMveMWrfNA85IzwPJygSaw5C1fFIHM4CWmnUUNEQBq4Zp1Aax5XPZp/Yo6zoLwjgkhr/KCN2XZ7NK519L1Q==
   dependencies:
     axios "^1.13.5"
+    firecrawl "4.15.2"
     typescript-event-target "^1.1.1"
     zod "^3.23.8"
     zod-to-json-schema "^3.23.0"
@@ -1636,55 +1637,55 @@
   resolved "https://registry.yarnpkg.com/@standard-schema/spec/-/spec-1.1.0.tgz#a79b55dbaf8604812f52d140b2c9ab41bc150bb8"
   integrity sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w==
 
-"@supabase/auth-js@2.97.0":
-  version "2.97.0"
-  resolved "https://registry.npmjs.org/@supabase/auth-js/-/auth-js-2.97.0.tgz"
-  integrity sha512-2Og/1lqp+AIavr8qS2X04aSl8RBY06y4LrtIAGxat06XoXYiDxKNQMQzWDAKm1EyZFZVRNH48DO5YvIZ7la5fQ==
+"@supabase/auth-js@2.99.0":
+  version "2.99.0"
+  resolved "https://registry.yarnpkg.com/@supabase/auth-js/-/auth-js-2.99.0.tgz#ad7f6d748ed8c9afa19edb876fa8151c8679c63c"
+  integrity sha512-tHiIST/OEoLmWBE+3X69xRY5srJM/lL86KltmMlIfDo9ePJLo14vQQV9T4NF+P+MoGhCwQL1GTmk51zuAFMXKw==
   dependencies:
     tslib "2.8.1"
 
-"@supabase/functions-js@2.97.0":
-  version "2.97.0"
-  resolved "https://registry.npmjs.org/@supabase/functions-js/-/functions-js-2.97.0.tgz"
-  integrity sha512-fSaA0ZeBUS9hMgpGZt5shIZvfs3Mvx2ZdajQT4kv/whubqDBAp3GU5W8iIXy21MRvKmO2NpAj8/Q6y+ZkZyF/w==
+"@supabase/functions-js@2.99.0":
+  version "2.99.0"
+  resolved "https://registry.yarnpkg.com/@supabase/functions-js/-/functions-js-2.99.0.tgz#657d70353ead4d80fd5e0bf0e4c4ff2a3a1b2119"
+  integrity sha512-zA9oad6EqGwMLLu2LfP1bXbqKcJGiotAdbdTfZG7YS7619YZQAEgejj9mp+E5vglKE1yMWbKK+S1J3PbuUtgLg==
   dependencies:
     tslib "2.8.1"
 
-"@supabase/postgrest-js@2.97.0":
-  version "2.97.0"
-  resolved "https://registry.npmjs.org/@supabase/postgrest-js/-/postgrest-js-2.97.0.tgz"
-  integrity sha512-g4Ps0eaxZZurvfv/KGoo2XPZNpyNtjth9aW8eho9LZWM0bUuBtxPZw3ZQ6ERSpEGogshR+XNgwlSPIwcuHCNww==
+"@supabase/postgrest-js@2.99.0":
+  version "2.99.0"
+  resolved "https://registry.yarnpkg.com/@supabase/postgrest-js/-/postgrest-js-2.99.0.tgz#c6f466af35b46bd37184d307ed28a52e89046474"
+  integrity sha512-8qfOMi2pu9y0IQhUAeFqjrvR49G4ELGevXCWV9qAHXFQ/h2FFh0I8PYjFQj4rHcHSq6hrpozDnS1vbQU8NAQ/A==
   dependencies:
     tslib "2.8.1"
 
-"@supabase/realtime-js@2.97.0":
-  version "2.97.0"
-  resolved "https://registry.npmjs.org/@supabase/realtime-js/-/realtime-js-2.97.0.tgz"
-  integrity sha512-37Jw0NLaFP0CZd7qCan97D1zWutPrTSpgWxAw6Yok59JZoxp4IIKMrPeftJ3LZHmf+ILQOPy3i0pRDHM9FY36Q==
+"@supabase/realtime-js@2.99.0":
+  version "2.99.0"
+  resolved "https://registry.yarnpkg.com/@supabase/realtime-js/-/realtime-js-2.99.0.tgz#6b258c6efee9155da0dc88f4fa87b6b1b66c5011"
+  integrity sha512-7nFTZhNeANR7FvEY6PfWLCfE8dHqcaJd9SuR7IPEZvBPG9K4uEHMivpjZx4NWRSU7Eji7ZbKy2LG+cJ48DhwHg==
   dependencies:
     "@types/phoenix" "^1.6.6"
     "@types/ws" "^8.18.1"
     tslib "2.8.1"
     ws "^8.18.2"
 
-"@supabase/storage-js@2.97.0":
-  version "2.97.0"
-  resolved "https://registry.npmjs.org/@supabase/storage-js/-/storage-js-2.97.0.tgz"
-  integrity sha512-9f6NniSBfuMxOWKwEFb+RjJzkfMdJUwv9oHuFJKfe/5VJR8cd90qw68m6Hn0ImGtwG37TUO+QHtoOechxRJ1Yg==
+"@supabase/storage-js@2.99.0":
+  version "2.99.0"
+  resolved "https://registry.yarnpkg.com/@supabase/storage-js/-/storage-js-2.99.0.tgz#92a41e0367a1d2ba6c45d3f77ddc7c1f2ae5fd1d"
+  integrity sha512-mAEEbfsght5EEALejYrwAP9k8sFBGjfMZT8n4SyMXk2iYuWVeRMs1kA/uKg0uDMctWdZ0bL+L4jZzksUJpCjMA==
   dependencies:
     iceberg-js "^0.8.1"
     tslib "2.8.1"
 
-"@supabase/supabase-js@^2.47.10":
-  version "2.97.0"
-  resolved "https://registry.npmjs.org/@supabase/supabase-js/-/supabase-js-2.97.0.tgz"
-  integrity sha512-kTD91rZNO4LvRUHv4x3/4hNmsEd2ofkYhuba2VMUPRVef1RCmnHtm7rIws38Fg0yQnOSZOplQzafn0GSiy6GVg==
+"@supabase/supabase-js@^2.99.0":
+  version "2.99.0"
+  resolved "https://registry.yarnpkg.com/@supabase/supabase-js/-/supabase-js-2.99.0.tgz#d6ee76caca9950fa86bdecbd81091204bdfe48b3"
+  integrity sha512-SP9Sn9tsHDB7N4u2gT13rdeZJewE4xibAxasG7vOz+fYi92+XkMMbWNx0uGK53zKTnAnvTs16isRooyBy4sn5w==
   dependencies:
-    "@supabase/auth-js" "2.97.0"
-    "@supabase/functions-js" "2.97.0"
-    "@supabase/postgrest-js" "2.97.0"
-    "@supabase/realtime-js" "2.97.0"
-    "@supabase/storage-js" "2.97.0"
+    "@supabase/auth-js" "2.99.0"
+    "@supabase/functions-js" "2.99.0"
+    "@supabase/postgrest-js" "2.99.0"
+    "@supabase/realtime-js" "2.99.0"
+    "@supabase/storage-js" "2.99.0"
 
 "@tailwindcss/node@4.2.1":
   version "4.2.1"
@@ -4064,6 +4065,16 @@ find-up@^5.0.0:
     locate-path "^6.0.0"
     path-exists "^4.0.0"
 
+firecrawl@4.15.2:
+  version "4.15.2"
+  resolved "https://registry.yarnpkg.com/firecrawl/-/firecrawl-4.15.2.tgz#9f14032a67518eab06ec73df4cbba42d413fa4b4"
+  integrity sha512-WaYg4aIse3DsndQj7vjtxi0Q1nAqF+uXMOr80aaoxOrWVSVzQ5v4igvbeXNkC8PlgFSnHqevzPmmJPXO5iRqBA==
+  dependencies:
+    axios "^1.13.5"
+    typescript-event-target "^1.1.1"
+    zod "^3.23.8"
+    zod-to-json-schema "^3.23.0"
+
 flat-cache@^3.0.4:
   version "3.2.0"
   resolved "https://registry.npmjs.org/flat-cache/-/flat-cache-3.2.0.tgz"
@@ -5683,22 +5694,10 @@ kuler@^2.0.0:
   resolved "https://registry.yarnpkg.com/kuler/-/kuler-2.0.0.tgz#e2c570a3800388fb44407e851531c1d670b061b3"
   integrity sha512-Xq9nH7KlWZmXAtodXDDRE7vs6DU1gTU8zYDHDiWLSip45Egwq3plLHzPn27NgvzL2r1LMPC1vdqh98sQxtqj4A==
 
-"langsmith@>=0.3.33 <1.0.0":
+"langsmith@>=0.3.33 <1.0.0", "langsmith@>=0.4.0 <1.0.0", "langsmith@>=0.5.0 <1.0.0", langsmith@^0.5.8:
   version "0.5.8"
   resolved "https://registry.yarnpkg.com/langsmith/-/langsmith-0.5.8.tgz#bc9767dedd753099ce6707c54f506efb3b044a3d"
   integrity sha512-AsdwxazXXLwbEzVTXB5uo7Fva5MhGhSvIJ9FjBbkWOkgwqC28E9Gmah5SGbPM3CPjN0FdxB6nKzX5GRkkkXDjQ==
-  dependencies:
-    "@types/uuid" "^10.0.0"
-    chalk "^5.6.2"
-    console-table-printer "^2.12.1"
-    p-queue "^6.6.2"
-    semver "^7.6.3"
-    uuid "^10.0.0"
-
-"langsmith@>=0.4.0 <1.0.0", "langsmith@>=0.5.0 <1.0.0":
-  version "0.5.6"
-  resolved "https://registry.npmjs.org/langsmith/-/langsmith-0.5.6.tgz"
-  integrity sha512-T/RA2l2MsTYX0z1aW8rQ2hBQZEOuXV2v/6tkfG6R5EotJTKMpw1dERCbvP8ezOP8otyWfnNlQA88ZnMRsQ7CHA==
   dependencies:
     "@types/uuid" "^10.0.0"
     chalk "^5.6.2"
@@ -5970,10 +5969,10 @@ mimic-fn@^2.1.0:
   resolved "https://registry.npmjs.org/mimic-fn/-/mimic-fn-2.1.0.tgz"
   integrity sha512-OqbOk5oEQeAZ8WXWydlu9HJjz9WVdEIvamMCcXmuqUYjTknH/sqsWvhQ3vgwKFRR1HpjvNBKQ37nbJgYzGqGcg==
 
-minimatch@^3.0.4, minimatch@^3.0.5, minimatch@^3.1.1, minimatch@^3.1.2, minimatch@^3.1.3:
-  version "3.1.4"
-  resolved "https://registry.npmjs.org/minimatch/-/minimatch-3.1.4.tgz"
-  integrity sha512-twmL+S8+7yIsE9wsqgzU3E8/LumN3M3QELrBZ20OdmQ9jB2JvW5oZtBEmft84k/Gs5CG9mqtWc6Y9vW+JEzGxw==
+minimatch@^3.0.4, minimatch@^3.0.5, minimatch@^3.1.1, minimatch@^3.1.2, minimatch@^3.1.5:
+  version "3.1.5"
+  resolved "https://registry.yarnpkg.com/minimatch/-/minimatch-3.1.5.tgz#580c88f8d5445f2bd6aa8f3cadefa0de79fbd69e"
+  integrity sha512-VgjWUsnnT6n+NUk6eZq77zeFdpW2LWDzP6zFGrCbHXiYNul5Dzqk2HHQ5uFH2DNW5Xbp8+jVzaeNt94ssEEl4w==
   dependencies:
     brace-expansion "^1.1.7"
 
@@ -7009,12 +7008,7 @@ semver@^6.3.0, semver@^6.3.1:
   resolved "https://registry.npmjs.org/semver/-/semver-6.3.1.tgz"
   integrity sha512-BR7VvDCVHO+q2xBEWskxS6DJE1qRnb7DxzUrogb71CWoSficBxYsiAGd+Kl0mmq/MprG9yArRkyrQxTO6XjMzA==
 
-semver@^7.3.7, semver@^7.5.3, semver@^7.5.4, semver@^7.6.3, semver@^7.7.3:
-  version "7.7.3"
-  resolved "https://registry.npmjs.org/semver/-/semver-7.7.3.tgz"
-  integrity sha512-SdsKMrI9TdgjdweUSR9MweHA4EJ8YxHn8DFaDisvhVlUOe4BF1tLD7GAj0lIqWVl+dPb/rExr0Btby5loQm20Q==
-
-semver@^7.7.1:
+semver@^7.3.7, semver@^7.5.3, semver@^7.5.4, semver@^7.6.3, semver@^7.7.1, semver@^7.7.3:
   version "7.7.4"
   resolved "https://registry.yarnpkg.com/semver/-/semver-7.7.4.tgz#28464e36060e991fa7a11d0279d2d3f3b57a7e8a"
   integrity sha512-vFKC2IEtQnVhpT78h1Yp8wzwrf8CM+MzKMHGJZfBtzhZNycRFnXsHk6E5TxIkkMsgNS7mdX3AGB7x2QM2di4lA==
@@ -8159,12 +8153,7 @@ ws@^3.3.1:
     safe-buffer "~5.1.0"
     ultron "~1.1.0"
 
-ws@^8.18.0:
-  version "8.18.0"
-  resolved "https://registry.npmjs.org/ws/-/ws-8.18.0.tgz"
-  integrity sha512-8VbfWfHLbbwu3+N6OKsOMpBdT4kXPDDB9cJk2bJ6mh9ucxdlnNvH1e+roYkKmN9Nxw2yjz7VzeO9oOz2zJ04Pw==
-
-ws@^8.18.2:
+ws@^8.18.0, ws@^8.18.2:
   version "8.19.0"
   resolved "https://registry.npmjs.org/ws/-/ws-8.19.0.tgz"
   integrity sha512-blAT2mjOEIi0ZzruJfIhb3nps74PRWTCz1IjglWEEpQl5XS/UNama6u2/rjFkDDouqr4L67ry+1aGIALViWjDg==
