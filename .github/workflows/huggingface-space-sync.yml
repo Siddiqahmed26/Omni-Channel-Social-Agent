@@ -38,5 +38,7 @@ jobs:
             exit 1
           fi
 
+          # Ensure the hf remote can be added even if it already exists
+          git remote remove hf 2>/dev/null || true
           git remote add hf "https://${HF_USERNAME}:${HF_TOKEN}@huggingface.co/spaces/${HF_USERNAME}/my-social-agent"
           git push hf HEAD:main
