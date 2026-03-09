@@ -17,8 +17,9 @@ function routingEdge(
     return END;
   }
 
+  // Route unknownResponse through reflection first so training feedback is always saved.
   if (state.next === "unknownResponse") {
-    return "humanNode";
+    return "reflection";
   }
 
   if (state.next === "schedulePost") {

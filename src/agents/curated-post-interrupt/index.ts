@@ -24,8 +24,10 @@ function routingEdge(
     return END;
   }
 
+  // Route unknownResponse through reflection first so training feedback is saved,
+  // then reflection will route back to humanNode.
   if (state.next === "unknownResponse") {
-    return "humanNode";
+    return "reflection";
   }
 
   if (state.next === "schedulePost") {
@@ -41,6 +43,7 @@ function reflectionRouting(
   if (state.next === "schedulePost") {
     return "schedulePost";
   }
+  // unknownResponse and rewritePost both return to humanNode after reflection
   return "humanNode";
 }
 
