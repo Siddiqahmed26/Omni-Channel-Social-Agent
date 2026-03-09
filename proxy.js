@@ -5,17 +5,18 @@ const app = express();
 const PORT = 7860;
 const TARGET_PORT = 7861;
 
-// 1. Bulletproof Health Check
-app.all('*', (req, res, next) => {
-    const path = req.path;
-    if (path === '/' || path === '/health' || path === '/ping') {
-        console.log(`📡 PROXY: Health check received on ${path} - Sending 200 OK`);
-        return res.status(200).send('✅ Omni Agent is healthy and listening. Ready to post!');
-    }
+// 1. Verbose Logging Middleware
+app.use((req, res, next) => {
+    console.log(`[${new Date().toISOString()}] 🔍 REQUEST: ${req.method} ${req.url} from ${req.ip}`);
     next();
 });
 
-// 2. Transparent Proxy for everything else
+// 2. Health check for Hugging Face
+app.get('/', (req, res) => {
+    res.status(200).send('✅ Omni Agent is healthy and listening.');
+});
+
+// 3. Proxy all other requests to LangGraph
 app.use('/', createProxyMiddleware({
     target: `http://localhost:${TARGET_PORT}`,
     changeOrigin: true,
