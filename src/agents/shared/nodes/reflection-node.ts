@@ -27,12 +27,15 @@ export async function reflectionNode(
     state: { post: string; userResponse?: string;[key: string]: any },
     config: LangGraphRunnableConfig,
 ) {
+    console.log("[REFLECTION NODE] Called. userResponse:", state.userResponse?.substring(0, 100));
+
     if (!state.userResponse || !state.userResponse.trim()) {
+        console.log("[REFLECTION NODE] No userResponse, skipping.");
         return {};
     }
 
     if (!config.store) {
-        console.warn("No store provided for reflection");
+        console.warn("[REFLECTION NODE] No store provided, skipping.");
         return {};
     }
 
@@ -74,9 +77,11 @@ User Feedback:
         })) as BaseMessage;
 
         const updated = response.content as string;
+        console.log("[REFLECTION NODE] Saving updated rules:", updated.substring(0, 200));
         await putReflectionsPrompt(config, updated);
+        console.log("[REFLECTION NODE] Rules saved successfully.");
     } catch (e) {
-        console.error("Reflection failed", e);
+        console.error("[REFLECTION NODE] Reflection failed:", e);
     }
 
     return {
