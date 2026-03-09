@@ -6,42 +6,33 @@ import { BaseChatModel } from "@langchain/core/language_models/chat_models";
 /**
  * Centrally manages LLM instantiation based on environment variables.
  * Supports Google Gemini, Anthropic, and OpenAI.
+ *
+ * Default: gpt-4o-mini (rock-solid, low-cost, high-quality)
+ * Google fallback: gemini-2.5-flash on v1beta
  */
 export function getModel(options: { temperature?: number; modelName?: string; preferMini?: boolean } = {}): BaseChatModel {
-    const { temperature = 0.5, modelName, preferMini } = options;
+    const { temperature = 0.5 } = options;
     const provider = process.env.MODEL_PROVIDER || "openai";
 
     if (provider === "google") {
-        let model = modelName || (preferMini ? "gemini-1.5-flash" : "gemini-1.5-flash");
-        // Map o1 to high-reasoning Gemini if requested
-        if (modelName === "o1") {
-            model = "gemini-2.0-flash-thinking-exp";
-        }
         return new ChatGoogleGenerativeAI({
-            model,
+            model: "gemini-2.5-flash",
             temperature,
-            // Use the v1beta Gemini API, which fully supports `systemInstruction`
-            // and avoids the 400 "Unknown name \"systemInstruction\"" errors seen
-            // with the v1 streaming endpoint.
             apiVersion: "v1beta",
+            maxRetries: 3,
         });
     }
 
     if (provider === "anthropic") {
-        let model = modelName || (preferMini ? "claude-3-haiku-20240307" : "claude-3-5-sonnet-latest");
-        // Map o1 to high-reasoning Claude
-        if (modelName === "o1") {
-            model = "claude-3-5-sonnet-latest";
-        }
         return new ChatAnthropic({
-            model,
+            model: "claude-3-5-sonnet-latest",
             temperature,
         });
     }
 
-    // Default to OpenAI
+    // Default to OpenAI — gpt-4o-mini: fastest, cheapest, most reliable
     return new ChatOpenAI({
-        model: modelName || (preferMini ? "gpt-4o-mini" : "gpt-4o"),
+        model: "gpt-4o-mini",
         temperature,
     });
 }
