@@ -12,7 +12,11 @@ export function getModel(options: { temperature?: number; modelName?: string; pr
     const provider = process.env.MODEL_PROVIDER || "openai";
 
     if (provider === "google") {
-        const model = "gemini-2.0-flash-001";
+        let model = modelName || (preferMini ? "gemini-1.5-flash" : "gemini-2.0-flash-001");
+        // Map o1 to high-reasoning Gemini if requested
+        if (modelName === "o1") {
+            model = "gemini-2.0-flash-thinking-exp";
+        }
         return new ChatGoogleGenerativeAI({
             model,
             temperature,
