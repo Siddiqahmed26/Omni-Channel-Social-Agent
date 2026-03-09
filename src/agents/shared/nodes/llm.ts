@@ -20,6 +20,11 @@ export function getModel(options: { temperature?: number; modelName?: string; pr
         return new ChatGoogleGenerativeAI({
             model,
             temperature,
+            // Avoid using the Gemini `systemInstruction` field directly, since it
+            // can cause `Invalid JSON payload ... Unknown name "systemInstruction"`
+            // errors with some API / SDK combinations. This flag tells LangChain
+            // to fold system messages into the first user message instead.
+            convertSystemMessageToHumanContent: true,
         });
     }
 
