@@ -8,7 +8,7 @@ import { Client } from "@langchain/langgraph-sdk";
  * 3. 54367 (Standard local fallback)
  */
 export function getLangGraphClient(): Client {
-    const port = process.env.PORT || "54367";
+    const port = process.env.PORT || "7860";
     const apiUrl = process.env.LANGGRAPH_API_URL || `http://localhost:${port}`;
 
     return new Client({

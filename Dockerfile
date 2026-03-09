@@ -1,21 +1,29 @@
-# 1. Use the official Playwright image (Noble is Ubuntu 24.04)
-# This image comes with all browser dependencies pre-installed.
-FROM mcr.microsoft.com/playwright:v1.58.2-noble
+FROM node:22-slim
 
 WORKDIR /app
 
-# 2. Copy package files and install dependencies
+# Set environment
+ENV NODE_ENV=production
+ENV PORT=7860
+ENV LANGGRAPH_PORT=7860
+ENV HOST=0.0.0.0
+ENV PYTHONUNBUFFERED=1
+
+# Install building dependencies
+RUN apt-get update && apt-get install -y python3 make g++ curl && rm -rf /var/lib/apt/lists/*
+
+# Install dependencies (only what's needed for production)
 COPY package.json yarn.lock* ./
-RUN yarn install && yarn global add @langchain/langgraph-cli
+RUN yarn install --production=false --network-timeout 100000
 
-# 3. Copy application files
-COPY src ./src
-COPY langgraph.json .
-COPY pyproject.toml .
-COPY README.md .
+# Copy application code
+COPY . .
 
-# 5. Expose the port
-EXPOSE 54367
+# Ensure script is executable
+RUN chmod +x start.sh
 
-# 6. Start the LangGraph server
-CMD ["langgraph", "dev", "--host", "0.0.0.0", "--port", "54367"]
+# HF expects port 7860
+EXPOSE 7860
+
+# Use start script
+CMD ["/bin/bash", "./start.sh"]
