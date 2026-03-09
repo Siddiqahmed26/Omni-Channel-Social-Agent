@@ -1,34 +1,26 @@
 #!/bin/bash
 
-# Force port 7860
-TARGET_PORT=7860
-export PORT=$TARGET_PORT
-export LANGGRAPH_PORT=$TARGET_PORT
+# Production Port Synchronization
+PUBLIC_PORT=7860
+INTERNAL_PORT=7861
+
+export PORT=$PUBLIC_PORT
+export LANGGRAPH_PORT=$INTERNAL_PORT
 
 echo "=========================================="
-echo "      AGENT STARTUP (v34 HEARTBEAT)"
+echo "    OMNI AGENT DUAL-BOOT (v38 RECOVERY)"
 echo "=========================================="
-echo "Date: $(date)"
-echo "Port: $TARGET_PORT"
-echo "Host: 0.0.0.0"
-echo "Node: $(node -v)"
-echo "Working Dir: $(pwd)"
+echo "Public Entry:   7860"
+echo "Internal Core:  7861"
+echo "Model Profile:  Gemini 2.0 Flash (Stable)"
 
-# Background health monitor to provide diagnostic visibility
-(
-  while true; do
-    sleep 30
-    echo "🔍 DIAGNOSTIC: Checking port $TARGET_PORT..."
-    if curl -s "http://localhost:$TARGET_PORT/info" > /dev/null; then
-      echo "✅ HEARTBEAT: Server is responding on $TARGET_PORT"
-    elif curl -s "http://localhost:$TARGET_PORT" > /dev/null; then
-      echo "✅ HEARTBEAT: Server is listening on $TARGET_PORT (Root reached)"
-    else
-      echo "⚠️ HEARTBEAT: Server not responding on $TARGET_PORT yet..."
-    fi
-  done
-) &
+# 1. Start Main LangGraph Server in background
+echo "🚀 BOOTING LangGraph Engine on $INTERNAL_PORT..."
+./node_modules/.bin/langgraphjs dev --host 0.0.0.0 --port "$INTERNAL_PORT" &
 
-# Execute directly to ensure it gets PID 1
-echo "🚀 EXCEPTIONALLY STABLE BOOT on $TARGET_PORT..."
-exec ./node_modules/.bin/langgraphjs dev --host 0.0.0.0 --port "$TARGET_PORT"
+# 2. Give the engine a head start
+sleep 2
+
+# 3. Start Health Proxy as the Main Process
+echo "📡 BOOTING Health Proxy on $PUBLIC_PORT..."
+exec node proxy.js
