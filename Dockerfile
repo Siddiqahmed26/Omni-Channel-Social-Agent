@@ -9,12 +9,18 @@ ENV LANGGRAPH_PORT=7860
 ENV HOST=0.0.0.0
 ENV PYTHONUNBUFFERED=1
 
-# Install building dependencies
-RUN apt-get update && apt-get install -y python3 make g++ curl && rm -rf /var/lib/apt/lists/*
+# Install building dependencies + Playwright system deps
+RUN apt-get update && apt-get install -y python3 make g++ curl \
+    libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 \
+    libxcomposite1 libxdamage1 libxfixes3 libxrandr2 libgbm1 libasound2 \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install dependencies (only what's needed for production)
 COPY package.json yarn.lock* ./
 RUN yarn install --production=false --network-timeout 100000
+
+# Install Playwright Chromium browser (needed for screenshot node)
+RUN npx playwright install chromium
 
 # Copy application code
 COPY . .
