@@ -30,15 +30,113 @@ function ResetButton({ handleReset }: { handleReset: () => void }) {
   );
 }
 
+
+// Detect if URL is an image
+const isImageUrl = (url: string) =>
+  /\.(png|jpg|jpeg|gif|webp|svg)(\?|$)/i.test(url) ||
+  url.includes("supabase.co/storage");
+
+// Split text and turn https:// URLs into clickable links
+const linkifyText = (text: string): React.ReactNode => {
+  const URL_REGEX = /(https?:\/\/[^\s]+)/g;
+  const parts = text.split(URL_REGEX);
+  return parts.map((part, i) =>
+    URL_REGEX.test(part) ? (
+      <a
+        key={i}
+        href={part}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={(e) => e.stopPropagation()}
+        className="text-blue-400 underline underline-offset-2 hover:text-blue-300 transition-colors break-all"
+      >
+        {part.length > 60 ? part.substring(0, 60) + "…" : part}
+      </a>
+    ) : (
+      <span key={i}>{part}</span>
+    )
+  );
+};
+
+// Render an image URL as a thumbnail
+function ImageThumb({ url, label }: { url: string; label?: string }) {
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      onClick={(e) => e.stopPropagation()}
+      className="group relative block overflow-hidden rounded-xl border border-white/10 hover:border-blue-400/50 transition-all shadow-lg"
+      title="Click to open full image"
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={url}
+        alt={label ?? "Image option"}
+        className="w-full h-28 object-cover group-hover:opacity-90 transition-opacity"
+        onError={(e) => {
+          (e.target as HTMLImageElement).style.display = "none";
+        }}
+      />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
+        <span className="text-[10px] text-white font-bold uppercase tracking-wider">
+          {label ?? "Open Image"}
+        </span>
+      </div>
+    </a>
+  );
+}
+
 function ArgsRenderer({ args }: { args: Record<string, any> }) {
   return (
     <div className="grid grid-cols-1 gap-4 w-full">
       {Object.entries(args).map(([k, v]) => {
+        // Image arrays — render as thumbnail grid
+        if (Array.isArray(v) && v.length > 0 && typeof v[0] === "string" && isImageUrl(v[0])) {
+          return (
+            <div key={`args-${k}`} className="flex flex-col gap-2 group/arg">
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 group-hover/arg:text-blue-400 transition-colors">
+                {prettifyText(k)}
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                {v.map((url: string, i: number) => (
+                  <ImageThumb key={url} url={url} label={`Option ${i + 1}`} />
+                ))}
+              </div>
+            </div>
+          );
+        }
+
+        // Single image URL
+        if (typeof v === "string" && isImageUrl(v)) {
+          return (
+            <div key={`args-${k}`} className="flex flex-col gap-2 group/arg">
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 group-hover/arg:text-blue-400 transition-colors">
+                {prettifyText(k)}
+              </p>
+              <ImageThumb url={v} label={prettifyText(k)} />
+            </div>
+          );
+        }
+
+        // Object with imageUrl field (image_candidates)
+        if (typeof v === "object" && v !== null && "imageUrl" in v) {
+          return (
+            <div key={`args-${k}`} className="flex flex-col gap-2 group/arg">
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 group-hover/arg:text-blue-400 transition-colors">
+                {prettifyText(k)}
+              </p>
+              <ImageThumb url={v.imageUrl} label={prettifyText(k)} />
+            </div>
+          );
+        }
+
+        // Regular text/post content with linkified URLs
         let value = "";
         if (["string", "number"].includes(typeof v)) {
           value = v as string;
         } else {
-          value = JSON.stringify(v, null);
+          value = JSON.stringify(v, null, 2);
         }
 
         return (
@@ -48,10 +146,8 @@ function ArgsRenderer({ args }: { args: Record<string, any> }) {
             </p>
             <div className="relative group/val">
               <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-2xl blur opacity-0 group-hover/val:opacity-100 transition duration-500" />
-              <div className="relative text-[13px] leading-[1.6] text-slate-300 bg-white/[0.03] border border-white/5 rounded-2xl p-4 w-full backdrop-blur-sm shadow-inner overflow-hidden">
-                <MarkdownText className="text-wrap break-all break-words whitespace-pre-wrap">
-                  {value}
-                </MarkdownText>
+              <div className="relative text-[13px] leading-[1.6] text-slate-300 bg-white/[0.03] border border-white/5 rounded-2xl p-4 w-full backdrop-blur-sm shadow-inner overflow-hidden whitespace-pre-wrap break-words">
+                {linkifyText(value)}
               </div>
             </div>
           </div>
@@ -60,6 +156,7 @@ function ArgsRenderer({ args }: { args: Record<string, any> }) {
     </div>
   );
 }
+
 
 interface InboxItemInputProps {
   interruptValue: HumanInterrupt;
