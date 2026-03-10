@@ -15,6 +15,28 @@ const truncateString = (str: string, maxLength: number = 100): string => {
   return str.length > maxLength ? str.substring(0, maxLength) + "..." : str;
 };
 
+// Helper to detect URLs and render them as clickable anchor tags
+const URL_REGEX = /(https?:\/\/[^\s]+)/g;
+const linkifyText = (text: string): React.ReactNode => {
+  const parts = text.split(URL_REGEX);
+  return parts.map((part, i) =>
+    URL_REGEX.test(part) ? (
+      <a
+        key={i}
+        href={part}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={(e) => e.stopPropagation()}
+        className="text-blue-400 underline underline-offset-2 hover:text-blue-300 transition-colors break-all"
+      >
+        {part}
+      </a>
+    ) : (
+      <span key={i}>{part}</span>
+    )
+  );
+};
+
 // Helper to render simple values or truncated complex values for the collapsed view
 const renderCollapsedValue = (
   value: any,
@@ -30,6 +52,11 @@ const renderCollapsedValue = (
     return <span className="text-emerald-400 font-bold">{String(value)}</span>;
   }
   if (typeof value === "string") {
+    if (URL_REGEX.test(value)) {
+      // Reset lastIndex after test()
+      URL_REGEX.lastIndex = 0;
+      return <span className="text-indigo-300 font-medium break-all">{linkifyText(value)}</span>;
+    }
     return (
       <span className="text-indigo-300 font-medium">
         &quot;{truncateString(value)}&quot;
@@ -74,6 +101,23 @@ const renderTableCellValue = (value: any): React.ReactNode => {
     } catch (_) {
       return <span className="text-red-400">Error stringifying</span>;
     }
+  }
+  // For plain strings, render with clickable URLs and preserve newlines
+  if (typeof value === "string") {
+    URL_REGEX.lastIndex = 0;
+    if (URL_REGEX.test(value)) {
+      URL_REGEX.lastIndex = 0;
+      return (
+        <span className="text-slate-200 whitespace-pre-wrap break-words leading-relaxed">
+          {linkifyText(value)}
+        </span>
+      );
+    }
+    return (
+      <span className="text-slate-200 whitespace-pre-wrap break-words leading-relaxed">
+        {value}
+      </span>
+    );
   }
   return renderCollapsedValue(value, false);
 };
