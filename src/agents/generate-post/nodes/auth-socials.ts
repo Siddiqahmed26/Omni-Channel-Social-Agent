@@ -10,21 +10,28 @@ export async function authSocialsPassthrough(
   config: LangGraphRunnableConfig,
 ) {
   let linkedInHumanInterrupt: HumanInterrupt | undefined = undefined;
-  const linkedInUserId = process.env.LINKEDIN_USER_ID;
-  if (linkedInUserId) {
+  // If using Arcade, we MUST have an ID to start the flow. Fallback to a default if missing.
+  const linkedInUserId = useArcadeAuth()
+    ? (process.env.LINKEDIN_USER_ID || "default_user_123")
+    : process.env.LINKEDIN_USER_ID;
+
+  if (linkedInUserId || useArcadeAuth()) {
     const postToLinkedInOrg = shouldPostToLinkedInOrg(config);
     linkedInHumanInterrupt = await getLinkedInAuthOrInterrupt({
-      linkedInUserId,
+      linkedInUserId: linkedInUserId!,
       returnInterrupt: true,
       postToOrg: postToLinkedInOrg,
     });
   }
 
   let twitterHumanInterrupt: HumanInterrupt | undefined = undefined;
-  const twitterUserId = process.env.TWITTER_USER_ID;
-  if (twitterUserId) {
+  const twitterUserId = useArcadeAuth()
+    ? (process.env.TWITTER_USER_ID || "default_user_123")
+    : process.env.TWITTER_USER_ID;
+
+  if (twitterUserId || useArcadeAuth()) {
     twitterHumanInterrupt = await getTwitterAuthOrInterrupt({
-      twitterUserId,
+      twitterUserId: twitterUserId!,
       returnInterrupt: true,
     });
   }
