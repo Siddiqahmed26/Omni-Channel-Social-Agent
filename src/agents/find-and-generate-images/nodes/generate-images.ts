@@ -3,7 +3,6 @@ import {
   getMimeTypeFromUrl,
   imageUrlToBuffer,
   retryWithTimeout,
-  sleep,
 } from "../../utils.js";
 import { FindAndGenerateImagesAnnotation } from "../find-and-generate-images-graph.js";
 import {
@@ -452,35 +451,45 @@ export async function generateImageCandidatesForPost(
     throw new Error("No post content available to generate images");
   }
 
-  const imageResults: { data: string; mimeType: string }[] = [];
+  // Determine number of style variations to generate
+  const numVariations = 4;
 
-  for (let index = 0; index < STYLE_VARIATIONS.length; index++) {
-    try {
-      const result = await generateImageWithNanoBananaPro(
+  console.log(`[IMAGE GEN] Generating ${numVariations} image variations in PARALLEL...`);
+
+  // Generate ALL image style variations in PARALLEL (was sequential before)
+  const parallelResults = await Promise.allSettled(
+    Array.from({ length: numVariations }, (_, index) =>
+      generateImageWithNanoBananaPro(
         report,
         post,
         imageUrls ?? [],
         index,
-      );
-      imageResults.push(result);
-    } catch (error) {
-      console.error("Failed to generate image", { error, index });
-    }
+      )
+    )
+  );
 
-    await sleep(500);
+  const imageResults: { data: string; mimeType: string }[] = [];
+  for (const result of parallelResults) {
+    if (result.status === "fulfilled") {
+      imageResults.push(result.value);
+    } else {
+      console.error("[IMAGE GEN] Failed to generate image variation", { error: result.reason });
+    }
   }
 
+  console.log(`[IMAGE GEN] ${imageResults.length}/${numVariations} images generated successfully.`);
+
+  // Upload all generated images in parallel
   const uploadedUrlsWithOmissions = await Promise.all(
     imageResults.map(async ({ data, mimeType }) => {
       try {
-        // Embed the generated image in the LangChain community template
         const templatedBuffer = await embedImageInTemplate(data, mimeType);
         return await uploadImageBufferToSupabase(
           templatedBuffer,
           `nano-banana-pro-templated`,
         );
       } catch (error) {
-        console.error("Failed to upload generated image", { error });
+        console.error("[IMAGE GEN] Failed to upload generated image", { error });
         return undefined;
       }
     }),
@@ -509,3 +518,4 @@ export async function generateImageCandidatesForPost(
     image: randomGeneratedImage,
   };
 }
+
