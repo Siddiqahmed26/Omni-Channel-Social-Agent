@@ -152,9 +152,9 @@ const UploadPostAnnotation = Annotation.Root({
   complexPost: Annotation<ComplexPost | undefined>,
   image: Annotation<
     | {
-        imageUrl: string;
-        mimeType: string;
-      }
+      imageUrl: string;
+      mimeType: string;
+    }
     | undefined
   >,
 });
@@ -243,164 +243,148 @@ export async function uploadPost(
   const isTextOnlyMode = isTextOnly(config);
   const postToLinkedInOrg = shouldPostToLinkedInOrg(config);
 
-  try {
-    let twitterClient: TwitterClient;
+  // --- Twitter (optional — skip gracefully if credentials not configured) ---
+  const hasTwitterCreds =
+    process.env.TWITTER_USER_TOKEN && process.env.TWITTER_USER_TOKEN_SECRET &&
+    process.env.TWITTER_API_KEY && process.env.TWITTER_API_KEY_SECRET;
+  const hasArcadeTwitter = useArcadeAuth() && !useTwitterApiOnly() && process.env.TWITTER_USER_ID;
 
-    if (useTwitterApiOnly() || !useArcadeAuth()) {
-      twitterClient = TwitterClient.fromBasicTwitterAuth();
-    } else {
-      const twitterUserId = process.env.TWITTER_USER_ID;
-      if (!twitterUserId) {
-        throw new Error("Twitter user ID not found in configurable fields.");
-      }
+  if (!hasTwitterCreds && !hasArcadeTwitter) {
+    console.log("⏭️  Twitter credentials not configured — skipping Twitter upload.");
+  } else {
+    try {
+      let twitterClient: TwitterClient;
 
-      const twitterToken = process.env.TWITTER_USER_TOKEN;
-      const twitterTokenSecret = process.env.TWITTER_USER_TOKEN_SECRET;
+      if (useTwitterApiOnly() || !useArcadeAuth()) {
+        twitterClient = TwitterClient.fromBasicTwitterAuth();
+      } else {
+        const twitterUserId = process.env.TWITTER_USER_ID!;
+        const twitterToken = process.env.TWITTER_USER_TOKEN;
+        const twitterTokenSecret = process.env.TWITTER_USER_TOKEN_SECRET;
 
-      twitterClient = await TwitterClient.fromArcade(
-        twitterUserId,
-        {
-          twitterToken,
-          twitterTokenSecret,
-        },
-        {
-          textOnlyMode: isTextOnlyMode,
-        },
-      );
-    }
-
-    let mediaBuffer: CreateMediaRequest | undefined = undefined;
-    if (!isTextOnlyMode) {
-      mediaBuffer = await getMediaFromImage(state.image);
-    }
-
-    let tweetId: string | undefined;
-
-    if (state.complexPost) {
-      const threadResponse = await twitterClient.uploadThread([
-        {
-          text: ensureSignature(state.complexPost.main_post),
-          ...(mediaBuffer && { media: mediaBuffer }),
-        },
-        {
-          text: state.complexPost.reply_post,
-        },
-      ]);
-      tweetId = threadResponse[0]?.data?.id;
-    } else {
-      const tweetResponse = await twitterClient.uploadTweet({
-        text: ensureSignature(state.post),
-        ...(mediaBuffer && { media: mediaBuffer }),
-      });
-      tweetId = tweetResponse.data?.id;
-    }
-
-    console.log("✅ Successfully uploaded Tweet ✅");
-
-    if (tweetId) {
-      await retweetFromMainAccount(tweetId);
-    }
-  } catch (e: any) {
-    console.error("Failed to upload post:", e);
-    let errorString = "";
-    if (typeof e === "object" && "message" in e) {
-      errorString = e.message;
-    } else {
-      errorString = e;
-    }
-    await postUploadFailureToSlack({
-      uploadDestination: "twitter",
-      error: errorString,
-      threadId:
-        config.configurable?.thread_id || "no thread id found in configurable",
-      postContent: state.complexPost || state.post,
-      image: state.image,
-    });
-  }
-
-  try {
-    let linkedInClient: LinkedInClient;
-
-    if (useArcadeAuth()) {
-      const linkedInUserId = process.env.LINKEDIN_USER_ID;
-      if (!linkedInUserId) {
-        throw new Error("LinkedIn user ID not found in configurable fields.");
-      }
-
-      linkedInClient = await LinkedInClient.fromArcade(linkedInUserId, {
-        postToOrganization: postToLinkedInOrg,
-      });
-    } else {
-      const accessToken =
-        process.env.LINKEDIN_ACCESS_TOKEN ||
-        config.configurable?.[LINKEDIN_ACCESS_TOKEN];
-      if (!accessToken) {
-        throw new Error(
-          "LinkedIn access token not found in environment or configurable fields. Either set it, or use Arcade Auth.",
+        twitterClient = await TwitterClient.fromArcade(
+          twitterUserId,
+          { twitterToken, twitterTokenSecret },
+          { textOnlyMode: isTextOnlyMode },
         );
       }
 
-      const personUrn =
-        process.env.LINKEDIN_PERSON_URN ||
-        config.configurable?.[LINKEDIN_PERSON_URN];
-      const organizationId =
-        process.env.LINKEDIN_ORGANIZATION_ID ||
-        config.configurable?.[LINKEDIN_ORGANIZATION_ID];
-      linkedInClient = new LinkedInClient({
-        accessToken: accessToken,
-        personUrn: personUrn,
-        organizationId: organizationId,
+      let mediaBuffer: CreateMediaRequest | undefined = undefined;
+      if (!isTextOnlyMode) {
+        mediaBuffer = await getMediaFromImage(state.image);
+      }
+
+      let tweetId: string | undefined;
+
+      if (state.complexPost) {
+        const threadResponse = await twitterClient.uploadThread([
+          {
+            text: ensureSignature(state.complexPost.main_post),
+            ...(mediaBuffer && { media: mediaBuffer }),
+          },
+          { text: state.complexPost.reply_post },
+        ]);
+        tweetId = threadResponse[0]?.data?.id;
+      } else {
+        const tweetResponse = await twitterClient.uploadTweet({
+          text: ensureSignature(state.post),
+          ...(mediaBuffer && { media: mediaBuffer }),
+        });
+        tweetId = tweetResponse.data?.id;
+      }
+
+      console.log("✅ Successfully uploaded Tweet ✅");
+
+      if (tweetId) {
+        await retweetFromMainAccount(tweetId);
+      }
+    } catch (e: any) {
+      console.error("Failed to upload post to Twitter:", e);
+      const errorString = typeof e === "object" && "message" in e ? e.message : String(e);
+      await postUploadFailureToSlack({
+        uploadDestination: "twitter",
+        error: errorString,
+        threadId: config.configurable?.thread_id || "no thread id found in configurable",
+        postContent: state.complexPost || state.post,
+        image: state.image,
       });
     }
+  }
 
-    let linkedInPostUrn: string | undefined;
+  // --- LinkedIn (optional — skip gracefully if credentials not configured) ---
+  const hasLinkedInCreds =
+    process.env.LINKEDIN_ACCESS_TOKEN || config.configurable?.[LINKEDIN_ACCESS_TOKEN];
+  const hasArcadeLinkedIn = useArcadeAuth() && process.env.LINKEDIN_USER_ID;
 
-    if (!isTextOnlyMode && state.image) {
-      const response = await linkedInClient.createImagePost(
-        {
-          text: ensureSignature(state.post),
-          imageUrl: state.image.imageUrl,
-        },
-        {
+  if (!hasLinkedInCreds && !hasArcadeLinkedIn) {
+    console.log("⏭️  LinkedIn credentials not configured — skipping LinkedIn upload.");
+  } else {
+    try {
+      let linkedInClient: LinkedInClient;
+
+      if (useArcadeAuth()) {
+        const linkedInUserId = process.env.LINKEDIN_USER_ID;
+        if (!linkedInUserId) {
+          throw new Error("LinkedIn user ID not found in configurable fields.");
+        }
+        linkedInClient = await LinkedInClient.fromArcade(linkedInUserId, {
           postToOrganization: postToLinkedInOrg,
-        },
-      );
-      if (response && typeof response === "object" && "id" in response) {
-        linkedInPostUrn = (response as { id: string }).id;
+        });
+      } else {
+        const accessToken =
+          process.env.LINKEDIN_ACCESS_TOKEN || config.configurable?.[LINKEDIN_ACCESS_TOKEN];
+        if (!accessToken) {
+          throw new Error(
+            "LinkedIn access token not found in environment or configurable fields.",
+          );
+        }
+        const personUrn =
+          process.env.LINKEDIN_PERSON_URN || config.configurable?.[LINKEDIN_PERSON_URN];
+        const organizationId =
+          process.env.LINKEDIN_ORGANIZATION_ID || config.configurable?.[LINKEDIN_ORGANIZATION_ID];
+        linkedInClient = new LinkedInClient({
+          accessToken,
+          personUrn,
+          organizationId,
+        });
       }
-    } else {
-      const response = await linkedInClient.createTextPost(
-        ensureSignature(state.post),
-        {
-          postToOrganization: postToLinkedInOrg,
-        },
-      );
-      if (response && typeof response === "object" && "id" in response) {
-        linkedInPostUrn = (response as { id: string }).id;
+
+      let linkedInPostUrn: string | undefined;
+
+      if (!isTextOnlyMode && state.image) {
+        const response = await linkedInClient.createImagePost(
+          { text: ensureSignature(state.post), imageUrl: state.image.imageUrl },
+          { postToOrganization: postToLinkedInOrg },
+        );
+        if (response && typeof response === "object" && "id" in response) {
+          linkedInPostUrn = (response as { id: string }).id;
+        }
+      } else {
+        const response = await linkedInClient.createTextPost(
+          ensureSignature(state.post),
+          { postToOrganization: postToLinkedInOrg },
+        );
+        if (response && typeof response === "object" && "id" in response) {
+          linkedInPostUrn = (response as { id: string }).id;
+        }
       }
-    }
 
-    console.log("✅ Successfully uploaded post to LinkedIn ✅");
+      console.log("✅ Successfully uploaded post to LinkedIn ✅");
 
-    if (linkedInPostUrn) {
-      await reshareFromMainLinkedInAccount(linkedInPostUrn);
+      if (linkedInPostUrn) {
+        await reshareFromMainLinkedInAccount(linkedInPostUrn);
+      }
+    } catch (e: any) {
+      console.error("Failed to upload post to LinkedIn:", e);
+      const errorString = typeof e === "object" && "message" in e ? e.message : String(e);
+      await postUploadFailureToSlack({
+        uploadDestination: "linkedin",
+        error: errorString,
+        threadId: config.configurable?.thread_id || "no thread id found in configurable",
+        postContent: state.complexPost || state.post,
+        image: state.image,
+      });
     }
-  } catch (e: any) {
-    console.error("Failed to upload post:", e);
-    let errorString = "";
-    if (typeof e === "object" && "message" in e) {
-      errorString = e.message;
-    } else {
-      errorString = e;
-    }
-    await postUploadFailureToSlack({
-      uploadDestination: "linkedin",
-      error: errorString,
-      threadId:
-        config.configurable?.thread_id || "no thread id found in configurable",
-      postContent: state.complexPost || state.post,
-      image: state.image,
-    });
   }
 
   return {};
