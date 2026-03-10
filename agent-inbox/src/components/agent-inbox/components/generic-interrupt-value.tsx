@@ -15,6 +15,9 @@ const truncateString = (str: string, maxLength: number = 100): string => {
   return str.length > maxLength ? str.substring(0, maxLength) + "..." : str;
 };
 
+// Module-level URL regex (reused by renderCollapsedValue)
+const URL_REGEX = /(https?:\/\/[^\s]+)/g;
+
 // Helper to detect URLs and render them as clickable anchor tags, while also stripping XML tags like <post>
 const cleanAndLinkifyText = (text: string): React.ReactNode => {
   if (typeof text !== "string") return text;
@@ -26,7 +29,6 @@ const cleanAndLinkifyText = (text: string): React.ReactNode => {
   }).trim();
   cleaned = cleaned.replace(/<\/?(post|thinking|original-post)>/gi, "").trim();
 
-  const URL_REGEX = /(https?:\/\/[^\s]+)/g;
   const parts = cleaned.split(URL_REGEX);
   return parts.map((part, i) =>
     URL_REGEX.test(part) ? (
