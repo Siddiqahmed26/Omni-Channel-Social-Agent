@@ -14,7 +14,6 @@ import { generateContentReport } from "./nodes/generate-report/index.js";
 import { generatePost } from "./nodes/generate-post/index.js";
 import { condensePost } from "./nodes/condense-post.js";
 import {
-  isTextOnly,
   removeUrls,
   shouldPostToLinkedInOrg,
   skipUsedUrlsCheck,
@@ -27,7 +26,6 @@ import { getSavedUrls } from "../shared/stores/post-subject-urls.js";
 import { humanNode } from "../shared/nodes/generate-post/human-node.js";
 import { schedulePost } from "../shared/nodes/generate-post/schedule-post.js";
 import { rewritePost } from "../shared/nodes/generate-post/rewrite-post.js";
-import { Client } from "@langchain/langgraph-sdk";
 import { getLangGraphClient } from "../shared/nodes/langgraph-client.js";
 import { POST_TO_LINKEDIN_ORGANIZATION } from "./constants.js";
 import { rewritePostWithSplitUrl } from "./nodes/rewrite-with-split-url.js";
@@ -63,19 +61,15 @@ function rewriteOrEndConditionalEdge(
 async function condenseOrHumanConditionalEdge(
   state: GeneratePostState,
   config: LangGraphRunnableConfig,
-): Promise<
-  "condensePost" | "humanNode" | "findAndGenerateImagesSubGraph" | typeof END
-> {
+): Promise<"condensePost" | "humanNode" | typeof END> {
   const cleanedPost = removeUrls(state.post || "");
   if (cleanedPost.length > 280 && state.condenseCount <= 3) {
     return "condensePost";
   }
 
-  const isTextOnlyMode = isTextOnly(config);
-  if (isTextOnlyMode) {
-    return routeToCuratedInterruptOrContinue(state, config);
-  }
-  return "findAndGenerateImagesSubGraph";
+  // Always go directly to humanNode — images are generated in the background
+  // from within humanNode before the interrupt fires (non-blocking).
+  return routeToCuratedInterruptOrContinue(state, config);
 }
 
 /**
@@ -197,24 +191,20 @@ const generatePostBuilder = new StateGraph(
   ])
 
   // After generating the post for the first time, check if it's too long,
-  // and if so, condense it. Otherwise, route to the human node.
+  // and if so, condense it. Otherwise, go straight to the human interrupt.
   .addConditionalEdges("generatePost", condenseOrHumanConditionalEdge, [
     "condensePost",
-    "findAndGenerateImagesSubGraph",
     "humanNode",
     END,
   ])
-  // After condensing the post, we should verify again that the content is below the character limit.
-  // Once the post is below the character limit, we can find & filter images. This needs to happen after the post
-  // has been generated because the image validator requires the post content.
+  // After condensing the post, verify again that the content is below the character limit.
   .addConditionalEdges("condensePost", condenseOrHumanConditionalEdge, [
     "condensePost",
-    "findAndGenerateImagesSubGraph",
     "humanNode",
     END,
   ])
 
-  // After finding images, we are done and can interrupt for the human to respond.
+  // After finding images (if explicitly triggered), route to interrupt.
   .addConditionalEdges(
     "findAndGenerateImagesSubGraph",
     routeToCuratedInterruptOrContinue,

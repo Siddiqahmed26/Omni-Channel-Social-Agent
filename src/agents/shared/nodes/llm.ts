@@ -16,7 +16,7 @@ export function getModel(options: { temperature?: number; modelName?: string; pr
 
     if (provider === "google") {
         return new ChatGoogleGenerativeAI({
-            model: "gemini-2.5-flash",
+            model: "gemini-2.0-flash",
             temperature,
             apiVersion: "v1beta",
             maxRetries: 3,

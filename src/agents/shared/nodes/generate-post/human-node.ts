@@ -10,6 +10,7 @@ import { routeResponse } from "../../../shared/nodes/route-response.js";
 import { saveUsedUrls } from "../../../shared/stores/post-subject-urls.js";
 import { HumanInterrupt, HumanResponse } from "@langchain/langgraph/prebuilt";
 import { DateType } from "../../../types.js";
+import { getLangGraphClient } from "../langgraph-client.js";
 
 interface ConstructDescriptionArgs {
   unknownResponseDescription: string;
@@ -135,12 +136,12 @@ export async function humanNode<
 
   const postArgs = state.complexPost
     ? {
-        main_post: state.complexPost.main_post,
-        reply_post: state.complexPost.reply_post,
-      }
+      main_post: state.complexPost.main_post,
+      reply_post: state.complexPost.reply_post,
+    }
     : {
-        post: state.post,
-      };
+      post: state.post,
+    };
 
   const interruptValue: HumanInterrupt = {
     action_request: {
@@ -171,6 +172,33 @@ export async function humanNode<
 
   // Save ALL links used to generate this post so that they are not used to generate future posts (duplicates).
   await saveUsedUrls([...(state.relevantLinks ?? []), ...state.links], config);
+
+  // --- FIRE-AND-FORGET IMAGE GENERATION ---
+  // Images are generated in the background while the user reviews the post,
+  // so they don't block or delay the interrupt from firing.
+  if (!isTextOnlyMode && !state.imageOptions?.length) {
+    try {
+      const client = getLangGraphClient();
+      const threadId = config.metadata?.thread_id as string | undefined;
+      if (threadId) {
+        client.runs
+          .create(threadId, "find_and_generate_images", {
+            input: {
+              post: state.post,
+              report: state.report ?? "",
+              relevantLinks: state.relevantLinks ?? [],
+              imageOptions: state.imageOptions ?? [],
+            },
+          })
+          .catch((err: unknown) =>
+            console.warn("[humanNode] Background image gen failed:", err),
+          );
+        console.log(`[humanNode] Background image generation started on thread ${threadId}`);
+      }
+    } catch (err) {
+      console.warn("[humanNode] Could not launch background image gen:", err);
+    }
+  }
 
   const response = interrupt<HumanInterrupt[], HumanResponse[]>([
     interruptValue,
@@ -243,9 +271,9 @@ export async function humanNode<
   const complexPost =
     castArgs.main_post && castArgs.reply_post
       ? {
-          main_post: castArgs.main_post,
-          reply_post: castArgs.reply_post,
-        }
+        main_post: castArgs.main_post,
+        reply_post: castArgs.reply_post,
+      }
       : undefined;
   if (!post && !complexPost) {
     throw new Error(
@@ -260,8 +288,8 @@ export async function humanNode<
     if (!postDate) {
       throw new Error(
         "Invalid date provided.\n\n" +
-          "Expected format: 'MM/dd/yyyy hh:mm a z' or 'P1'/'P2'/'P3' or leave empty to post now.\n\n" +
-          `Received: '${postDateString}'`,
+        "Expected format: 'MM/dd/yyyy hh:mm a z' or 'P1'/'P2'/'P3' or leave empty to post now.\n\n" +
+        `Received: '${postDateString}'`,
       );
     }
   }

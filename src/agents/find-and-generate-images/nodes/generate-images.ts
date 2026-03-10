@@ -451,37 +451,23 @@ export async function generateImageCandidatesForPost(
     throw new Error("No post content available to generate images");
   }
 
-  // Determine number of style variations to generate
-  const numVariations = 4;
-  const BATCH_SIZE = 2; // Keep within Vertex AI free-tier quota
+  // Generate 2 image variations in a single parallel batch (fits in Vertex AI free-tier quota)
+  const numVariations = 2;
 
-  console.log(`[IMAGE GEN] Generating ${numVariations} image variations in batches of ${BATCH_SIZE}...`);
+  console.log(`[IMAGE GEN] Generating ${numVariations} image variations in parallel...`);
 
-  // Run in batches to avoid Vertex AI 429 rate limiting
+  const batchResults = await Promise.allSettled(
+    Array.from({ length: numVariations }, (_, index) =>
+      generateImageWithNanoBananaPro(report, post, imageUrls ?? [], index)
+    )
+  );
+
   const imageResults: { data: string; mimeType: string }[] = [];
-  for (let i = 0; i < numVariations; i += BATCH_SIZE) {
-    const batchIndices = Array.from(
-      { length: Math.min(BATCH_SIZE, numVariations - i) },
-      (_, j) => i + j
-    );
-
-    const batchResults = await Promise.allSettled(
-      batchIndices.map(index =>
-        generateImageWithNanoBananaPro(report, post, imageUrls ?? [], index)
-      )
-    );
-
-    for (const result of batchResults) {
-      if (result.status === "fulfilled") {
-        imageResults.push(result.value);
-      } else {
-        console.error("[IMAGE GEN] Failed to generate image variation", { error: result.reason });
-      }
-    }
-
-    // Short pause between batches to respect rate limits
-    if (i + BATCH_SIZE < numVariations) {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+  for (const result of batchResults) {
+    if (result.status === "fulfilled") {
+      imageResults.push(result.value);
+    } else {
+      console.error("[IMAGE GEN] Failed to generate image variation", { error: result.reason });
     }
   }
 
