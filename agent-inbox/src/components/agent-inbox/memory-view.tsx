@@ -205,7 +205,7 @@ export function MemoryView() {
                         <textarea
                             value={reflections}
                             onChange={(e) => { setReflections(e.target.value); setHasChanges(true); }}
-                            placeholder={"No reflections learned yet. Click Synchronize to load, or type your own rules below and click Save Rules.\n\nExample rules:\n- Always use emojis\n- Keep under 200 words\n- Start with a bold hook"}
+                            placeholder={"(Knowledge base is empty. When the agent learns from your feedback, the rules will appear here...)\n\nExample rules:\n- Always use emojis\n- Keep under 200 words\n- Start with a bold hook"}
                             className="flex-1 w-full bg-transparent border-none text-slate-200 font-mono text-sm leading-relaxed focus:ring-0 resize-none no-scrollbar placeholder:text-slate-500"
                         />
                     </div>

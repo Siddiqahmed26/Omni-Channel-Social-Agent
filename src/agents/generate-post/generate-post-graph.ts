@@ -27,6 +27,7 @@ import { getSavedUrls } from "../shared/stores/post-subject-urls.js";
 import { humanNode } from "../shared/nodes/generate-post/human-node.js";
 import { schedulePost } from "../shared/nodes/generate-post/schedule-post.js";
 import { rewritePost } from "../shared/nodes/generate-post/rewrite-post.js";
+import { reflectionNode } from "../shared/nodes/reflection-node.js";
 import { Client } from "@langchain/langgraph-sdk";
 import { getLangGraphClient } from "../shared/nodes/langgraph-client.js";
 import { POST_TO_LINKEDIN_ORGANIZATION } from "./constants.js";
@@ -45,19 +46,28 @@ function rewriteOrEndConditionalEdge(
   state: GeneratePostState,
 ):
   | "rewritePost"
-  | "schedulePost"
+  | "reflection"
   | "updateScheduleDate"
   | "humanNode"
   | "rewriteWithSplitUrl"
   | typeof END {
   if (state.next) {
     if (state.next === "unknownResponse") {
-      // If the user's response is unknown, we should route back to the human node.
-      return "humanNode";
+      return "reflection";
+    }
+    if (state.next === "schedulePost") {
+      return "reflection";
     }
     return state.next;
   }
   return END;
+}
+
+function reflectionRouting(state: GeneratePostState): "schedulePost" | "humanNode" {
+  if (state.next === "schedulePost") {
+    return "schedulePost";
+  }
+  return "humanNode";
 }
 
 async function condenseOrHumanConditionalEdge(
@@ -221,20 +231,32 @@ const generatePostBuilder = new StateGraph(
     ["humanNode", END],
   )
 
-  // Always route back to `humanNode` if the post was re-written or date was updated.
-  .addEdge("rewritePost", "humanNode")
-  .addEdge("updateScheduleDate", "humanNode")
-  .addEdge("rewriteWithSplitUrl", "humanNode")
+  // Reflection node to save user feedback to long-term memory
+  .addNode("reflection", reflectionNode)
 
-  // If the schedule post is successful, end the graph.
+  // Always route to reflection after rewriting the post so the model learns the new style.
+  .addEdge("rewritePost", "reflection")
+  .addEdge("rewriteWithSplitUrl", "reflection")
+
+  // Date changes don't need reflection
+  .addEdge("updateScheduleDate", "humanNode")
+
+  // The humanNode routes to either rewrites, schedule, reflection, or end.
   .addConditionalEdges("humanNode", rewriteOrEndConditionalEdge, [
     "rewritePost",
-    "schedulePost",
+    "reflection",
     "updateScheduleDate",
     "humanNode",
     "rewriteWithSplitUrl",
     END,
   ])
+
+  // Reflection routes back to humanNode (if feedback was just given) or finishes scheduling.
+  .addConditionalEdges("reflection", reflectionRouting, [
+    "schedulePost",
+    "humanNode",
+  ])
+
   // Always end after scheduling the post.
   .addEdge("schedulePost", END);
 
