@@ -47,16 +47,23 @@ function rewriteOrEndConditionalEdge(
 ):
   | "rewritePost"
   | "reflection"
+  | "schedulePost"
   | "updateScheduleDate"
   | "humanNode"
   | "rewriteWithSplitUrl"
   | typeof END {
   if (state.next) {
     if (state.next === "unknownResponse") {
+      // Unknown response - run reflection to save the style feedback, then re-interrupt.
       return "reflection";
     }
     if (state.next === "schedulePost") {
-      return "reflection";
+      // If there was actual user text feedback (e.g. they typed something before accepting),
+      // run reflection to save it. Otherwise go straight to schedulePost.
+      if (state.userResponse && state.userResponse.trim()) {
+        return "reflection";
+      }
+      return "schedulePost";
     }
     return state.next;
   }
@@ -245,6 +252,7 @@ const generatePostBuilder = new StateGraph(
   .addConditionalEdges("humanNode", rewriteOrEndConditionalEdge, [
     "rewritePost",
     "reflection",
+    "schedulePost",
     "updateScheduleDate",
     "humanNode",
     "rewriteWithSplitUrl",
