@@ -118,14 +118,22 @@ export async function humanNode<
   const isTextOnlyMode = isTextOnly(config);
 
   const unknownResponseDescription = getUnknownResponseDescription(state);
-  const defaultDate = state.scheduleDate || getNextSaturdayDate();
+  const isCurated = config.configurable?.origin === "curate-data";
+
   let defaultDateString = "";
-  if (
-    typeof state.scheduleDate === "string" &&
-    ["p1", "p2", "p3"].includes(state.scheduleDate)
-  ) {
-    defaultDateString = state.scheduleDate as string;
-  } else {
+  if (state.scheduleDate) {
+    if (typeof state.scheduleDate === "string" && ["p1", "p2", "p3"].includes(state.scheduleDate)) {
+      defaultDateString = state.scheduleDate;
+    } else {
+      defaultDateString = formatInTimeZone(
+        state.scheduleDate as Date,
+        "America/Los_Angeles",
+        "MM/dd/yyyy hh:mm a z",
+      );
+    }
+  } else if (isCurated) {
+    // Only default to next Saturday if this is an automated curated post.
+    const defaultDate = getNextSaturdayDate();
     defaultDateString = formatInTimeZone(
       defaultDate,
       "America/Los_Angeles",
@@ -135,12 +143,12 @@ export async function humanNode<
 
   const postArgs = state.complexPost
     ? {
-        main_post: state.complexPost.main_post,
-        reply_post: state.complexPost.reply_post,
-      }
+      main_post: state.complexPost.main_post,
+      reply_post: state.complexPost.reply_post,
+    }
     : {
-        post: state.post,
-      };
+      post: state.post,
+    };
 
   const interruptValue: HumanInterrupt = {
     action_request: {
@@ -243,9 +251,9 @@ export async function humanNode<
   const complexPost =
     castArgs.main_post && castArgs.reply_post
       ? {
-          main_post: castArgs.main_post,
-          reply_post: castArgs.reply_post,
-        }
+        main_post: castArgs.main_post,
+        reply_post: castArgs.reply_post,
+      }
       : undefined;
   if (!post && !complexPost) {
     throw new Error(
@@ -260,8 +268,8 @@ export async function humanNode<
     if (!postDate) {
       throw new Error(
         "Invalid date provided.\n\n" +
-          "Expected format: 'MM/dd/yyyy hh:mm a z' or 'P1'/'P2'/'P3' or leave empty to post now.\n\n" +
-          `Received: '${postDateString}'`,
+        "Expected format: 'MM/dd/yyyy hh:mm a z' or 'P1'/'P2'/'P3' or leave empty to post now.\n\n" +
+        `Received: '${postDateString}'`,
       );
     }
   }
