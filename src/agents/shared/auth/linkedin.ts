@@ -140,9 +140,18 @@ If you have already authorized reading/posting on Twitter, please accept this in
     const res = interrupt<HumanInterrupt[], HumanResponse[]>([
       authInterrupt,
     ])[0];
+
     if (res.type === "accept") {
-      // This means that the user has accepted, however the
-      // authorization is still needed. Throw an error.
+      // The user clicked "Authorize & Proceed". We must re-check if they actually authorized.
+      const recheckAuthResponse = await arcade.auth.start(linkedInUserId, "linkedin", {
+        scopes,
+      });
+      if (!recheckAuthResponse.url) {
+        // Authorization is complete!
+        return undefined;
+      }
+
+      // Authorization is STILL needed.
       throw new Error(
         "User accepted authorization, but authorization is still needed.",
       );
