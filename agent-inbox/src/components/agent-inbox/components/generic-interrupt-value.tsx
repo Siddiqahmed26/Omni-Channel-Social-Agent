@@ -121,7 +121,7 @@ const renderTableCellValue = (value: any): React.ReactNode => {
       URL_REGEX.lastIndex = 0;
       return (
         <span className="text-slate-200 whitespace-pre-wrap break-words leading-relaxed">
-          {linkifyText(value)}
+          {cleanAndLinkifyText(value)}
         </span>
       );
     }
