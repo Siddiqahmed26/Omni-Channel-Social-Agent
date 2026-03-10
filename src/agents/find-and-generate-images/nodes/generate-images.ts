@@ -451,8 +451,8 @@ export async function generateImageCandidatesForPost(
     throw new Error("No post content available to generate images");
   }
 
-  // Generate 2 image variations in a single parallel batch (fits in Vertex AI free-tier quota)
-  const numVariations = 2;
+  // Generate 3 image variations in a single parallel batch
+  const numVariations = 3;
 
   console.log(`[IMAGE GEN] Generating ${numVariations} image variations in parallel...`);
 
