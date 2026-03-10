@@ -6,7 +6,7 @@ import { createClient } from "@/lib/client";
 import { useLocalStorage } from "./hooks/use-local-storage";
 import { LANGCHAIN_API_KEY_LOCAL_STORAGE_KEY } from "./constants";
 import { motion, AnimatePresence } from "framer-motion";
-import { Brain, Save, Trash2, Loader2, Sparkles, BrainCircuit, Cpu, LoaderCircle } from "lucide-react";
+import { Brain, Save, Trash2, Loader2, Sparkles, BrainCircuit, Cpu, LoaderCircle, Check } from "lucide-react";
 import { Button } from "../ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { logger } from "./utils/logger";
@@ -199,12 +199,25 @@ export function MemoryView() {
 
                     <div className="p-4 md:p-8 min-h-[400px] flex-1 flex flex-col">
                         <textarea
-                            readOnly
                             value={reflections}
-                            placeholder="No reflections learned yet. The agent will populate this automatically as you give it feedback on social media posts."
-                            className="flex-1 w-full bg-transparent border-none text-slate-200 font-mono text-sm leading-relaxed focus:ring-0 resize-none no-scrollbar placeholder:text-slate-400"
+                            onChange={(e) => { setReflections(e.target.value); setHasChanges(true); }}
+                            placeholder={"No reflections learned yet. Click Synchronize to load, or type your own rules below and click Save Rules.\n\nExample rules:\n- Always use emojis\n- Keep under 200 words\n- Start with a bold hook"}
+                            className="flex-1 w-full bg-transparent border-none text-slate-200 font-mono text-sm leading-relaxed focus:ring-0 resize-none no-scrollbar placeholder:text-slate-500"
                         />
                     </div>
+
+                    {hasChanges && (
+                        <div className="px-6 pb-4 flex justify-end">
+                            <button
+                                onClick={handleSave}
+                                disabled={saving}
+                                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-black uppercase tracking-widest transition-all active:scale-95 shadow-lg shadow-blue-500/20 disabled:opacity-50"
+                            >
+                                {saving ? <LoaderCircle className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                                {saving ? "Saving..." : "Save Rules"}
+                            </button>
+                        </div>
+                    )}
 
                     <div className="px-8 py-4 bg-black/40 border-t border-white/5 text-[10px] text-slate-400 font-bold uppercase tracking-widest flex justify-between items-center">
                         <span>Namespace: reflection_rules / rules</span>
