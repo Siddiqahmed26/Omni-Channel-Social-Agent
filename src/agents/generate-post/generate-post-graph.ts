@@ -20,7 +20,6 @@ import {
 } from "../utils.js";
 import { verifyLinksGraph } from "../verify-links/verify-links-graph.js";
 import { authSocialsPassthrough } from "./nodes/auth-socials.js";
-import { findAndGenerateImagesGraph } from "../find-and-generate-images/find-and-generate-images-graph.js";
 import { updateScheduledDate } from "../shared/nodes/update-scheduled-date.js";
 import { getSavedUrls } from "../shared/stores/post-subject-urls.js";
 import { humanNode } from "../shared/nodes/generate-post/human-node.js";
@@ -166,8 +165,6 @@ const generatePostBuilder = new StateGraph(
   .addNode("rewritePost", rewritePost<GeneratePostState, GeneratePostUpdate>)
   // Generates a report on the content.
   .addNode("generateContentReport", generateContentReport)
-  // Finds images in the content.
-  .addNode("findAndGenerateImagesSubGraph", findAndGenerateImagesGraph)
   // Updated the scheduled date from the natural language response from the user.
   .addNode("updateScheduleDate", updateScheduledDate)
   // Rewrite the post splitting the URL from the main body of the tweet
@@ -203,13 +200,6 @@ const generatePostBuilder = new StateGraph(
     "humanNode",
     END,
   ])
-
-  // After finding images (if explicitly triggered), route to interrupt.
-  .addConditionalEdges(
-    "findAndGenerateImagesSubGraph",
-    routeToCuratedInterruptOrContinue,
-    ["humanNode", END],
-  )
 
   // Always route back to `humanNode` if the post was re-written or date was updated.
   .addEdge("rewritePost", "humanNode")
