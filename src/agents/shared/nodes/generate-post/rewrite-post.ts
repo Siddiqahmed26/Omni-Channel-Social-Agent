@@ -18,6 +18,19 @@ The original post you wrote is as follows:
 
 Listen to your boss closely, and make the necessary changes to the post. You should respond ONLY with the updated post, with no additional information, or text before or after the post.`;
 
+/**
+ * Cleans LLM post output:
+ * 1. Strips <thinking>...</thinking> chain-of-thought blocks
+ * 2. Extracts content from <post>...</post> tags if present
+ */
+export function cleanPostOutput(raw: string): string {
+  let cleaned = raw.replace(/<thinking>[\s\S]*?<\/thinking>/gi, "").trim();
+  const postMatch = cleaned.match(/<post>([\s\S]*?)<\/post>/i);
+  if (postMatch) {
+    cleaned = postMatch[1].trim();
+  }
+  return cleaned;
+}
 
 export async function rewritePost<
   State extends BaseGeneratePostState = BaseGeneratePostState,
@@ -57,7 +70,7 @@ export async function rewritePost<
   ]);
 
   return {
-    post: revisePostResponse.content as string,
+    post: cleanPostOutput(revisePostResponse.content as string),
     next: undefined,
   } as Update;
 }
