@@ -109,7 +109,18 @@ export function QuickGenerateDialog({ iconOnly = false }: { iconOnly?: boolean }
                     </Button>
                 )}
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[480px] bg-black/60 backdrop-blur-3xl border border-white/10 text-white shadow-[0_40px_100px_rgba(0,0,0,0.7)] rounded-[32px] overflow-hidden p-0">
+            <DialogContent className="sm:max-w-[480px] bg-black/60 backdrop-blur-3xl border border-white/10 text-white shadow-[0_40px_100px_rgba(0,0,0,0.7)] rounded-[32px] p-0 [&>button]:hidden">
+                {/* Explicit close button — replaces the hidden shadcn default */}
+                <button
+                    type="button"
+                    onClick={() => setOpen(false)}
+                    className="absolute top-4 right-4 z-50 w-8 h-8 rounded-full flex items-center justify-center bg-white/5 border border-white/10 text-slate-400 hover:text-white hover:bg-white/15 transition-all active:scale-90"
+                    aria-label="Close"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+                        <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                </button>
                 <div className="absolute inset-0 pointer-events-none bg-gradient-to-br from-blue-500/10 via-transparent to-purple-500/10 opacity-50" />
                 <div className="relative z-10 p-8">
                     <DialogHeader className="mb-8">
