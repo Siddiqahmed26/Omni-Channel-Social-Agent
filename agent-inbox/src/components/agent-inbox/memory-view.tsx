@@ -37,12 +37,14 @@ export function MemoryView() {
         setLoading(true);
         try {
             lastFetchedRef.current = fetchKey;
+            const langchainApiKeyLS = getItem(LANGCHAIN_API_KEY_LOCAL_STORAGE_KEY) || undefined;
             const client = createClient({
                 deploymentUrl: selectedInbox.deploymentUrl,
-                langchainApiKey: undefined
+                langchainApiKey: langchainApiKeyLS
             });
 
             const result = await (client.store as any).getItem(["reflection_rules"], "rules");
+            console.log("SYNC RESULT:", result);
 
             if (result && result.value && result.value.prompt) {
                 setReflections(result.value.prompt as string);
@@ -73,9 +75,10 @@ export function MemoryView() {
 
         setSaving(true);
         try {
+            const langchainApiKeyLS = getItem(LANGCHAIN_API_KEY_LOCAL_STORAGE_KEY) || undefined;
             const client = createClient({
                 deploymentUrl: selectedInbox.deploymentUrl,
-                langchainApiKey: undefined
+                langchainApiKey: langchainApiKeyLS
             });
 
             await (client.store as any).putItem(["reflection_rules"], "rules", {
@@ -106,9 +109,10 @@ export function MemoryView() {
 
         setResetting(true);
         try {
+            const langchainApiKeyLS = getItem(LANGCHAIN_API_KEY_LOCAL_STORAGE_KEY) || undefined;
             const client = createClient({
                 deploymentUrl: selectedInbox.deploymentUrl,
-                langchainApiKey: undefined
+                langchainApiKey: langchainApiKeyLS
             });
 
             await (client.store as any).putItem(["reflection_rules"], "rules", {
