@@ -109,9 +109,9 @@ const getDependencies = async (
 
 export async function getGitHubContentsAndTypeFromUrl(url: string): Promise<
   | {
-      contents: string;
-      fileType: string;
-    }
+    contents: string;
+    fileType: string;
+  }
   | undefined
 > {
   const repoContents = await getRepoContents(url);
@@ -133,8 +133,8 @@ interface VerifyGitHubContentParams {
   contents: string;
   fileType: string;
   dependencyFiles:
-    | Array<{ fileContents: string; fileName: string }>
-    | undefined;
+  | Array<{ fileContents: string; fileName: string }>
+  | undefined;
 }
 
 async function verifyGitHubContentIsRelevant({
@@ -173,54 +173,81 @@ export async function verifyGitHubContent(
   state: typeof VerifyContentAnnotation.State,
   config: LangGraphRunnableConfig,
 ): Promise<VerifyGitHubContentReturn> {
-  const shouldExclude = shouldExcludeGitHubContent(state.link);
-  if (shouldExclude) {
+  // Validate the URL has at least owner/repo before doing any work
+  try {
+    const url = new URL(state.link);
+    const parts = url.pathname.split("/").filter(Boolean);
+    if (url.hostname === "github.com" && parts.length < 2) {
+      console.warn(
+        "[verify-github] Skipping GitHub profile URL (no repository name):",
+        state.link,
+      );
+      return { relevantLinks: [], pageContents: [] };
+    }
+  } catch {
+    console.warn("[verify-github] Invalid URL, skipping:", state.link);
+    return { relevantLinks: [], pageContents: [] };
+  }
+
+  try {
+    const shouldExclude = shouldExcludeGitHubContent(state.link);
+    if (shouldExclude) {
+      return {
+        relevantLinks: [],
+        pageContents: [],
+      };
+    }
+
+    const contentsAndType = await getGitHubContentsAndTypeFromUrl(state.link);
+    if (!contentsAndType) {
+      console.warn("No contents found for GitHub URL", state.link);
+      return {
+        relevantLinks: [],
+        pageContents: [],
+      };
+    }
+
+    const returnValue = {
+      relevantLinks: [state.link],
+      pageContents: [contentsAndType.contents],
+    };
+
+    if (await skipContentRelevancyCheck(config.configurable)) {
+      console.log(
+        "Skipping content relevancy check. Returning relevant links and page content",
+        {
+          relevantLinks: returnValue.relevantLinks,
+          pageContentsLength: returnValue.pageContents.length,
+          pageContentsItemsLength: returnValue.pageContents[0].length,
+        },
+      );
+      return returnValue;
+    }
+
+    const dependencyFiles = await getDependencies(state.link);
+    if (
+      await verifyGitHubContentIsRelevant({
+        contents: contentsAndType.contents,
+        fileType: contentsAndType.fileType,
+        dependencyFiles,
+      })
+    ) {
+      return returnValue;
+    }
+
+    // Not relevant, return empty arrays so this URL is not included.
     return {
       relevantLinks: [],
       pageContents: [],
     };
-  }
-
-  const contentsAndType = await getGitHubContentsAndTypeFromUrl(state.link);
-  if (!contentsAndType) {
-    console.warn("No contents found for GitHub URL", state.link);
-    return {
-      relevantLinks: [],
-      pageContents: [],
-    };
-  }
-
-  const returnValue = {
-    relevantLinks: [state.link],
-    pageContents: [contentsAndType.contents],
-  };
-
-  if (await skipContentRelevancyCheck(config.configurable)) {
-    console.log(
-      "Skipping content relevancy check. Returning relevant links and page content",
-      {
-        relevantLinks: returnValue.relevantLinks,
-        pageContentsLength: returnValue.pageContents.length,
-        pageContentsItemsLength: returnValue.pageContents[0].length,
-      },
+  } catch (error) {
+    // Don't crash the entire background run for a bad GitHub URL
+    console.warn(
+      "[verify-github] Error processing URL, skipping gracefully:",
+      state.link,
+      error instanceof Error ? error.message : error,
     );
-    return returnValue;
+    return { relevantLinks: [], pageContents: [] };
   }
-
-  const dependencyFiles = await getDependencies(state.link);
-  if (
-    await verifyGitHubContentIsRelevant({
-      contents: contentsAndType.contents,
-      fileType: contentsAndType.fileType,
-      dependencyFiles,
-    })
-  ) {
-    return returnValue;
-  }
-
-  // Not relevant, return empty arrays so this URL is not included.
-  return {
-    relevantLinks: [],
-    pageContents: [],
-  };
 }
+
