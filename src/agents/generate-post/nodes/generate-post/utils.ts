@@ -7,15 +7,22 @@ import { filterLinksForPostContent } from "../../../utils.js";
  * @returns The parsed generation, or the unmodified generation if it cannot be parsed
  */
 export function parseGeneration(generation: string): string {
-  const reportMatch = generation.match(/<post>([\s\S]*?)<\/post>/);
+  const reportMatch = generation.match(/<post>([\s\S]*?)<\/post>/i);
   if (!reportMatch) {
     console.warn(
       "Could not parse post from generation:\nSTART OF POST GENERATION\n\n",
       generation,
       "\n\nEND OF POST GENERATION",
     );
+    // Fallback: If regex fails severely, just clean the raw string
+    return generation.replace(/```xml\s*<post>/gi, "").replace(/<post>/gi, "").replace(/<\/post>\s*```/gi, "").replace(/<\/post>/gi, "").trim();
   }
-  return reportMatch ? reportMatch[1].trim() : generation;
+
+  // Clean up any potential markdown wrappings inside the matched content
+  let cleaned = reportMatch[1].trim();
+  cleaned = cleaned.replace(/^```[a-z]*\n/i, "").replace(/\n```$/i, "");
+
+  return cleaned;
 }
 
 export function formatPrompt(report: string, relevantLinks: string[]): string {
