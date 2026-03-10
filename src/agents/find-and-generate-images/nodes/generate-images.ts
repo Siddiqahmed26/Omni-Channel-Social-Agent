@@ -453,31 +453,40 @@ export async function generateImageCandidatesForPost(
 
   // Determine number of style variations to generate
   const numVariations = 4;
+  const BATCH_SIZE = 2; // Keep within Vertex AI free-tier quota
 
-  console.log(`[IMAGE GEN] Generating ${numVariations} image variations in PARALLEL...`);
+  console.log(`[IMAGE GEN] Generating ${numVariations} image variations in batches of ${BATCH_SIZE}...`);
 
-  // Generate ALL image style variations in PARALLEL (was sequential before)
-  const parallelResults = await Promise.allSettled(
-    Array.from({ length: numVariations }, (_, index) =>
-      generateImageWithNanoBananaPro(
-        report,
-        post,
-        imageUrls ?? [],
-        index,
-      )
-    )
-  );
-
+  // Run in batches to avoid Vertex AI 429 rate limiting
   const imageResults: { data: string; mimeType: string }[] = [];
-  for (const result of parallelResults) {
-    if (result.status === "fulfilled") {
-      imageResults.push(result.value);
-    } else {
-      console.error("[IMAGE GEN] Failed to generate image variation", { error: result.reason });
+  for (let i = 0; i < numVariations; i += BATCH_SIZE) {
+    const batchIndices = Array.from(
+      { length: Math.min(BATCH_SIZE, numVariations - i) },
+      (_, j) => i + j
+    );
+
+    const batchResults = await Promise.allSettled(
+      batchIndices.map(index =>
+        generateImageWithNanoBananaPro(report, post, imageUrls ?? [], index)
+      )
+    );
+
+    for (const result of batchResults) {
+      if (result.status === "fulfilled") {
+        imageResults.push(result.value);
+      } else {
+        console.error("[IMAGE GEN] Failed to generate image variation", { error: result.reason });
+      }
+    }
+
+    // Short pause between batches to respect rate limits
+    if (i + BATCH_SIZE < numVariations) {
+      await new Promise(resolve => setTimeout(resolve, 1000));
     }
   }
 
   console.log(`[IMAGE GEN] ${imageResults.length}/${numVariations} images generated successfully.`);
+
 
   // Upload all generated images in parallel
   const uploadedUrlsWithOmissions = await Promise.all(

@@ -15,10 +15,19 @@ const truncateString = (str: string, maxLength: number = 100): string => {
   return str.length > maxLength ? str.substring(0, maxLength) + "..." : str;
 };
 
-// Helper to detect URLs and render them as clickable anchor tags
-const URL_REGEX = /(https?:\/\/[^\s]+)/g;
-const linkifyText = (text: string): React.ReactNode => {
-  const parts = text.split(URL_REGEX);
+// Helper to detect URLs and render them as clickable anchor tags, while also stripping XML tags like <post>
+const cleanAndLinkifyText = (text: string): React.ReactNode => {
+  if (typeof text !== "string") return text;
+
+  // Strip XML tags like <post>, <thinking> etc.
+  let cleaned = text.replace(/<(post|thinking|original-post)>[\s\S]*?<\/\1>/gi, (match, tag) => {
+    if (tag.toLowerCase() === "post") return match.replace(/<\/?post>/gi, "");
+    return "";
+  }).trim();
+  cleaned = cleaned.replace(/<\/?(post|thinking|original-post)>/gi, "").trim();
+
+  const URL_REGEX = /(https?:\/\/[^\s]+)/g;
+  const parts = cleaned.split(URL_REGEX);
   return parts.map((part, i) =>
     URL_REGEX.test(part) ? (
       <a
@@ -29,13 +38,14 @@ const linkifyText = (text: string): React.ReactNode => {
         onClick={(e) => e.stopPropagation()}
         className="text-blue-400 underline underline-offset-2 hover:text-blue-300 transition-colors break-all"
       >
-        {part}
+        {part.length > 50 ? part.substring(0, 50) + "..." : part}
       </a>
     ) : (
       <span key={i}>{part}</span>
     )
   );
 };
+
 
 // Helper to render simple values or truncated complex values for the collapsed view
 const renderCollapsedValue = (
@@ -55,7 +65,7 @@ const renderCollapsedValue = (
     if (URL_REGEX.test(value)) {
       // Reset lastIndex after test()
       URL_REGEX.lastIndex = 0;
-      return <span className="text-indigo-300 font-medium break-all">{linkifyText(value)}</span>;
+      return <span className="text-indigo-300 font-medium break-all">{cleanAndLinkifyText(value)}</span>;
     }
     return (
       <span className="text-indigo-300 font-medium">

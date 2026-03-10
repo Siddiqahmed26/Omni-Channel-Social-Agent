@@ -31,15 +31,36 @@ function ResetButton({ handleReset }: { handleReset: () => void }) {
 }
 
 
-// Detect if URL is an image
-const isImageUrl = (url: string) =>
-  /\.(png|jpg|jpeg|gif|webp|svg)(\?|$)/i.test(url) ||
-  url.includes("supabase.co/storage");
+// Detect if URL is an image, even if mixed with text like "[DEFAULT] URL: https://..."
+const isImageUrl = (text: string) => {
+  if (typeof text !== "string") return false;
+  const urlMatch = text.match(/https?:\/\/[^\s]+(?:\.(?:png|jpg|jpeg|gif|webp|svg)|supabase\.co\/storage)[^\s]*/i);
+  return !!urlMatch;
+};
 
-// Split text and turn https:// URLs into clickable links
-const linkifyText = (text: string): React.ReactNode => {
+// Extract the first URL from a string
+const extractUrl = (text: string) => {
+  const urlMatch = text.match(/https?:\/\/[^\s]+/);
+  return urlMatch ? urlMatch[0] : text;
+};
+
+// Clean XML tags and linkify
+const cleanAndLinkify = (text: string): React.ReactNode => {
+  // Strip XML tags like <post>, <thinking> etc.
+  let cleaned = text.replace(/<(post|thinking|original-post)>[\s\S]*?<\/\1>/gi, (match, tag) => {
+    // If it's <post>, we want to keep the content but strip the tags
+    if (tag.toLowerCase() === "post") {
+      return match.replace(/<\/?post>/gi, "");
+    }
+    // For others (<thinking>, <original-post>), strip the whole block
+    return "";
+  }).trim();
+
+  // If after stripping, it still has <post> or </post> or <thinking> (partial matches), clean them too
+  cleaned = cleaned.replace(/<\/?(post|thinking|original-post)>/gi, "").trim();
+
   const URL_REGEX = /(https?:\/\/[^\s]+)/g;
-  const parts = text.split(URL_REGEX);
+  const parts = cleaned.split(URL_REGEX);
   return parts.map((part, i) =>
     URL_REGEX.test(part) ? (
       <a
@@ -50,7 +71,7 @@ const linkifyText = (text: string): React.ReactNode => {
         onClick={(e) => e.stopPropagation()}
         className="text-blue-400 underline underline-offset-2 hover:text-blue-300 transition-colors break-all"
       >
-        {part.length > 60 ? part.substring(0, 60) + "…" : part}
+        {part.length > 65 ? part.substring(0, 65) + "…" : part}
       </a>
     ) : (
       <span key={i}>{part}</span>
@@ -60,26 +81,27 @@ const linkifyText = (text: string): React.ReactNode => {
 
 // Render an image URL as a thumbnail
 function ImageThumb({ url, label }: { url: string; label?: string }) {
+  const cleanUrl = extractUrl(url);
   return (
     <a
-      href={url}
+      href={cleanUrl}
       target="_blank"
       rel="noopener noreferrer"
       onClick={(e) => e.stopPropagation()}
-      className="group relative block overflow-hidden rounded-xl border border-white/10 hover:border-blue-400/50 transition-all shadow-lg"
+      className="group relative block overflow-hidden rounded-xl border border-white/10 hover:border-blue-400/50 transition-all shadow-lg bg-black/20"
       title="Click to open full image"
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src={url}
+        src={cleanUrl}
         alt={label ?? "Image option"}
-        className="w-full h-28 object-cover group-hover:opacity-90 transition-opacity"
+        className="w-full h-32 object-cover group-hover:scale-105 transition-transform duration-500"
         onError={(e) => {
           (e.target as HTMLImageElement).style.display = "none";
         }}
       />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
-        <span className="text-[10px] text-white font-bold uppercase tracking-wider">
+      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-3 opacity-0 group-hover:opacity-100 transition-opacity">
+        <span className="text-[10px] text-white font-bold uppercase tracking-widest flex items-center gap-2">
           {label ?? "Open Image"}
         </span>
       </div>
@@ -89,65 +111,67 @@ function ImageThumb({ url, label }: { url: string; label?: string }) {
 
 function ArgsRenderer({ args }: { args: Record<string, any> }) {
   return (
-    <div className="grid grid-cols-1 gap-4 w-full">
+    <div className="grid grid-cols-1 gap-6 w-full mt-2">
       {Object.entries(args).map(([k, v]) => {
-        // Image arrays — render as thumbnail grid
+        // Image options - specialized grid for arrays of image URLs
         if (Array.isArray(v) && v.length > 0 && typeof v[0] === "string" && isImageUrl(v[0])) {
           return (
-            <div key={`args-${k}`} className="flex flex-col gap-2 group/arg">
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 group-hover/arg:text-blue-400 transition-colors">
-                {prettifyText(k)}
+            <div key={`args-${k}`} className="flex flex-col gap-3 group/arg">
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 group-hover/arg:text-blue-400 transition-colors flex items-center gap-2">
+                <Brain className="w-3 h-3" /> {prettifyText(k)}
               </p>
-              <div className="grid grid-cols-2 gap-2">
-                {v.map((url: string, i: number) => (
-                  <ImageThumb key={url} url={url} label={`Option ${i + 1}`} />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {v.map((item: string, i: number) => (
+                  <ImageThumb key={item} url={item} label={`Variation ${i + 1}`} />
                 ))}
               </div>
             </div>
           );
         }
 
-        // Single image URL
+        // Single image candidate or URL (even with [DEFAULT] prefix)
         if (typeof v === "string" && isImageUrl(v)) {
           return (
-            <div key={`args-${k}`} className="flex flex-col gap-2 group/arg">
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 group-hover/arg:text-blue-400 transition-colors">
-                {prettifyText(k)}
+            <div key={`args-${k}`} className="flex flex-col gap-3 group/arg">
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 group-hover/arg:text-blue-400 transition-colors flex items-center gap-2">
+                <Brain className="w-3 h-3" /> {prettifyText(k)}
               </p>
               <ImageThumb url={v} label={prettifyText(k)} />
             </div>
           );
         }
 
-        // Object with imageUrl field (image_candidates)
+        // Object with imageUrl field (e.g. image_candidates)
         if (typeof v === "object" && v !== null && "imageUrl" in v) {
           return (
-            <div key={`args-${k}`} className="flex flex-col gap-2 group/arg">
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 group-hover/arg:text-blue-400 transition-colors">
-                {prettifyText(k)}
+            <div key={`args-${k}`} className="flex flex-col gap-3 group/arg">
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 group-hover/arg:text-blue-400 transition-colors flex items-center gap-2">
+                <Brain className="w-3 h-3" /> {prettifyText(k)}
               </p>
-              <ImageThumb url={v.imageUrl} label={prettifyText(k)} />
+              <ImageThumb url={(v as any).imageUrl} label={prettifyText(k)} />
             </div>
           );
         }
 
-        // Regular text/post content with linkified URLs
+        // Regular text/narrative content
         let value = "";
         if (["string", "number"].includes(typeof v)) {
           value = v as string;
-        } else {
+        } else if (v !== null && v !== undefined) {
           value = JSON.stringify(v, null, 2);
         }
 
+        if (!value) return null;
+
         return (
-          <div key={`args-${k}`} className="flex flex-col gap-2 group/arg">
+          <div key={`args-${k}`} className="flex flex-col gap-3 group/arg">
             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 group-hover/arg:text-blue-400 transition-colors">
               {prettifyText(k)}
             </p>
             <div className="relative group/val">
-              <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-2xl blur opacity-0 group-hover/val:opacity-100 transition duration-500" />
-              <div className="relative text-[13px] leading-[1.6] text-slate-300 bg-white/[0.03] border border-white/5 rounded-2xl p-4 w-full backdrop-blur-sm shadow-inner overflow-hidden whitespace-pre-wrap break-words">
-                {linkifyText(value)}
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-2xl blur opacity-0 group-hover/val:opacity-100 transition duration-500" />
+              <div className="relative text-[14px] leading-[1.7] text-slate-300 bg-white/[0.03] border border-white/5 rounded-2xl p-5 w-full backdrop-blur-md shadow-2xl overflow-hidden whitespace-pre-wrap break-words">
+                {cleanAndLinkify(value)}
               </div>
             </div>
           </div>
@@ -156,6 +180,7 @@ function ArgsRenderer({ args }: { args: Record<string, any> }) {
     </div>
   );
 }
+
 
 
 interface InboxItemInputProps {

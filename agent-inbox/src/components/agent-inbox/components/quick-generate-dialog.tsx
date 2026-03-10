@@ -32,25 +32,37 @@ export function QuickGenerateDialog({ iconOnly = false }: { iconOnly?: boolean }
         setIsSubmitting(true);
         setErrorMessage(null);
 
+        // --- URL Validation ---
+        const trimmedUrl = url.trim();
         try {
-            // Use the selected inbox's deployment URL or fallback
+            const parsed = new URL(trimmedUrl);
+            if (parsed.hostname === "github.com") {
+                const parts = parsed.pathname.split("/").filter(Boolean);
+                if (parts.length < 2) {
+                    setErrorMessage("⚠️ Please paste a GitHub REPOSITORY URL (e.g. github.com/owner/repo), not just your profile.");
+                    setIsSubmitting(false);
+                    return;
+                }
+            }
+            if (parsed.hostname.includes("youtube.com") && !parsed.searchParams.get("v")) {
+                setErrorMessage("⚠️ Please paste a full YouTube VIDEO URL (e.g. youtube.com/watch?v=xxxxx).");
+                setIsSubmitting(false);
+                return;
+            }
+
+            // Main logic inside the try block
             const currentInbox = agentInboxes.find(i => i.selected) || agentInboxes[0];
             const deploymentUrl = currentInbox?.deploymentUrl || "https://siddiq262001-my-social-agent.hf.space";
             const graphId = currentInbox?.graphId || "generate_post";
 
-            // Initialize the client
             const client = createClient({ deploymentUrl, langchainApiKey: undefined });
-
-            // Get current user for metadata
             const supabase = createSupabaseClient();
             const { data: { user } } = await supabase.auth.getUser();
 
-            // Create a brand new thread with user_id metadata
             const thread = await client.threads.create({
                 metadata: { user_id: user?.id }
             });
 
-            // Start the agent run on this new thread
             await client.runs.create(thread.thread_id, graphId, {
                 input: { links: [url] },
             });
@@ -64,15 +76,19 @@ export function QuickGenerateDialog({ iconOnly = false }: { iconOnly?: boolean }
             setUrl("");
             setOpen(false);
 
-            // Reload to show the new run
             setTimeout(() => {
                 window.location.reload();
             }, 1500);
+
         } catch (error) {
-            logger.error("Error generating post:", error);
-            setErrorMessage(
-                `Failed to start generation: ${error instanceof Error ? error.message : String(error)}. Please try again.`
-            );
+            if (error instanceof TypeError && error.message.includes("Invalid URL")) {
+                setErrorMessage("⚠️ Please enter a valid URL starting with https://");
+            } else {
+                logger.error("Error generating post:", error);
+                setErrorMessage(
+                    `Failed to start generation: ${error instanceof Error ? error.message : String(error)}. Please try again.`
+                );
+            }
         } finally {
             setIsSubmitting(false);
         }
