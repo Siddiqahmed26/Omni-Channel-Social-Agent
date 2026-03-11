@@ -4,23 +4,16 @@ export async function GET(req: Request) {
   const url = new URL(req.url);
 
   const flowId = url.searchParams.get("flow_id");
-  const redirectUrl = url.searchParams.get("redirect_url") || url.searchParams.get("redirect_uri");
-  const userId = url.searchParams.get("user_id") || url.searchParams.get("userId");
+  const userId = url.searchParams.get("user_id");
 
-  // 1. Arcade verifier test flow (Dashboard "Run Test")
+  // ⭐ Arcade verifier TEST flow
   if (flowId) {
-    if (redirectUrl) {
-      return NextResponse.redirect(redirectUrl);
-    }
-    // If no redirect_url is provided, return a success status that Arcade can potentially read
-    return NextResponse.json({
-      status: "approved",
-      flow_id: flowId,
-      message: "Custom verifier active. Redirect URL missing from request."
-    });
+    // Arcade expects redirect back to their callback
+    const callback = `https://cloud.arcade.dev/api/v1/oauth/callback?flow_id=${flowId}&status=approved`;
+    return NextResponse.redirect(callback);
   }
 
-  // 2. Real multi-user auth flow
+  // ⭐ Real multi-user auth flow
   if (userId) {
     return NextResponse.json({
       status: "verified",
@@ -28,11 +21,8 @@ export async function GET(req: Request) {
     });
   }
 
-  // 3. User manually visiting the URL to check if it's up
-  return NextResponse.json({
-    message: "Omni-Channel Social Agent - Arcade Verification Endpoint",
-    status: "active",
-    usage: "This endpoint is used internally by Arcade.dev for user verification.",
-    received_params: Object.fromEntries(url.searchParams)
-  });
+  return NextResponse.json(
+    { error: "Invalid verifier request" },
+    { status: 400 }
+  );
 }
