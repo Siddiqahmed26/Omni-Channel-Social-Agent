@@ -437,12 +437,17 @@ function EditAndOrAcceptComponent({
   const defaultRows = React.useRef<Record<string, number>>({});
   const editResponse = humanResponse.find((r) => r.type === "edit");
   const acceptResponse = humanResponse.find((r) => r.type === "accept");
+  
+  // Force the Social Media Auth node to render as an Action card (buttons) rather than a raw JSON editor
+  const isAuthNode = interruptValue?.action_request?.action === "Authorize Social Media Accounts";
+
   if (
+    isAuthNode ||
     !editResponse ||
     typeof editResponse.args !== "object" ||
     !editResponse.args
   ) {
-    if (acceptResponse) {
+    if (acceptResponse || isAuthNode) {
       return (
         <AcceptComponent
           actionRequestArgs={interruptValue?.action_request?.args || {}}
