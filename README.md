@@ -3,7 +3,7 @@ title: Omni-Channel Social Agent
 emoji: 🤖
 colorFrom: blue
 colorTo: green
-sdk: docker
+sdk: docker 
 app_port: 7860
 pinned: false
 ---
