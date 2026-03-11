@@ -18,6 +18,12 @@ export const FindAndGenerateImagesAnnotation = Annotation.Root({
    */
   post: Annotation<string>,
   /**
+   * Action to perform for graph routing (e.g., 'disconnect' to restart auth).
+   */
+  action: Annotation<"disconnect" | undefined>({
+    reducer: (_state, update) => update,
+  }),
+  /**
    * The image candidates for the post.
    */
   image_candidates: Annotation<Image[]>,

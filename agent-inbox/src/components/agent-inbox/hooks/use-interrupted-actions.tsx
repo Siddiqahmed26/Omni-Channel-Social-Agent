@@ -26,7 +26,9 @@ interface UseInterruptedActionsInput<
 interface UseInterruptedActionsValue {
   // Actions
   handleSubmit: (
-    e: React.MouseEvent<HTMLButtonElement, MouseEvent> | React.KeyboardEvent
+    e?: React.MouseEvent<HTMLButtonElement, MouseEvent> | React.KeyboardEvent,
+    overrideResponse?: HumanResponseWithEdits[],
+    overrideSubmitType?: SubmitType
   ) => Promise<void>;
   handleIgnore: (
     e: React.MouseEvent<HTMLButtonElement, MouseEvent>
@@ -121,9 +123,11 @@ export default function useInterruptedActions<
   }, [threadData?.interrupts]);
 
   const handleSubmit = async (
-    e: React.MouseEvent<HTMLButtonElement, MouseEvent> | React.KeyboardEvent
+    e?: React.MouseEvent<HTMLButtonElement, MouseEvent> | React.KeyboardEvent,
+    overrideResponse?: HumanResponseWithEdits[],
+    overrideSubmitType?: SubmitType
   ) => {
-    e.preventDefault();
+    e?.preventDefault();
     if (!threadData || !setThreadData) {
       toast({
         title: "Error",
@@ -132,7 +136,11 @@ export default function useInterruptedActions<
       });
       return;
     }
-    if (!humanResponse) {
+
+    const currentHumanResponse = overrideResponse || humanResponse;
+    const currentSubmitType = overrideSubmitType || selectedSubmitType;
+
+    if (!currentHumanResponse || currentHumanResponse.length === 0) {
       toast({
         title: "Error",
         description: "Please enter a response.",
@@ -157,13 +165,13 @@ export default function useInterruptedActions<
     initialHumanInterruptEditValue.current = {};
 
     if (
-      humanResponse.some((r) => ["response", "edit", "accept"].includes(r.type))
+      currentHumanResponse.some((r) => ["response", "edit", "accept"].includes(r.type))
     ) {
       setStreamFinished(false);
       setCurrentNode("");
 
       try {
-        const humanResponseInput: HumanResponse[] = humanResponse.flatMap(
+        const humanResponseInput: HumanResponse[] = currentHumanResponse.flatMap(
           (r) => {
             if (r.type === "edit") {
               if (r.acceptAllowed && !r.editsMade) {
@@ -191,7 +199,7 @@ export default function useInterruptedActions<
         );
 
         const input = humanResponseInput.find(
-          (r) => r.type === selectedSubmitType
+          (r) => r.type === currentSubmitType
         );
         if (!input) {
           toast({
@@ -301,7 +309,7 @@ export default function useInterruptedActions<
       }
     } else {
       setLoading(true);
-      await sendHumanResponse(threadData.thread.thread_id, humanResponse);
+      await sendHumanResponse(threadData.thread.thread_id, currentHumanResponse as any);
 
       toast({
         title: "Success",

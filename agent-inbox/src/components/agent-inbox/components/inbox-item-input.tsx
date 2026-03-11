@@ -259,7 +259,9 @@ interface InboxItemInputProps {
   setHasEdited: React.Dispatch<React.SetStateAction<boolean>>;
 
   handleSubmit: (
-    e: React.MouseEvent<HTMLButtonElement, MouseEvent> | React.KeyboardEvent
+    e?: React.MouseEvent<HTMLButtonElement, MouseEvent> | React.KeyboardEvent,
+    overrideResponse?: HumanResponseWithEdits[],
+    overrideSubmitType?: SubmitType
   ) => Promise<void>;
 }
 
@@ -610,17 +612,12 @@ export function InboxItemInput({
       }
     ];
 
-    // We update the local state manually
+    // We update the local state manually for UI consistency
     setHumanResponse(disconnectResponse);
     setSelectedSubmitType("edit");
 
-    // We can theoretically handleSubmit directly but the structure normally
-    // waits for the user. We'll simulate a quick event.
-    setTimeout(() => {
-      // Find the "edit" component and auto submit it or call directly if we adjust context.
-      // For simplicity, we just trigger the generic handleSubmit knowing SelectedSubmitType is edit
-      handleSubmit({ preventDefault: () => { } } as any);
-    }, 100);
+    // Directly trigger the programmatic submission
+    handleSubmit(undefined, disconnectResponse, "edit");
   };
 
   const onEditChange = (

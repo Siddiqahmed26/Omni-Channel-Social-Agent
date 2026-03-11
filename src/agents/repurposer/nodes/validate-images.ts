@@ -220,8 +220,8 @@ export async function validateImages(state: RepurposerState): Promise<{
     } catch (error) {
       console.error(
         `Failed to validate images.\nImage URLs: ${imageMessages
-          .filter((m) => m.fileUri)
-          .map((m) => m.fileUri)
+          .map((m) => ("image_url" in m && m.image_url ? m.image_url.url : ""))
+          .filter(Boolean)
           .join(", ")}\n\nError:`,
         error,
       );

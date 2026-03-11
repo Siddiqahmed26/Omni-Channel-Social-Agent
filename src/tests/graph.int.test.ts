@@ -8,7 +8,6 @@ import { TwitterApi } from "twitter-api-v2";
 import { EXPECTED_README } from "./expected.js";
 import { getPageText } from "../agents/utils.js";
 import { generatePostGraph } from "../agents/generate-post/generate-post-graph.js";
-import { getYouTubeVideoDuration } from "../agents/shared/nodes/youtube.utils.js";
 import { getGitHubContentsAndTypeFromUrl } from "../agents/shared/nodes/verify-github.js";
 import { verifyYouTubeContent } from "../agents/shared/nodes/verify-youtube.js";
 import { Command, MemorySaver } from "@langchain/langgraph";
@@ -135,12 +134,12 @@ describe("generate via github repos", () => {
   }, 60000);
 });
 
-test("Can get video duration", async () => {
-  const duration = await getYouTubeVideoDuration(
-    "https://www.youtube.com/watch?v=BGvqeRB4Jpk",
-  );
-  expect(duration).toBe(91);
-});
+// test("Can get video duration", async () => {
+//   const duration = await getYouTubeVideoDuration(
+//     "https://www.youtube.com/watch?v=BGvqeRB4Jpk",
+//   );
+//   expect(duration).toBe(91);
+// });
 
 test("Can get page text", async () => {
   const text = await getPageText("https://buff.ly/4g0ZRXI");

@@ -28,7 +28,6 @@ import { humanNode } from "../shared/nodes/generate-post/human-node.js";
 import { schedulePost } from "../shared/nodes/generate-post/schedule-post.js";
 import { rewritePost } from "../shared/nodes/generate-post/rewrite-post.js";
 import { reflectionNode } from "../shared/nodes/reflection-node.js";
-import { Client } from "@langchain/langgraph-sdk";
 import { getLangGraphClient } from "../shared/nodes/langgraph-client.js";
 import { POST_TO_LINKEDIN_ORGANIZATION } from "./constants.js";
 import { rewritePostWithSplitUrl } from "./nodes/rewrite-with-split-url.js";
@@ -42,6 +41,15 @@ function routeAfterGeneratingReport(
   return END;
 }
 
+function routeAfterAuthSocials(
+  state: GeneratePostState,
+): "verifyLinksSubGraph" | "authSocialsPassthrough" {
+  if (state.action === "disconnect") {
+    return "authSocialsPassthrough";
+  }
+  return "verifyLinksSubGraph";
+}
+
 function rewriteOrEndConditionalEdge(
   state: GeneratePostState,
 ):
@@ -51,7 +59,11 @@ function rewriteOrEndConditionalEdge(
   | "updateScheduleDate"
   | "humanNode"
   | "rewriteWithSplitUrl"
+  | "authSocialsPassthrough"
   | typeof END {
+  if (state.action === "disconnect") {
+    return "authSocialsPassthrough";
+  }
   if (state.next) {
     if (state.next === "unknownResponse") {
       // Unknown response - run reflection to save the style feedback, then re-interrupt.
@@ -198,7 +210,10 @@ const generatePostBuilder = new StateGraph(
 
   // Start node
   .addEdge(START, "authSocialsPassthrough")
-  .addEdge("authSocialsPassthrough", "verifyLinksSubGraph")
+  .addConditionalEdges("authSocialsPassthrough", routeAfterAuthSocials, [
+    "verifyLinksSubGraph",
+    "authSocialsPassthrough"
+  ])
 
   // After verifying the different content types, we should generate a report on them.
   .addConditionalEdges(
@@ -256,6 +271,7 @@ const generatePostBuilder = new StateGraph(
     "updateScheduleDate",
     "humanNode",
     "rewriteWithSplitUrl",
+    "authSocialsPassthrough",
     END,
   ])
 

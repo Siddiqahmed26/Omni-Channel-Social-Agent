@@ -239,6 +239,14 @@ export async function humanNode<
       `Unexpected response args type: ${typeof response.args}. Must be an object.`,
     );
   }
+
+  // Intercept the disconnect action
+  if (response.type === "edit" && "action" in response.args && response.args.action === "disconnect") {
+    return {
+      action: "disconnect",
+    } as Update;
+  }
+
   if (!("args" in response.args)) {
     throw new Error(
       `Unexpected response args value: ${response.args}. Must be defined.`,

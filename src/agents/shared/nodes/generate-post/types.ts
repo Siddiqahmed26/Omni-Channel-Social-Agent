@@ -1,4 +1,4 @@
-import { Annotation } from "@langchain/langgraph";
+import { Annotation, END } from "@langchain/langgraph";
 import { DateType } from "../../../types.js";
 import { IngestDataAnnotation } from "../../../ingest-data/ingest-data-state.js";
 import { VerifyLinksResultAnnotation } from "../../../verify-links/verify-links-state.js";
@@ -18,7 +18,9 @@ const BaseGeneratePostAnnotation = Annotation.Root({
   /**
    * The generated post for LinkedIn/Twitter.
    */
-  post: Annotation<string>,
+  post: Annotation<string>({
+    reducer: (_state, update) => update,
+  }),
   /**
    * The complex post, if the user decides to split the URL from the main body.
    *
@@ -26,11 +28,15 @@ const BaseGeneratePostAnnotation = Annotation.Root({
    * which includes images too.
    * Tracking issue: https://github.com/langchain-ai/social-media-agent/issues/144
    */
-  complexPost: Annotation<ComplexPost | undefined>,
+  complexPost: Annotation<ComplexPost | undefined>({
+    reducer: (_state, update) => update,
+  }),
   /**
    * The date to schedule the post for.
    */
-  scheduleDate: Annotation<DateType>,
+  scheduleDate: Annotation<DateType>({
+    reducer: (_state, update) => update,
+  }),
   /**
    * The image to attach to the post, and the MIME type.
    */
@@ -40,11 +46,15 @@ const BaseGeneratePostAnnotation = Annotation.Root({
         mimeType: string;
       }
     | undefined
-  >,
+  >({
+    reducer: (_state, update) => update,
+  }),
   /**
    * The links to use to generate a post.
    */
-  links: Annotation<string[]>,
+  links: Annotation<string[]>({
+    reducer: (_state, update) => update,
+  }),
   /**
    * The report generated on the content of the message. Used
    * as context for generating the post.
@@ -54,12 +64,32 @@ const BaseGeneratePostAnnotation = Annotation.Root({
   /**
    * The node to execute next.
    */
-  next: Annotation<string | undefined>,
+  next: Annotation<
+    | "schedulePost"
+    | "rewritePost"
+    | "updateScheduleDate"
+    | "unknownResponse"
+    | "rewriteWithSplitUrl"
+    | typeof END
+    | undefined
+  >({
+    reducer: (_state, update) => update,
+    default: () => undefined,
+  }),
+  /**
+   * Action to perform for graph routing (e.g., 'disconnect' to restart auth).
+   */
+  action: Annotation<"disconnect" | undefined>({
+    reducer: (_state, update) => update,
+    default: () => undefined,
+  }),
   /**
    * Response from the user for the post. Typically used to request
    * changes to be made to the post.
    */
-  userResponse: Annotation<string | undefined>,
+  userResponse: Annotation<string | undefined>({
+    reducer: (_state, update) => update,
+  }),
 });
 
 export type BaseGeneratePostState = typeof BaseGeneratePostAnnotation.State;

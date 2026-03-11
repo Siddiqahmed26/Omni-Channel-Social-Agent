@@ -105,6 +105,13 @@ export const GeneratePostAnnotation = Annotation.Root({
     reducer: (_state, update) => update,
     default: () => 0,
   }),
+  /**
+   * Action to perform for graph routing (e.g., 'disconnect' to restart auth).
+   */
+  action: Annotation<"disconnect" | undefined>({
+    reducer: (_state, update) => update,
+    default: () => undefined,
+  }),
 });
 
 export type GeneratePostState = typeof GeneratePostAnnotation.State;
@@ -157,4 +164,6 @@ export const BASE_GENERATE_POST_CONFIG: typeof GeneratePostConfigurableAnnotatio
   origin: undefined,
   [SKIP_CONTENT_RELEVANCY_CHECK]: undefined,
   [SKIP_USED_URLS_CHECK]: undefined,
+  twitterUserId: undefined,
+  linkedInUserId: undefined,
 };

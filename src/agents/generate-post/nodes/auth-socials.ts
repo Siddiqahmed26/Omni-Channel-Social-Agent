@@ -86,8 +86,8 @@ Once done, please 'accept' this interrupt event.`;
     typeof interruptRes.args === "object" &&
     interruptRes.args?.action === "disconnect"
   ) {
-    throw new Error(`Disconnected ${interruptRes.args.args?.platform}. Please generate your post again.`);
+    return { action: "disconnect" };
   }
 
-  return {};
+  return { action: undefined };
 }
