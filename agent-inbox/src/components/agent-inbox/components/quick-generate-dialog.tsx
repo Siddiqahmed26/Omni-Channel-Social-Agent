@@ -64,7 +64,16 @@ export function QuickGenerateDialog({ iconOnly = false }: { iconOnly?: boolean }
             });
 
             await client.runs.create(thread.thread_id, graphId, {
-                input: { links: [url] },
+                input: {
+                    links: [url],
+                    // Explicitly wipe out the old state so the new run doesn't use old YouTube summaries!
+                    pageContents: [],
+                    relevantLinks: [],
+                    imageOptions: [],
+                    report: "",
+                    post: "",
+                    condenseCount: 0
+                },
             });
 
             toast({

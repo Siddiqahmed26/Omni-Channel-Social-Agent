@@ -87,13 +87,13 @@ function getYouTubeClientFromUrl(): youtube_v3.Youtube {
 }
 
 /**
- * Get the duration of a video from a YouTube URL.
+ * Get the details of a video from a YouTube URL including duration, title, and description.
  * @param videoUrl The URL of the YouTube video
- * @returns The duration of the video in seconds
+ * @returns An object containing duration, title, and description
  */
-export async function getYouTubeVideoDuration(
+export async function getYouTubeVideoDetails(
   videoUrl: string,
-): Promise<number | undefined> {
+): Promise<{ duration: number | undefined; title: string; description: string }> {
   const youtubeClient = getYouTubeClientFromUrl();
   const videoId = getVideoID(videoUrl);
   if (!videoId) {
@@ -102,7 +102,7 @@ export async function getYouTubeVideoDuration(
 
   const videoInfo = await youtubeClient.videos.list({
     id: [videoId],
-    part: ["contentDetails"], // Add this to get duration info
+    part: ["contentDetails", "snippet"], // Add snippet to get title and description
   });
 
   if (!videoInfo.data.items?.length || videoInfo.data.items?.length > 1) {
@@ -111,13 +111,19 @@ export async function getYouTubeVideoDuration(
   }
 
   let videoDuration: number | undefined = undefined;
+  let title = "";
+  let description = "";
+
   videoInfo.data.items?.forEach((i) => {
     const duration = i.contentDetails?.duration;
     if (duration) {
       videoDuration = parseDuration(duration);
     }
+    title = i.snippet?.title || "";
+    description = i.snippet?.description || "";
   });
-  return videoDuration;
+
+  return { duration: videoDuration, title, description };
 }
 
 /**
