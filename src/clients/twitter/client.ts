@@ -594,21 +594,24 @@ export class TwitterClient {
 
 /**
  * Gets a TwitterClient instance. Will use Arcade auth if USE_ARCADE_AUTH is true, otherwise will use basic auth.
+ * @param twitterUserId The dynamic user ID to use for Arcade authentication (optional)
  * @returns A TwitterClient instance.
  */
-export async function getTwitterClient(): Promise<TwitterClient> {
+export async function getTwitterClient(
+  twitterUserId?: string
+): Promise<TwitterClient> {
   if (useTwitterApiOnly() || !useArcadeAuth()) {
     return TwitterClient.fromBasicTwitterAuth();
   } else {
-    const twitterUserId = process.env.TWITTER_USER_ID;
-    if (!twitterUserId) {
+    const userId = twitterUserId || process.env.TWITTER_USER_ID;
+    if (!userId) {
       throw new Error("Twitter user ID not found in configurable fields.");
     }
 
     const twitterToken = process.env.TWITTER_USER_TOKEN;
     const twitterTokenSecret = process.env.TWITTER_USER_TOKEN_SECRET;
 
-    return TwitterClient.fromArcade(twitterUserId, {
+    return TwitterClient.fromArcade(userId, {
       twitterToken,
       twitterTokenSecret,
     });

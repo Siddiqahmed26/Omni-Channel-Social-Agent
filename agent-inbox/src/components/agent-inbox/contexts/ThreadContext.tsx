@@ -479,18 +479,32 @@ export function ThreadsProvider<
       return;
     }
     try {
+      let twitterUserId = localStorage.getItem("arcade_twitter_userId");
+      if (!twitterUserId) {
+        twitterUserId = crypto.randomUUID();
+        localStorage.setItem("arcade_twitter_userId", twitterUserId);
+      }
+
+      let linkedInUserId = localStorage.getItem("arcade_linkedin_userId");
+      if (!linkedInUserId) {
+        linkedInUserId = crypto.randomUUID();
+        localStorage.setItem("arcade_linkedin_userId", linkedInUserId);
+      }
+
       if (options?.stream) {
         return client.runs.stream(threadId, graphId, {
           command: {
             resume: response,
           },
           streamMode: "events",
+          config: { configurable: { twitterUserId, linkedInUserId } }
         }) as any; // Type assertion needed due to conditional return type
       }
       return client.runs.create(threadId, graphId, {
         command: {
           resume: response,
         },
+        config: { configurable: { twitterUserId, linkedInUserId } }
       }) as any; // Type assertion needed due to conditional return type
     } catch (e: any) {
       logger.error("Error sending human response", e);

@@ -116,4 +116,12 @@ export const RepurposerConfigurableAnnotation = Annotation.Root({
    * If true, [LINKEDIN_ORGANIZATION_ID] is required.
    */
   [POST_TO_LINKEDIN_ORGANIZATION]: Annotation<boolean | undefined>,
+  /**
+   * The dynamic User ID to use for Arcade Twitter Authentication.
+   */
+  twitterUserId: Annotation<string | undefined>,
+  /**
+   * The dynamic User ID to use for Arcade LinkedIn Authentication.
+   */
+  linkedInUserId: Annotation<string | undefined>,
 });

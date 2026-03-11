@@ -109,7 +109,7 @@ function ImageThumb({ url, label }: { url: string; label?: string }) {
   );
 }
 
-function ArgsRenderer({ args }: { args: Record<string, any> }) {
+function ArgsRenderer({ args, onDisconnect }: { args: Record<string, any>, onDisconnect: (platform: "Twitter" | "LinkedIn") => void }) {
   return (
     <div className="grid grid-cols-1 gap-6 w-full mt-2">
       {Object.entries(args).map(([k, v]) => {
@@ -167,12 +167,16 @@ function ArgsRenderer({ args }: { args: Record<string, any> }) {
                 <Icon className="w-3 h-3 text-emerald-400" /> Account Status
               </p>
 
-              <div
-                className={`flex items-center justify-center gap-3 w-full py-4 rounded-xl text-emerald-400 font-bold tracking-wide shadow-inner bg-emerald-400/10 border border-emerald-400/20`}
+              <button
+                type="button"
+                onClick={() => onDisconnect(platformName as "Twitter" | "LinkedIn")}
+                className={`flex items-center justify-center gap-3 w-full py-4 rounded-xl text-emerald-400 font-bold tracking-wide shadow-inner bg-emerald-400/10 border border-emerald-400/20 hover:bg-emerald-400/20 active:scale-95 transition-all group/btn`}
               >
-                <CheckCircle2 className="w-4 h-4" />
-                <span>{platformName} Connected</span>
-              </div>
+                <CheckCircle2 className="w-4 h-4 group-hover/btn:hidden" />
+                <CircleX className="w-4 h-4 hidden group-hover/btn:block shrink-0" />
+                <span className="group-hover/btn:hidden">{platformName} Connected</span>
+                <span className="hidden group-hover/btn:inline">Disconnect {platformName}</span>
+              </button>
             </div>
           );
         }
@@ -314,7 +318,7 @@ function ResponseComponent({
 
       {showArgsInResponse && interruptValue?.action_request?.args && (
         <div className="w-full bg-black/20 p-6 rounded-2xl border border-white/5">
-          <ArgsRenderer args={interruptValue.action_request.args} />
+          <ArgsRenderer args={interruptValue.action_request.args} onDisconnect={() => { }} />
         </div>
       )}
 
@@ -385,7 +389,7 @@ function AcceptComponent({
 
       {actionRequestArgs && Object.keys(actionRequestArgs).length > 0 && (
         <div className="w-full bg-black/20 p-6 rounded-2xl border border-white/5 inner-shadow">
-          <ArgsRenderer args={actionRequestArgs} />
+          <ArgsRenderer args={actionRequestArgs} onDisconnect={() => { }} />
         </div>
       )}
 
@@ -580,6 +584,38 @@ export function InboxItemInput({
     hasArgs && !showArgsInResponse && !isEditAllowed && !acceptAllowed;
   const isError = currentNode === "__error__";
 
+  const handleDisconnect = async (platform: "Twitter" | "LinkedIn") => {
+    // 1. Wipe out localStorage key
+    if (platform === "Twitter") {
+      localStorage.removeItem("arcade_twitter_userId");
+    } else {
+      localStorage.removeItem("arcade_linkedin_userId");
+    }
+
+    // 2. Submit response to the backend intercept
+    const disconnectResponse: HumanResponseWithEdits[] = [
+      {
+        type: "edit",
+        args: {
+          action: "disconnect",
+          args: { platform }
+        }
+      }
+    ];
+
+    // We update the local state manually
+    setHumanResponse(disconnectResponse);
+    setSelectedSubmitType("edit");
+
+    // We can theoretically handleSubmit directly but the structure normally
+    // waits for the user. We'll simulate a quick event.
+    setTimeout(() => {
+      // Find the "edit" component and auto submit it or call directly if we adjust context.
+      // For simplicity, we just trigger the generic handleSubmit knowing SelectedSubmitType is edit
+      handleSubmit({ preventDefault: () => { } } as any);
+    }, 100);
+  };
+
   const onEditChange = (
     change: string | string[],
     response: HumanResponseWithEdits,
@@ -739,7 +775,7 @@ export function InboxItemInput({
       )}
     >
       {showArgsOutsideActionCards && interruptValue?.action_request?.args && (
-        <ArgsRenderer args={interruptValue.action_request.args} />
+        <ArgsRenderer args={interruptValue.action_request.args} onDisconnect={handleDisconnect} />
       )}
 
       <div className="flex flex-col gap-2 items-start w-full">

@@ -1,11 +1,14 @@
+import { LangGraphRunnableConfig } from "@langchain/langgraph";
 import { RepurposerState } from "../../types.js";
 import { getUrlContents } from "./get-url-contents.js";
 
 export async function extractContent(
   state: RepurposerState,
+  config: LangGraphRunnableConfig,
 ): Promise<Partial<RepurposerState>> {
   const { contents: originalContent, imageUrls } = await getUrlContents(
     state.originalLink,
+    config.configurable?.twitterUserId,
   );
   const originalContentPrompt = `Here is the original content. This content is the basis of the new marketing campaign. This post has already been shared, so use this as a base for the new campaign building on top of this post:
   
@@ -22,7 +25,7 @@ ${originalContent}
   }
 
   const additionalContextPromises = state.contextLinks.map(async (link) => {
-    const { contents, imageUrls } = await getUrlContents(link);
+    const { contents, imageUrls } = await getUrlContents(link, config.configurable?.twitterUserId);
     return {
       content: contents,
       link,

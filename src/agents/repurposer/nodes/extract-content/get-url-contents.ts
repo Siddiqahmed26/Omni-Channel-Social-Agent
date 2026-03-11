@@ -47,7 +47,7 @@ async function getYouTubeContent(url: string): Promise<{
   }
 }
 
-async function getTwitterContent(url: string): Promise<{
+async function getTwitterContent(url: string, twitterUserId?: string): Promise<{
   contents: string;
   imageUrls: string[];
 }> {
@@ -56,7 +56,7 @@ async function getTwitterContent(url: string): Promise<{
     throw new Error("Failed to extract tweet ID from link:" + url);
   }
 
-  const twitterClient = await getTwitterClient();
+  const twitterClient = await getTwitterClient(twitterUserId);
   let tweetContent: TweetV2SingleResult | undefined;
 
   try {
@@ -118,7 +118,7 @@ async function getTwitterContent(url: string): Promise<{
 /**
  * Extracts the contents from a given URL. This can be either a blog post, tweet, or YouTube video.
  */
-export async function getUrlContents(url: string): Promise<{
+export async function getUrlContents(url: string, twitterUserId?: string): Promise<{
   contents: string;
   imageUrls: string[];
 }> {
@@ -129,7 +129,7 @@ export async function getUrlContents(url: string): Promise<{
   } else if (type === "youtube") {
     return getYouTubeContent(url);
   } else if (type === "twitter") {
-    return getTwitterContent(url);
+    return getTwitterContent(url, twitterUserId);
   }
 
   throw new Error(`Unsupported URL type: ${type}`);

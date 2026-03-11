@@ -12,7 +12,7 @@ export async function authSocialsPassthrough(
   let linkedInHumanInterrupt: HumanInterrupt | undefined = undefined;
   // If using Arcade, we MUST have an ID to start the flow. Fallback to a default if missing.
   const linkedInUserId = useArcadeAuth()
-    ? (process.env.LINKEDIN_USER_ID || "default_user_123")
+    ? (config.configurable?.linkedInUserId || process.env.LINKEDIN_USER_ID || "default_user_123")
     : process.env.LINKEDIN_USER_ID;
 
   if (linkedInUserId || useArcadeAuth()) {
@@ -26,7 +26,7 @@ export async function authSocialsPassthrough(
 
   let twitterHumanInterrupt: HumanInterrupt | undefined = undefined;
   const twitterUserId = useArcadeAuth()
-    ? (process.env.TWITTER_USER_ID || "default_user_123")
+    ? (config.configurable?.twitterUserId || process.env.TWITTER_USER_ID || "default_user_123")
     : process.env.TWITTER_USER_ID;
 
   if (twitterUserId || useArcadeAuth()) {
@@ -41,7 +41,7 @@ export async function authSocialsPassthrough(
     return {};
   }
 
-  const combinedArgs = {
+  const combinedArgs: Record<string, any> = {
     ...twitterHumanInterrupt?.action_request.args,
     ...linkedInHumanInterrupt?.action_request.args,
     twitterConnected: !twitterHumanInterrupt?.action_request.args?.authorizeTwitterURL,
@@ -68,7 +68,7 @@ Once done, please 'accept' this interrupt event.`;
       allow_accept: true,
       allow_ignore: true,
       allow_respond: false,
-      allow_edit: false,
+      allow_edit: true, // We allow edit so we can send the disconnect event
     },
   };
 
@@ -79,6 +79,14 @@ Once done, please 'accept' this interrupt event.`;
   if (interruptRes.type === "ignore") {
     // Throw an error to end the graph.
     throw new Error("Authorization denied by user.");
+  }
+
+  if (
+    interruptRes.type === "edit" &&
+    typeof interruptRes.args === "object" &&
+    interruptRes.args?.action === "disconnect"
+  ) {
+    throw new Error(`Disconnected ${interruptRes.args.args?.platform}. Please generate your post again.`);
   }
 
   return {};

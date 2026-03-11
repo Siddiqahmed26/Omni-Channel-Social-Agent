@@ -1,3 +1,4 @@
+import { LangGraphRunnableConfig } from "@langchain/langgraph";
 import { VerifyTweetAnnotation } from "../verify-tweet-state.js";
 import { extractTweetId } from "../../utils.js";
 import {
@@ -11,6 +12,7 @@ import { getTwitterClient } from "../../../clients/twitter/client.js";
 
 export async function getTweetContent(
   state: typeof VerifyTweetAnnotation.State,
+  config: LangGraphRunnableConfig,
 ) {
   const tweetId = extractTweetId(state.link);
   if (!tweetId) {
@@ -18,7 +20,7 @@ export async function getTweetContent(
     return {};
   }
 
-  const twitterClient = await getTwitterClient();
+  const twitterClient = await getTwitterClient(config.configurable?.twitterUserId);
 
   let tweetContent: TweetV2SingleResult | undefined;
   try {

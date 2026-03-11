@@ -89,9 +89,9 @@ export const GeneratePostAnnotation = Annotation.Root({
    */
   image: Annotation<
     | {
-        imageUrl: string;
-        mimeType: string;
-      }
+      imageUrl: string;
+      mimeType: string;
+    }
     | undefined
   >({
     reducer: (_state, update) => update,
@@ -132,6 +132,14 @@ export const GeneratePostConfigurableAnnotation = Annotation.Root({
    */
   origin: Annotation<string | undefined>,
   /**
+   * The dynamic User ID to use for Arcade Twitter Authentication.
+   */
+  twitterUserId: Annotation<string | undefined>,
+  /**
+   * The dynamic User ID to use for Arcade LinkedIn Authentication.
+   */
+  linkedInUserId: Annotation<string | undefined>,
+  /**
    * Whether or not to skip the content relevancy check.
    */
   [SKIP_CONTENT_RELEVANCY_CHECK]: Annotation<boolean | undefined>(),
@@ -143,10 +151,10 @@ export const GeneratePostConfigurableAnnotation = Annotation.Root({
 });
 
 export const BASE_GENERATE_POST_CONFIG: typeof GeneratePostConfigurableAnnotation.State =
-  {
-    [POST_TO_LINKEDIN_ORGANIZATION]: undefined,
-    [TEXT_ONLY_MODE]: false,
-    origin: undefined,
-    [SKIP_CONTENT_RELEVANCY_CHECK]: undefined,
-    [SKIP_USED_URLS_CHECK]: undefined,
-  };
+{
+  [POST_TO_LINKEDIN_ORGANIZATION]: undefined,
+  [TEXT_ONLY_MODE]: false,
+  origin: undefined,
+  [SKIP_CONTENT_RELEVANCY_CHECK]: undefined,
+  [SKIP_USED_URLS_CHECK]: undefined,
+};

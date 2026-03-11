@@ -258,7 +258,10 @@ export async function uploadPost(
       if (useTwitterApiOnly() || !useArcadeAuth()) {
         twitterClient = TwitterClient.fromBasicTwitterAuth();
       } else {
-        const twitterUserId = process.env.TWITTER_USER_ID!;
+        const twitterUserId = config.configurable?.twitterUserId || process.env.TWITTER_USER_ID;
+        if (!twitterUserId) {
+          throw new Error("Twitter user ID not found in configurable fields.");
+        }
         const twitterToken = process.env.TWITTER_USER_TOKEN;
         const twitterTokenSecret = process.env.TWITTER_USER_TOKEN_SECRET;
 
@@ -323,7 +326,7 @@ export async function uploadPost(
       let linkedInClient: LinkedInClient;
 
       if (useArcadeAuth()) {
-        const linkedInUserId = process.env.LINKEDIN_USER_ID;
+        const linkedInUserId = config.configurable?.linkedInUserId || process.env.LINKEDIN_USER_ID;
         if (!linkedInUserId) {
           throw new Error("LinkedIn user ID not found in configurable fields.");
         }

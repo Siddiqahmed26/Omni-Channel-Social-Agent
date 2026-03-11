@@ -63,6 +63,19 @@ export function QuickGenerateDialog({ iconOnly = false }: { iconOnly?: boolean }
                 metadata: { user_id: user?.id }
             });
 
+            // Get or create dynamic user IDs for Arcade authentication
+            let twitterUserId = localStorage.getItem("arcade_twitter_userId");
+            if (!twitterUserId) {
+                twitterUserId = crypto.randomUUID();
+                localStorage.setItem("arcade_twitter_userId", twitterUserId);
+            }
+
+            let linkedInUserId = localStorage.getItem("arcade_linkedin_userId");
+            if (!linkedInUserId) {
+                linkedInUserId = crypto.randomUUID();
+                localStorage.setItem("arcade_linkedin_userId", linkedInUserId);
+            }
+
             await client.runs.create(thread.thread_id, graphId, {
                 input: {
                     links: [url],
@@ -74,6 +87,12 @@ export function QuickGenerateDialog({ iconOnly = false }: { iconOnly?: boolean }
                     post: "",
                     condenseCount: 0
                 },
+                config: {
+                    configurable: {
+                        twitterUserId,
+                        linkedInUserId
+                    }
+                }
             });
 
             toast({
