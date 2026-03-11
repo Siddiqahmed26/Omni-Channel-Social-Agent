@@ -15,7 +15,7 @@ export async function authSocialsPassthrough(
   let linkedInHumanInterrupt: HumanInterrupt | undefined = undefined;
   // If using Arcade, prioritize the configurable ID (UUID) for multi-user support.
   const linkedInUserId = useArcade
-    ? (config.configurable?.linkedInUserId || process.env.LINKEDIN_USER_ID || "default_user_123")
+    ? (config.configurable?.linkedInUserId || process.env.LINKEDIN_USER_ID)
     : process.env.LINKEDIN_USER_ID;
 
   if (linkedInUserId || useArcade) {
@@ -29,7 +29,7 @@ export async function authSocialsPassthrough(
 
   let twitterHumanInterrupt: HumanInterrupt | undefined = undefined;
   const twitterUserId = useArcade
-    ? (config.configurable?.twitterUserId || process.env.TWITTER_USER_ID || "default_user_123")
+    ? (config.configurable?.twitterUserId || process.env.TWITTER_USER_ID)
     : process.env.TWITTER_USER_ID;
 
   if (twitterUserId || useArcade) {
@@ -89,7 +89,7 @@ Once done, please 'accept' this interrupt event.`;
     typeof interruptRes.args === "object" &&
     interruptRes.args?.action === "disconnect"
   ) {
-    return { action: "disconnect" };
+    throw new Error("User requested disconnect.");
   }
 
   return { action: undefined };
