@@ -3,19 +3,22 @@ import { GeneratePostAnnotation } from "../generate-post-state.js";
 import { getLinkedInAuthOrInterrupt } from "../../shared/auth/linkedin.js";
 import { getTwitterAuthOrInterrupt } from "../../shared/auth/twitter.js";
 import { HumanInterrupt, HumanResponse } from "@langchain/langgraph/prebuilt";
-import { shouldPostToLinkedInOrg, useArcadeAuth } from "../../utils.js";
+import { shouldPostToLinkedInOrg } from "../../utils.js";
 
 export async function authSocialsPassthrough(
   _state: typeof GeneratePostAnnotation.State,
   config: LangGraphRunnableConfig,
 ) {
+  // Use env var directly to avoid ReferenceError
+  const useArcade = process.env.USE_ARCADE_AUTH === "true";
+  
   let linkedInHumanInterrupt: HumanInterrupt | undefined = undefined;
-  // If using Arcade, we MUST have an ID to start the flow. Fallback to a default if missing.
-  const linkedInUserId = useArcadeAuth()
+  // If using Arcade, prioritize the configurable ID (UUID) for multi-user support.
+  const linkedInUserId = useArcade
     ? (config.configurable?.linkedInUserId || process.env.LINKEDIN_USER_ID || "default_user_123")
     : process.env.LINKEDIN_USER_ID;
 
-  if (linkedInUserId || useArcadeAuth()) {
+  if (linkedInUserId || useArcade) {
     const postToLinkedInOrg = shouldPostToLinkedInOrg(config);
     linkedInHumanInterrupt = await getLinkedInAuthOrInterrupt({
       linkedInUserId: linkedInUserId!,
@@ -25,11 +28,11 @@ export async function authSocialsPassthrough(
   }
 
   let twitterHumanInterrupt: HumanInterrupt | undefined = undefined;
-  const twitterUserId = useArcadeAuth()
+  const twitterUserId = useArcade
     ? (config.configurable?.twitterUserId || process.env.TWITTER_USER_ID || "default_user_123")
     : process.env.TWITTER_USER_ID;
 
-  if (twitterUserId || useArcadeAuth()) {
+  if (twitterUserId || useArcade) {
     twitterHumanInterrupt = await getTwitterAuthOrInterrupt({
       twitterUserId: twitterUserId!,
       returnInterrupt: true,
