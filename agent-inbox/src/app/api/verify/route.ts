@@ -4,10 +4,11 @@ import Arcade from "@arcadeai/arcadejs";
 export async function GET(req: Request) {
   const url = new URL(req.url);
   const flowId = url.searchParams.get("flow_id");
-  const userId = url.searchParams.get("user_id") || url.searchParams.get("userId");
+  const userId = url.searchParams.get("user_id") || url.searchParams.get("userId") || url.searchParams.get("sub");
   const redirectUrl = url.searchParams.get("redirect_url") || url.searchParams.get("redirect_uri");
 
-  console.log(`[Verify] Handshake: flow_id=${flowId}, user_id=${userId}`);
+  const allParams = Object.fromEntries(url.searchParams);
+  console.log("[Verify] Request params:", allParams);
 
   // 1. Dashboard "Run Test" Flow (Initial Redirect)
   if (redirectUrl) {
@@ -19,21 +20,20 @@ export async function GET(req: Request) {
   if (flowId) {
     const arcadeKey = process.env.ARCADE_API_KEY;
     if (!arcadeKey) {
-      return NextResponse.json({ error: "ARCADE_API_KEY not set" }, { status: 500 });
+      return NextResponse.json({ error: "ARCADE_API_KEY not set in Vercel" }, { status: 500 });
     }
 
     const arcade = new Arcade({ apiKey: arcadeKey });
     
-    // IMPORTANT: The 'coordinator_error' 400 happens when this finalUserId 
-    // does NOT match the ID Arcade used to start the flow.
-    // For Dashboard "Run Test", you must set the "Test User ID" field in Arcade
-    // to match this string exactly.
+    // Diagnostic Fallback Logic
+    // 1. Use user_id from query (best)
+    // 2. Use LINKEDIN_USER_ID from env (next best)
+    // 3. Fallback to hardcoded (last resort for tests)
     const finalUserId = userId || process.env.LINKEDIN_USER_ID || "siddiqahmed.work@gmail.com";
     
     try {
-      console.log(`[Verify] Handshaking flow ${flowId} for user ${finalUserId}`);
+      console.log(`[Verify] Attempting confirm_user: user=${finalUserId}, flow=${flowId}`);
       
-      // Use the SDK's internal POST to confirm the user identity
       const confirmRes = await arcade.post("/v1/auth/confirm_user", {
         body: {
           flow_id: flowId,
@@ -41,22 +41,33 @@ export async function GET(req: Request) {
         }
       });
 
-      console.log("[Verify] Confirmation Success:", confirmRes);
+      console.log("[Verify] Handshake Complete!");
 
-      // Final Redirect to Arcade success callback
       const callback = `https://cloud.arcade.dev/api/v1/oauth/callback?flow_id=${flowId}&status=approved`;
       return NextResponse.redirect(callback);
 
     } catch (error: any) {
-      console.error("[Verify] Confirmation Error:", error);
+      console.error("[Verify] Confirmation Failed:", error.message);
       
-      // We return a detailed error page to the user's browser
+      // EXTREME DIAGNOSTICS: Return everything to the user
       return NextResponse.json({ 
-        arcade_error: "coordinator_error",
-        why: "User ID Mismatch. The ID we sent to Arcade does not match the one that started the flow.",
-        action_required: `In your Arcade Dashboard, set 'User ID for testing' to: ${finalUserId}`,
-        tried_user: finalUserId,
-        tried_flow: flowId,
+        error: "User ID Mismatch (coordinator_error)",
+        diagnosis: "Arcade is rejecting our confirmation because the User ID doesn't match the one that started the flow.",
+        
+        instructions: [
+          "1. Go to Arcade Dashboard > User Verification",
+          `2. Locate 'User ID for testing' and set it to: ${finalUserId}`,
+          "3. OR, add LINKEDIN_USER_ID to Vercel env vars with your correct email.",
+          "4. Run the test again."
+        ],
+
+        state: {
+          tried_to_confirm_user: finalUserId,
+          flow_id: flowId,
+          incoming_params: allParams,
+          env_linkedin_user_id: process.env.LINKEDIN_USER_ID ? "SET (hidden for privacy)" : "NOT SET",
+          arcade_api_key_status: "SET"
+        },
         raw_error: error.message
       }, { status: 400 });
     }
@@ -64,7 +75,10 @@ export async function GET(req: Request) {
 
   return NextResponse.json({
     status: "active",
-    message: "Arcade Verifier is ready.",
-    received_params: Object.fromEntries(url.searchParams)
+    message: "Arcade Verifier is awaiting a flow_id.",
+    env_check: {
+      has_arcade_key: !!process.env.ARCADE_API_KEY,
+      has_user_id_env: !!process.env.LINKEDIN_USER_ID
+    }
   });
 }
