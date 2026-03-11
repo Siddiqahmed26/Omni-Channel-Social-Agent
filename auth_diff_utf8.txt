@@ -1,0 +1,102 @@
+﻿commit 2f9a382a6d531b9d8b4b8895f347581beae91c95
+Author: Antigravity AI <antigravity@google.com>
+Date:   Wed Mar 11 08:13:04 2026 +0530
+
+    feat(auth): implement graceful disconnect graph loop-back
+
+diff --git a/src/agents/generate-post/nodes/auth-socials.ts b/src/agents/generate-post/nodes/auth-socials.ts
+index 949ce77..d499b2a 100644
+--- a/src/agents/generate-post/nodes/auth-socials.ts
++++ b/src/agents/generate-post/nodes/auth-socials.ts
+@@ -86,8 +86,8 @@ Once done, please 'accept' this interrupt event.`;
+     typeof interruptRes.args === "object" &&
+     interruptRes.args?.action === "disconnect"
+   ) {
+-    throw new Error(`Disconnected ${interruptRes.args.args?.platform}. Please generate your post again.`);
++    return { action: "disconnect" };
+   }
+ 
+-  return {};
++  return { action: undefined };
+ }
+
+commit ce146f7f49b19615efdbd31308ee6a3438c71c16
+Author: Antigravity AI <antigravity@google.com>
+Date:   Wed Mar 11 06:56:10 2026 +0530
+
+    feat: implement social media account disconnect and reconnect flow
+
+diff --git a/src/agents/generate-post/nodes/auth-socials.ts b/src/agents/generate-post/nodes/auth-socials.ts
+index 1bb7f75..949ce77 100644
+--- a/src/agents/generate-post/nodes/auth-socials.ts
++++ b/src/agents/generate-post/nodes/auth-socials.ts
+@@ -12,7 +12,7 @@ export async function authSocialsPassthrough(
+   let linkedInHumanInterrupt: HumanInterrupt | undefined = undefined;
+   // If using Arcade, we MUST have an ID to start the flow. Fallback to a default if missing.
+   const linkedInUserId = useArcadeAuth()
+-    ? (process.env.LINKEDIN_USER_ID || "default_user_123")
++    ? (config.configurable?.linkedInUserId || process.env.LINKEDIN_USER_ID || "default_user_123")
+     : process.env.LINKEDIN_USER_ID;
+ 
+   if (linkedInUserId || useArcadeAuth()) {
+@@ -26,7 +26,7 @@ export async function authSocialsPassthrough(
+ 
+   let twitterHumanInterrupt: HumanInterrupt | undefined = undefined;
+   const twitterUserId = useArcadeAuth()
+-    ? (process.env.TWITTER_USER_ID || "default_user_123")
++    ? (config.configurable?.twitterUserId || process.env.TWITTER_USER_ID || "default_user_123")
+     : process.env.TWITTER_USER_ID;
+ 
+   if (twitterUserId || useArcadeAuth()) {
+@@ -41,7 +41,7 @@ export async function authSocialsPassthrough(
+     return {};
+   }
+ 
+-  const combinedArgs = {
++  const combinedArgs: Record<string, any> = {
+     ...twitterHumanInterrupt?.action_request.args,
+     ...linkedInHumanInterrupt?.action_request.args,
+     twitterConnected: !twitterHumanInterrupt?.action_request.args?.authorizeTwitterURL,
+@@ -68,7 +68,7 @@ Once done, please 'accept' this interrupt event.`;
+       allow_accept: true,
+       allow_ignore: true,
+       allow_respond: false,
+-      allow_edit: false,
++      allow_edit: true, // We allow edit so we can send the disconnect event
+     },
+   };
+ 
+@@ -81,5 +81,13 @@ Once done, please 'accept' this interrupt event.`;
+     throw new Error("Authorization denied by user.");
+   }
+ 
++  if (
++    interruptRes.type === "edit" &&
++    typeof interruptRes.args === "object" &&
++    interruptRes.args?.action === "disconnect"
++  ) {
++    throw new Error(`Disconnected ${interruptRes.args.args?.platform}. Please generate your post again.`);
++  }
++
+   return {};
+ }
+
+commit 6c41b70f04c8fdeb3b3fe8829547175ab25e706c
+Author: Antigravity AI <antigravity@google.com>
+Date:   Wed Mar 11 05:35:13 2026 +0530
+
+    v92: redesign auth socials ui with solid connect buttons and connected states
+
+diff --git a/src/agents/generate-post/nodes/auth-socials.ts b/src/agents/generate-post/nodes/auth-socials.ts
+index 0dc81aa..1bb7f75 100644
+--- a/src/agents/generate-post/nodes/auth-socials.ts
++++ b/src/agents/generate-post/nodes/auth-socials.ts
+@@ -44,6 +44,8 @@ export async function authSocialsPassthrough(
+   const combinedArgs = {
+     ...twitterHumanInterrupt?.action_request.args,
+     ...linkedInHumanInterrupt?.action_request.args,
++    twitterConnected: !twitterHumanInterrupt?.action_request.args?.authorizeTwitterURL,
++    linkedInConnected: !linkedInHumanInterrupt?.action_request.args?.authorizeLinkedInURL,
+   };
+ 
+   const description = `# Authorization Required
