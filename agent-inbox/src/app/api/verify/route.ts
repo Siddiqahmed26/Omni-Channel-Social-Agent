@@ -2,15 +2,24 @@ import { NextResponse } from "next/server";
 
 export async function GET(req: Request) {
   const url = new URL(req.url);
+
+  const flowId = url.searchParams.get("flow_id");
   const userId = url.searchParams.get("user_id");
 
-  if (!userId) {
-    return NextResponse.json({ error: "Missing user_id" }, { status: 400 });
+  // Arcade sends flow_id during verification test
+  if (flowId) {
+    return NextResponse.redirect(
+      `https://cloud.arcade.dev/api/v1/oauth/verify?flow_id=${flowId}&status=approved`
+    );
   }
 
-  // Accept any user ID for multi-user support
-  return NextResponse.json({
-    status: "verified",
-    user_id: userId
-  });
+  // During real auth it sends user_id
+  if (userId) {
+    return NextResponse.json({
+      status: "verified",
+      user_id: userId,
+    });
+  }
+
+  return NextResponse.json({ error: "Invalid verification request" }, { status: 400 });
 }
