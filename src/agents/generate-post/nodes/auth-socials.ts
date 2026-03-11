@@ -44,6 +44,8 @@ export async function authSocialsPassthrough(
   const combinedArgs = {
     ...twitterHumanInterrupt?.action_request.args,
     ...linkedInHumanInterrupt?.action_request.args,
+    twitterConnected: !twitterHumanInterrupt?.action_request.args?.authorizeTwitterURL,
+    linkedInConnected: !linkedInHumanInterrupt?.action_request.args?.authorizeLinkedInURL,
   };
 
   const description = `# Authorization Required

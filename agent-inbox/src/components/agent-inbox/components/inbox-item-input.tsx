@@ -153,6 +153,55 @@ function ArgsRenderer({ args }: { args: Record<string, any> }) {
           );
         }
 
+        // Handle Connected States
+        if (k === "twitterConnected" || k === "linkedInConnected") {
+          if (!v) return null; // If not connected, do nothing, the URL handler above will show the Connect button
+
+          const isTwitter = k === "twitterConnected";
+          const platformName = isTwitter ? "Twitter" : "LinkedIn";
+          const Icon = isTwitter ? Sparkles : CheckCircle2;
+
+          return (
+            <div key={`args-${k}`} className="flex flex-col gap-3 group/arg">
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 group-hover/arg:text-emerald-400 transition-colors flex items-center gap-2">
+                <Icon className="w-3 h-3 text-emerald-400" /> Account Status
+              </p>
+
+              <div
+                className={`flex items-center justify-center gap-3 w-full py-4 rounded-xl text-emerald-400 font-bold tracking-wide shadow-inner bg-emerald-400/10 border border-emerald-400/20`}
+              >
+                <CheckCircle2 className="w-4 h-4" />
+                <span>{platformName} Connected</span>
+              </div>
+            </div>
+          );
+        }
+
+        // Special handling for Arcade Auth URLs
+        if (k === "authorizeTwitterURL" || k === "authorizeLinkedInURL") {
+          const isTwitter = k === "authorizeTwitterURL";
+          const platformName = isTwitter ? "Twitter" : "LinkedIn";
+          const brandColor = isTwitter ? "bg-[#1DA1F2] hover:bg-[#1A91DA]" : "bg-[#0A66C2] hover:bg-[#0958A6]";
+          const Icon = isTwitter ? Sparkles : CheckCircle2; // Using generic icons for now
+
+          return (
+            <div key={`args-${k}`} className="flex flex-col gap-3 group/arg">
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 group-hover/arg:text-blue-400 transition-colors flex items-center gap-2">
+                <Icon className="w-3 h-3" /> Connect Account
+              </p>
+
+              <a
+                href={v as string}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`flex items-center justify-center gap-3 w-full py-4 rounded-xl text-white font-bold tracking-wide transition-all active:scale-[0.98] shadow-lg ${brandColor}`}
+              >
+                <span>Connect to {platformName}</span>
+              </a>
+            </div>
+          );
+        }
+
         // Regular text/narrative content
         let value = "";
         if (["string", "number"].includes(typeof v)) {
