@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import Arcade from "@arcadeai/arcadejs";
 
 export async function GET(req: Request) {
   const url = new URL(req.url);
@@ -7,8 +6,7 @@ export async function GET(req: Request) {
   const userId = url.searchParams.get("user_id") || url.searchParams.get("userId") || url.searchParams.get("sub");
   const redirectUrl = url.searchParams.get("redirect_url") || url.searchParams.get("redirect_uri");
 
-  const allParams = Object.fromEntries(url.searchParams);
-  const allHeaders = Object.fromEntries(req.headers.entries());
+  console.log(`[Verify] Cloud Handshake: flow_id=${flowId}, user_id=${userId}`);
 
   // 1. Initial Test Redirect
   if (redirectUrl) {
@@ -19,62 +17,75 @@ export async function GET(req: Request) {
   if (flowId) {
     const arcadeKey = process.env.ARCADE_API_KEY;
     if (!arcadeKey) {
-      return NextResponse.json({ error: "ARCADE_API_KEY not set" }, { status: 500 });
+      return NextResponse.json({ error: "ARCADE_API_KEY missing" }, { status: 500 });
     }
 
-    const arcade = new Arcade({ apiKey: arcadeKey });
+    // PRIORITY: Prioritize query param, then env, then fallback test user
     const finalUserId = userId || process.env.LINKEDIN_USER_ID || "siddiqahmed.work@gmail.com";
     
     try {
-      // DEBUG: Check flow status first
-      console.log(`[Verify] Checking status for flow: ${flowId}`);
-      const flowStatus = await arcade.auth.status({ id: flowId });
-      console.log("[Verify] Current flow status:", JSON.stringify(flowStatus, null, 2));
-
-      // Attempt Confirmation
-      console.log(`[Verify] Confirming user: ${finalUserId}`);
-      const confirmRes = await arcade.post("/v1/auth/confirm_user", {
-        body: {
+      // THE CLOUD ENDPOINT: This is specific to the platform/dashboard flows
+      const confirmEndpoint = "https://cloud.arcade.dev/api/v1/oauth/confirm_user";
+      console.log(`[Verify] POSTING TO ${confirmEndpoint}`);
+      
+      const response = await fetch(confirmEndpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          // Cloud endpoints typically require the Bearer prefix
+          "Authorization": `Bearer ${arcadeKey}`,
+        },
+        body: JSON.stringify({
           flow_id: flowId,
           user_id: finalUserId,
-        }
+        }),
       });
 
-      console.log("[Verify] Success!");
+      const resData = await response.text();
+      
+      if (!response.ok) {
+        console.error(`[Verify] Cloud Handshake Failed (${response.status}):`, resData);
+        
+        // Try fallback without Bearer just in case
+        console.log("[Verify] Retrying without Bearer prefix...");
+        const retryRes = await fetch(confirmEndpoint, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": arcadeKey,
+          },
+          body: JSON.stringify({ flow_id: flowId, user_id: finalUserId }),
+        });
+        
+        if (!retryRes.ok) {
+          const retryData = await retryRes.text();
+          throw new Error(`Cloud rejection: ${resData} | Retry rejection: ${retryData}`);
+        }
+      }
+
+      console.log("[Verify] Cloud Handshake SUCCESS.");
+
+      // Final redirect to complete the Arcade flow
       const callback = `https://cloud.arcade.dev/api/v1/oauth/callback?flow_id=${flowId}&status=approved`;
       return NextResponse.redirect(callback);
 
     } catch (error: any) {
-      console.error("[Verify] Handshake Error:", error.message);
+      console.error("[Verify] System Error:", error.message);
       
-      // Get the freshest status for the error report
-      let currentStatus = {};
-      try {
-        currentStatus = await arcade.auth.status({ id: flowId });
-      } catch (sErr) {}
-
       return NextResponse.json({ 
-        error: "Arcade Handshake Failed",
-        message: error.message,
-        hint: "The 400 'coordinator_error' usually means the user_id we sent doesn't match the one that started the flow.",
-        
-        diagnostics: {
-          flow_status: currentStatus,
-          tried_user: finalUserId,
-          flow_id: flowId,
-          tips: [
-            "Check that ARCADE_API_KEY in Vercel is correct.",
-            "Make sure Arcade Dashboard > User verification > 'User ID for testing' is exactly: " + finalUserId,
-            "If using different emails, try adding LINKEDIN_USER_ID to Vercel env."
-          ]
-        }
+        error: "Arcade Cloud Handshake Failed",
+        detail: error.message,
+        tried_user: finalUserId,
+        flow_id: flowId,
+        endpoint_tried: "https://cloud.arcade.dev/api/v1/oauth/confirm_user",
+        recommendation: "Ensure Arcade Dashboard > User verification > 'User ID for testing' is exactly: " + finalUserId
       }, { status: 400 });
     }
   }
 
   return NextResponse.json({
-    status: "ready",
-    message: "Arcade Verifier is awaiting a flow.",
-    params: allParams
+    status: "active",
+    message: "Arcade Cloud Verifier is online.",
+    detected_params: Object.fromEntries(url.searchParams)
   });
 }
