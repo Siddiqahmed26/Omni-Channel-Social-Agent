@@ -2,19 +2,16 @@ import { NextResponse } from "next/server";
 
 export async function GET(req: Request) {
   const url = new URL(req.url);
-
   const flowId = url.searchParams.get("flow_id");
   const userId = url.searchParams.get("user_id") || url.searchParams.get("userId");
   const redirectUrl = url.searchParams.get("redirect_url") || url.searchParams.get("redirect_uri");
 
-  // 1. Arcade Dashboard "Run Test" flow
-  // Arcade often sends a 'redirect_url' parameter during its internal testing.
+  // 1. Handle Arcade Dashboard "Run Test" Flow
   if (redirectUrl) {
     return NextResponse.redirect(redirectUrl);
   }
 
-  // 2. Real Auth Flow or Manual Verification Test
-  // If we have a flow_id, we MUST confirm it back to Arcade.
+  // 2. Handle Real Auth Flow (Handshake confirming user_id to Arcade)
   if (flowId) {
     const arcadeKey = process.env.ARCADE_API_KEY;
     if (!arcadeKey) {
@@ -22,20 +19,39 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "ARCADE_API_KEY not set" }, { status: 500 });
     }
 
-    // Use the provided user_id, or fallback to a generic verified ID for testing.
     // In a production app, you would ideally get this from a session/cookie.
+    // For now, we prioritize the query param sent by Arcade.
     const finalUserId = userId || "anonymous_verified_user";
 
     try {
-      // Sign a JWT for Arcade (HS256)
-      const token = await signToken(finalUserId, flowId, arcadeKey);
-      
-      // Redirect back to Arcade callback to complete the verification.
-      const callback = `https://cloud.arcade.dev/api/v1/verify/callback?flow_id=${flowId}&token=${token}`;
-      return NextResponse.redirect(callback);
+      // Server-side confirmation call to Arcade
+      const arcadeBase = "https://cloud.arcade.dev";
+      const confirmRes = await fetch(`${arcadeBase}/api/v1/oauth/confirm_user`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${arcadeKey}`,
+        },
+        body: JSON.stringify({
+          flow_id: flowId,
+          user_id: finalUserId,
+        }),
+      });
+
+      if (!confirmRes.ok) {
+        const errText = await confirmRes.text();
+        console.error("Arcade confirm_user failed:", confirmRes.status, errText);
+        return NextResponse.json({ error: "Arcade confirmation failed", detail: errText }, { status: confirmRes.status });
+      }
+
+      // Successful confirmation! 
+      // Now redirect the browser back to Arcade's callback to complete the OAuth flow.
+      const callbackUrl = `${arcadeBase}/api/v1/oauth/callback?flow_id=${flowId}&status=approved`;
+      return NextResponse.redirect(callbackUrl);
+
     } catch (error) {
-      console.error("Error signing verification token:", error);
-      return NextResponse.json({ error: "Failed to sign token" }, { status: 500 });
+      console.error("Error during Arcade verification handshake:", error);
+      return NextResponse.json({ error: "Internal verification error" }, { status: 500 });
     }
   }
 
@@ -45,36 +61,4 @@ export async function GET(req: Request) {
     message: "Arcade Verification Endpoint is ready.",
     received_params: Object.fromEntries(url.searchParams)
   });
-}
-
-/**
- * Web Crypto based JWT signing (no external dependencies required)
- */
-async function signToken(userId: string, flowId: string, apiKey: string) {
-  const header = { alg: 'HS256', typ: 'JWT' };
-  const payload = { 
-    sub: userId, 
-    flow_id: flowId, 
-    iat: Math.floor(Date.now() / 1000), 
-    exp: Math.floor(Date.now() / 1000) + 600 
-  };
-  
-  const s2b = (s: string) => btoa(s).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
-  const tokenData = `${s2b(JSON.stringify(header))}.${s2b(JSON.stringify(payload))}`;
-  
-  const key = await crypto.subtle.importKey(
-    'raw', 
-    new TextEncoder().encode(apiKey),
-    { name: 'HMAC', hash: 'SHA-256' }, 
-    false, 
-    ['sign']
-  );
-  
-  const sig = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(tokenData));
-  const b64Sig = btoa(String.fromCharCode(...new Uint8Array(sig)))
-    .replace(/=/g, '')
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_');
-    
-  return `${tokenData}.${b64Sig}`;
 }
