@@ -7,14 +7,15 @@ export async function GET(req: Request) {
   const userId = url.searchParams.get("user_id") || url.searchParams.get("userId");
   const redirectUrl = url.searchParams.get("redirect_url") || url.searchParams.get("redirect_uri");
 
-  console.log(`[Verify] Request: flow_id=${flowId}, user_id=${userId}`);
+  console.log(`[Verify] Handshake: flow_id=${flowId}, user_id=${userId}`);
 
-  // 1. Dashboard "Run Test" Flow
+  // 1. Dashboard "Run Test" Flow (Initial Redirect)
   if (redirectUrl) {
+    console.log("[Verify] Initial test redirect detected.");
     return NextResponse.redirect(redirectUrl);
   }
 
-  // 2. Auth Handshake
+  // 2. Auth Confirmation Handshake
   if (flowId) {
     const arcadeKey = process.env.ARCADE_API_KEY;
     if (!arcadeKey) {
@@ -23,14 +24,16 @@ export async function GET(req: Request) {
 
     const arcade = new Arcade({ apiKey: arcadeKey });
     
-    // Use incoming ID, or fallback to the email used in the app/dashboard configs
+    // IMPORTANT: The 'coordinator_error' 400 happens when this finalUserId 
+    // does NOT match the ID Arcade used to start the flow.
+    // For Dashboard "Run Test", you must set the "Test User ID" field in Arcade
+    // to match this string exactly.
     const finalUserId = userId || process.env.LINKEDIN_USER_ID || "siddiqahmed.work@gmail.com";
     
     try {
-      console.log(`[Verify] Confirming ${finalUserId} via SDK for flow ${flowId}`);
+      console.log(`[Verify] Handshaking flow ${flowId} for user ${finalUserId}`);
       
-      // Use the SDK's internal POST method to ensure headers/baseURL are correct
-      // Based on Python SDK, the endpoint is /v1/auth/confirm_user
+      // Use the SDK's internal POST to confirm the user identity
       const confirmRes = await arcade.post("/v1/auth/confirm_user", {
         body: {
           flow_id: flowId,
@@ -38,23 +41,23 @@ export async function GET(req: Request) {
         }
       });
 
-      console.log("[Verify] SDK Confirmation Success:", confirmRes);
+      console.log("[Verify] Confirmation Success:", confirmRes);
 
-      // Final Redirect to complete the flow
+      // Final Redirect to Arcade success callback
       const callback = `https://cloud.arcade.dev/api/v1/oauth/callback?flow_id=${flowId}&status=approved`;
       return NextResponse.redirect(callback);
 
     } catch (error: any) {
-      console.error("[Verify] SDK Confirmation Error:", error);
+      console.error("[Verify] Confirmation Error:", error);
       
-      // Return specific error details to help debug 400 Bad Request
+      // We return a detailed error page to the user's browser
       return NextResponse.json({ 
-        error: "Arcade confirmation failed", 
-        message: error.message,
-        name: error.name,
-        status: error.status,
+        arcade_error: "coordinator_error",
+        why: "User ID Mismatch. The ID we sent to Arcade does not match the one that started the flow.",
+        action_required: `In your Arcade Dashboard, set 'User ID for testing' to: ${finalUserId}`,
         tried_user: finalUserId,
-        tried_flow: flowId
+        tried_flow: flowId,
+        raw_error: error.message
       }, { status: 400 });
     }
   }
