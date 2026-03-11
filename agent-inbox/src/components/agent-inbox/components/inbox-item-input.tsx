@@ -279,6 +279,7 @@ function ResponseComponent({
   handleSubmit: (
     e: React.MouseEvent<HTMLButtonElement, MouseEvent> | React.KeyboardEvent
   ) => Promise<void>;
+  onDisconnect: (platform: "Twitter" | "LinkedIn") => void;
 }) {
   const res = humanResponse.find((r) => r.type === "response");
   if (!res || typeof res.args !== "string") {
@@ -318,7 +319,7 @@ function ResponseComponent({
 
       {showArgsInResponse && interruptValue?.action_request?.args && (
         <div className="w-full bg-black/20 p-6 rounded-2xl border border-white/5">
-          <ArgsRenderer args={interruptValue.action_request.args} onDisconnect={() => { }} />
+          <ArgsRenderer args={interruptValue.action_request.args} onDisconnect={onDisconnect} />
         </div>
       )}
 
@@ -370,6 +371,7 @@ function AcceptComponent({
   handleSubmit: (
     e: React.MouseEvent<HTMLButtonElement, MouseEvent> | React.KeyboardEvent
   ) => Promise<void>;
+  onDisconnect: (platform: "Twitter" | "LinkedIn") => void;
 }) {
   return (
     <motion.div
@@ -389,7 +391,7 @@ function AcceptComponent({
 
       {actionRequestArgs && Object.keys(actionRequestArgs).length > 0 && (
         <div className="w-full bg-black/20 p-6 rounded-2xl border border-white/5 inner-shadow">
-          <ArgsRenderer args={actionRequestArgs} onDisconnect={() => { }} />
+          <ArgsRenderer args={actionRequestArgs} onDisconnect={onDisconnect} />
         </div>
       )}
 
@@ -425,6 +427,7 @@ function EditAndOrAcceptComponent({
   handleSubmit: (
     e: React.MouseEvent<HTMLButtonElement, MouseEvent> | React.KeyboardEvent
   ) => Promise<void>;
+  onDisconnect: (platform: "Twitter" | "LinkedIn") => void;
 }) {
   const defaultRows = React.useRef<Record<string, number>>({});
   const editResponse = humanResponse.find((r) => r.type === "edit");
@@ -440,6 +443,7 @@ function EditAndOrAcceptComponent({
           actionRequestArgs={interruptValue?.action_request?.args || {}}
           streaming={streaming}
           handleSubmit={handleSubmit}
+          onDisconnect={onDisconnect}
         />
       );
     }
@@ -786,6 +790,7 @@ export function InboxItemInput({
           interruptValue={interruptValue}
           onEditChange={onEditChange}
           handleSubmit={handleSubmit}
+          onDisconnect={handleDisconnect}
         />
         {supportsMultipleMethods ? (
           <div className="flex gap-4 items-center w-full px-6 py-4">
@@ -802,6 +807,7 @@ export function InboxItemInput({
             interruptValue={interruptValue}
             onResponseChange={onResponseChange}
             handleSubmit={handleSubmit}
+            onDisconnect={handleDisconnect}
           />
         )}
         {streaming && !currentNode && (
