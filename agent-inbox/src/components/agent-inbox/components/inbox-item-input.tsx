@@ -153,31 +153,55 @@ function ArgsRenderer({ args, onDisconnect }: { args: Record<string, any>, onDis
           );
         }
 
-        // Minimalist Connected States with functional Disconnect button
+        // Handle Connected States
         if (k === "twitterConnected" || k === "linkedInConnected") {
-          if (!v) return null; // If not connected, hide this key entirely
-          const platformName = k === "twitterConnected" ? "Twitter" : "LinkedIn";
+          if (!v) return null; // If not connected, do nothing, the URL handler above will show the Connect button
+
+          const isTwitter = k === "twitterConnected";
+          const platformName = isTwitter ? "Twitter" : "LinkedIn";
+          const Icon = isTwitter ? Sparkles : CheckCircle2;
 
           return (
             <div key={`args-${k}`} className="flex flex-col gap-3 group/arg">
-              <div className="flex items-center justify-between w-full">
-                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 group-hover/arg:text-blue-400 transition-colors">
-                  {prettifyText(k)}
-                </p>
-                <button
-                  type="button"
-                  onClick={() => onDisconnect(platformName)}
-                  className="text-[10px] font-bold uppercase tracking-[0.1em] text-red-400 hover:text-red-300 hover:bg-red-400/20 transition-all bg-red-400/10 px-3 py-1 rounded-full cursor-pointer"
-                >
-                  Disconnect
-                </button>
-              </div>
-              <div className="relative group/val">
-                <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-2xl blur opacity-0 group-hover/val:opacity-100 transition duration-500" />
-                <div className="relative text-[14px] leading-[1.7] text-slate-300 bg-white/[0.03] border border-white/5 rounded-2xl p-5 w-full backdrop-blur-md shadow-2xl overflow-hidden whitespace-pre-wrap break-words">
-                  true
-                </div>
-              </div>
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 group-hover/arg:text-emerald-400 transition-colors flex items-center gap-2">
+                <Icon className="w-3 h-3 text-emerald-400" /> Account Status
+              </p>
+
+              <button
+                type="button"
+                onClick={() => onDisconnect(platformName as "Twitter" | "LinkedIn")}
+                className={`flex items-center justify-center gap-3 w-full py-4 rounded-xl text-emerald-400 font-bold tracking-wide shadow-inner bg-emerald-400/10 border border-emerald-400/20 hover:bg-emerald-400/20 active:scale-95 transition-all group/btn`}
+              >
+                <CheckCircle2 className="w-4 h-4 group-hover/btn:hidden" />
+                <CircleX className="w-4 h-4 hidden group-hover/btn:block shrink-0" />
+                <span className="group-hover/btn:hidden">{platformName} Connected</span>
+                <span className="hidden group-hover/btn:inline">Disconnect {platformName}</span>
+              </button>
+            </div>
+          );
+        }
+
+        // Special handling for Arcade Auth URLs
+        if (k === "authorizeTwitterURL" || k === "authorizeLinkedInURL") {
+          const isTwitter = k === "authorizeTwitterURL";
+          const platformName = isTwitter ? "Twitter" : "LinkedIn";
+          const brandColor = isTwitter ? "bg-[#1DA1F2] hover:bg-[#1A91DA]" : "bg-[#0A66C2] hover:bg-[#0958A6]";
+          const Icon = isTwitter ? Sparkles : CheckCircle2; // Using generic icons for now
+
+          return (
+            <div key={`args-${k}`} className="flex flex-col gap-3 group/arg">
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 group-hover/arg:text-blue-400 transition-colors flex items-center gap-2">
+                <Icon className="w-3 h-3" /> Connect Account
+              </p>
+
+              <a
+                href={v as string}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`flex items-center justify-center gap-3 w-full py-4 rounded-xl text-white font-bold tracking-wide transition-all active:scale-[0.98] shadow-lg ${brandColor}`}
+              >
+                <span>Connect to {platformName}</span>
+              </a>
             </div>
           );
         }
