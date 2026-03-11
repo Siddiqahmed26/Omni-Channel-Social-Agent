@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import Arcade from "@arcadeai/arcadejs";
 
 export async function GET(req: Request) {
   const url = new URL(req.url);
@@ -6,86 +7,61 @@ export async function GET(req: Request) {
   const userId = url.searchParams.get("user_id") || url.searchParams.get("userId");
   const redirectUrl = url.searchParams.get("redirect_url") || url.searchParams.get("redirect_uri");
 
-  console.log(`[Verify] Handshake Started: flow_id=${flowId}, user_id=${userId}`);
+  console.log(`[Verify] Request: flow_id=${flowId}, user_id=${userId}`);
 
-  // 1. Dashboard "Run Test" Redirect
+  // 1. Dashboard "Run Test" Flow
   if (redirectUrl) {
-    console.log("[Verify] Test redirect_url detected, following it...");
     return NextResponse.redirect(redirectUrl);
   }
 
-  // 2. Real/Test Confirmation Handshake
+  // 2. Auth Handshake
   if (flowId) {
     const arcadeKey = process.env.ARCADE_API_KEY;
     if (!arcadeKey) {
-      console.error("[Verify] ARCADE_API_KEY is missing!");
       return NextResponse.json({ error: "ARCADE_API_KEY not set" }, { status: 500 });
     }
 
-    // fallback logic: prioritize incoming userId, then env, then dashboard default
+    const arcade = new Arcade({ apiKey: arcadeKey });
+    
+    // Use incoming ID, or fallback to the email used in the app/dashboard configs
     const finalUserId = userId || process.env.LINKEDIN_USER_ID || "siddiqahmed.work@gmail.com";
     
     try {
-      // THE DEFINITIVE ENDPOINT: Found in Arcade's internal SDKs
-      const confirmEndpoint = "https://api.arcade.dev/v1/auth/confirm_user";
-      console.log(`[Verify] POST to ${confirmEndpoint} for user ${finalUserId}`);
-
-      const response = await fetch(confirmEndpoint, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          // The JS SDK sends the key directly without "Bearer"
-          "Authorization": arcadeKey, 
-        },
-        body: JSON.stringify({
+      console.log(`[Verify] Confirming ${finalUserId} via SDK for flow ${flowId}`);
+      
+      // Use the SDK's internal POST method to ensure headers/baseURL are correct
+      // Based on Python SDK, the endpoint is /v1/auth/confirm_user
+      const confirmRes = await arcade.post("/v1/auth/confirm_user", {
+        body: {
           flow_id: flowId,
           user_id: finalUserId,
-        }),
+        }
       });
 
-      if (!response.ok) {
-        const errorDetail = await response.text();
-        console.error(`[Verify] Arcade confirmation failed: ${response.status}`, errorDetail);
-        
-        // Try fallback with "Bearer " prefix just in case it's a newer requirement
-        console.log("[Verify] Retrying with Bearer prefix...");
-        const retryRes = await fetch(confirmEndpoint, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${arcadeKey}`,
-          },
-          body: JSON.stringify({ flow_id: flowId, user_id: finalUserId }),
-        });
+      console.log("[Verify] SDK Confirmation Success:", confirmRes);
 
-        if (!retryRes.ok) {
-          const retryErr = await retryRes.text();
-          console.error(`[Verify] Bearer fallback also failed: ${retryRes.status}`, retryErr);
-          return NextResponse.json({ 
-            error: "Arcade confirmation failed", 
-            detail: errorDetail,
-            retry_detail: retryErr
-          }, { status: 400 });
-        }
-        console.log("[Verify] Bearer fallback succeeded!");
-      } else {
-        console.log("[Verify] Handshake confirmed successfully.");
-      }
-
-      // 3. Final Redirect back to Arcade callback
+      // Final Redirect to complete the flow
       const callback = `https://cloud.arcade.dev/api/v1/oauth/callback?flow_id=${flowId}&status=approved`;
-      console.log(`[Verify] Redirecting to success callback: ${callback}`);
       return NextResponse.redirect(callback);
 
-    } catch (error) {
-      console.error("[Verify] System error during handshake:", error);
-      return NextResponse.json({ error: "Internal verification error" }, { status: 500 });
+    } catch (error: any) {
+      console.error("[Verify] SDK Confirmation Error:", error);
+      
+      // Return specific error details to help debug 400 Bad Request
+      return NextResponse.json({ 
+        error: "Arcade confirmation failed", 
+        message: error.message,
+        name: error.name,
+        status: error.status,
+        tried_user: finalUserId,
+        tried_flow: flowId
+      }, { status: 400 });
     }
   }
 
   return NextResponse.json({
-    status: "ready",
-    message: "Arcade Custom Verifier is online.",
-    params: Object.fromEntries(url.searchParams)
+    status: "active",
+    message: "Arcade Verifier is ready.",
+    received_params: Object.fromEntries(url.searchParams)
   });
 }
