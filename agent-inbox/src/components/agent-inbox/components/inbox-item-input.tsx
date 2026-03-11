@@ -270,6 +270,7 @@ function ResponseComponent({
   interruptValue,
   onResponseChange,
   handleSubmit,
+  onDisconnect,
 }: {
   humanResponse: HumanResponseWithEdits[];
   streaming: boolean;
@@ -365,6 +366,7 @@ function AcceptComponent({
   streaming,
   actionRequestArgs,
   handleSubmit,
+  onDisconnect,
 }: {
   streaming: boolean;
   actionRequestArgs: Record<string, any>;
@@ -414,6 +416,7 @@ function EditAndOrAcceptComponent({
   onEditChange,
   handleSubmit,
   interruptValue,
+  onDisconnect,
 }: {
   humanResponse: HumanResponseWithEdits[];
   streaming: boolean;
