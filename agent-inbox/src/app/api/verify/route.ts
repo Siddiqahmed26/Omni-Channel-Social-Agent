@@ -4,16 +4,15 @@ export async function GET(req: Request) {
   const url = new URL(req.url);
 
   const flowId = url.searchParams.get("flow_id");
+  const redirectUrl = url.searchParams.get("redirect_url");
   const userId = url.searchParams.get("user_id");
 
-  // Arcade sends flow_id during verification test
-  if (flowId) {
-    return NextResponse.redirect(
-      `https://cloud.arcade.dev/api/v1/oauth/verify?flow_id=${flowId}&status=approved`
-    );
+  // Arcade verifier test flow
+  if (flowId && redirectUrl) {
+    return NextResponse.redirect(redirectUrl);
   }
 
-  // During real auth it sends user_id
+  // Real multi-user auth flow
   if (userId) {
     return NextResponse.json({
       status: "verified",
@@ -21,5 +20,8 @@ export async function GET(req: Request) {
     });
   }
 
-  return NextResponse.json({ error: "Invalid verification request" }, { status: 400 });
+  return NextResponse.json(
+    { error: "Invalid verifier request" },
+    { status: 400 }
+  );
 }
