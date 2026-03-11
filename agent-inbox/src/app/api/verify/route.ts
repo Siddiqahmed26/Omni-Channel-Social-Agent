@@ -6,48 +6,50 @@ export async function GET(req: Request) {
   const userId = url.searchParams.get("user_id") || url.searchParams.get("userId");
   const redirectUrl = url.searchParams.get("redirect_url") || url.searchParams.get("redirect_uri");
 
-  console.log(`[Verify] Incoming request: flow_id=${flowId}, user_id=${userId}`);
+  console.log(`[Verify] Handshake Started: flow_id=${flowId}, user_id=${userId}`);
 
-  // 1. Handle Arcade Dashboard "Run Test" Flow
+  // 1. Dashboard "Run Test" Redirect
   if (redirectUrl) {
-    console.log("[Verify] Redirecting for test flow");
+    console.log("[Verify] Test redirect_url detected, following it...");
     return NextResponse.redirect(redirectUrl);
   }
 
-  // 2. Handle Handshake confirming user_id to Arcade
+  // 2. Real/Test Confirmation Handshake
   if (flowId) {
     const arcadeKey = process.env.ARCADE_API_KEY;
     if (!arcadeKey) {
+      console.error("[Verify] ARCADE_API_KEY is missing!");
       return NextResponse.json({ error: "ARCADE_API_KEY not set" }, { status: 500 });
     }
 
-    // IMPORTANT: For the dashboard "Run Test" to work, the user_id must match the one 
-    // entered in the Arcade UI (e.g., siddiqahmed.work@gmail.com).
-    // In a real SaaS app, this would come from your authenticated session.
+    // fallback logic: prioritize incoming userId, then env, then dashboard default
     const finalUserId = userId || process.env.LINKEDIN_USER_ID || "siddiqahmed.work@gmail.com";
-    console.log(`[Verify] Confirming user: ${finalUserId} for flow: ${flowId}`);
-
+    
     try {
-      // Trying the GET endpoint as per official documentation leads
-      // Base URL should be api.arcade.dev
-      const confirmUrl = new URL("https://api.arcade.dev/v1/auth/confirm_user");
-      confirmUrl.searchParams.append("flow_id", flowId);
-      confirmUrl.searchParams.append("user_id", finalUserId);
+      // THE DEFINITIVE ENDPOINT: Found in Arcade's internal SDKs
+      const confirmEndpoint = "https://api.arcade.dev/v1/auth/confirm_user";
+      console.log(`[Verify] POST to ${confirmEndpoint} for user ${finalUserId}`);
 
-      const confirmRes = await fetch(confirmUrl.toString(), {
-        method: "GET",
+      const response = await fetch(confirmEndpoint, {
+        method: "POST",
         headers: {
-          "Authorization": `Bearer ${arcadeKey}`,
+          "Content-Type": "application/json",
+          // The JS SDK sends the key directly without "Bearer"
+          "Authorization": arcadeKey, 
         },
+        body: JSON.stringify({
+          flow_id: flowId,
+          user_id: finalUserId,
+        }),
       });
 
-      if (!confirmRes.ok) {
-        const errText = await confirmRes.text();
-        console.error(`[Verify] Arcade confirmation failed (${confirmRes.status}):`, errText);
+      if (!response.ok) {
+        const errorDetail = await response.text();
+        console.error(`[Verify] Arcade confirmation failed: ${response.status}`, errorDetail);
         
-        // If GET fails, try POST as a fallback to the oauth path
-        console.log("[Verify] Retrying with POST to oauth/confirm_user...");
-        const postRes = await fetch("https://cloud.arcade.dev/api/v1/oauth/confirm_user", {
+        // Try fallback with "Bearer " prefix just in case it's a newer requirement
+        console.log("[Verify] Retrying with Bearer prefix...");
+        const retryRes = await fetch(confirmEndpoint, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -56,32 +58,34 @@ export async function GET(req: Request) {
           body: JSON.stringify({ flow_id: flowId, user_id: finalUserId }),
         });
 
-        if (!postRes.ok) {
-          const postErr = await postRes.text();
-          console.error(`[Verify] POST fallback also failed (${postRes.status}):`, postErr);
+        if (!retryRes.ok) {
+          const retryErr = await retryRes.text();
+          console.error(`[Verify] Bearer fallback also failed: ${retryRes.status}`, retryErr);
           return NextResponse.json({ 
             error: "Arcade confirmation failed", 
-            get_error: errText,
-            post_error: postErr 
+            detail: errorDetail,
+            retry_detail: retryErr
           }, { status: 400 });
         }
+        console.log("[Verify] Bearer fallback succeeded!");
+      } else {
+        console.log("[Verify] Handshake confirmed successfully.");
       }
 
-      // Success! Now redirect to complete the flow.
-      const arcadeBase = "https://cloud.arcade.dev";
-      const callbackUrl = `${arcadeBase}/api/v1/oauth/callback?flow_id=${flowId}&status=approved`;
-      console.log("[Verify] Success! Redirecting to:", callbackUrl);
-      return NextResponse.redirect(callbackUrl);
+      // 3. Final Redirect back to Arcade callback
+      const callback = `https://cloud.arcade.dev/api/v1/oauth/callback?flow_id=${flowId}&status=approved`;
+      console.log(`[Verify] Redirecting to success callback: ${callback}`);
+      return NextResponse.redirect(callback);
 
     } catch (error) {
-      console.error("[Verify] Internal error during handshake:", error);
+      console.error("[Verify] System error during handshake:", error);
       return NextResponse.json({ error: "Internal verification error" }, { status: 500 });
     }
   }
 
   return NextResponse.json({
-    status: "active",
-    message: "Arcade Verification Endpoint is active.",
-    received_params: Object.fromEntries(url.searchParams)
+    status: "ready",
+    message: "Arcade Custom Verifier is online.",
+    params: Object.fromEntries(url.searchParams)
   });
 }
