@@ -19,6 +19,9 @@ export async function authSocialsPassthrough(
     : process.env.LINKEDIN_USER_ID;
 
   if (linkedInUserId || useArcade) {
+    if (useArcade && !config.configurable?.linkedInUserId) {
+        console.warn("[AUTH] No LinkedIn User ID provided in config, falling back to environment variable.");
+    }
     const postToLinkedInOrg = shouldPostToLinkedInOrg(config);
     linkedInHumanInterrupt = await getLinkedInAuthOrInterrupt({
       linkedInUserId: linkedInUserId!,
@@ -33,6 +36,9 @@ export async function authSocialsPassthrough(
     : process.env.TWITTER_USER_ID;
 
   if (twitterUserId || useArcade) {
+    if (useArcade && !config.configurable?.twitterUserId) {
+        console.warn("[AUTH] No Twitter User ID provided in config, falling back to environment variable.");
+    }
     twitterHumanInterrupt = await getTwitterAuthOrInterrupt({
       twitterUserId: twitterUserId!,
       returnInterrupt: true,

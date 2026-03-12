@@ -19,21 +19,21 @@ export const TWEET_EXAMPLES = EXAMPLES.map(
  * should update this prompt, along with the `EXAMPLES` list.
  */
 export const POST_STRUCTURE_INSTRUCTIONS = `<section key="1">
-The first part should be the introduction or hook. This should be short and to the point, ideally no more than 5 words. If necessary, you can include one to two emojis in the header, however this is not required. You should not include emojis if the post is more casual, however if you're making an announcement, you should include an emoji.
+The first part must be a powerful, scroll-stopping headline or hook. It should be bold, visionary, and concise (ideally under 6 words). Use a single emoji that reflects innovation or energy (e.g., 🚀, 🧠, ✨). This is a product launch/innovation announcement, not a newsletter.
 </section>
 
 <section key="2">
-This section will contain the main content of the post. The post body should contain a concise, high-level overview of the content/product/service/findings outlined in the marketing report.
-It should focus on what the content does, shows off, or the problem it solves.
-This may include some technical details if the marketing report is very technical, however you should keep in mind your audience is not all advanced developers, so do not make it overly technical.
-Ensure this section is short, no more than 3 (short) sentences. Optionally, if the content is very technical, you may include bullet points covering the main technical aspects of the content to make it more engaging and easier to follow.
-Remember, the content/product/service/findings outlined in the marketing report is the main focus of this post.
+This section is the core of the announcement. Describe the "innovation" or "breakthrough" described in the marketing report with a sense of wonder and technical authority.
+Focus on the TRANSFORMATIONAL impact—how this changes the game for builders or users.
+Keep it punchy: no more than 2-3 short, powerful sentences.
+If the content is highly technical, use a sleek bulleted list (max 3 items) with modern icons instead of generic bullets.
+The tone should be "The future is here," not "Here is a cool tool."
 </section>
 
 <section key="3">
-The final section of the post should contain a call to action. This should contain a few words that encourage the reader to click the link to the content being promoted.
-Optionally, you can include an emoji here.
-Ensure you do not make this section more than 3-6 words.
+The final section is the call to action. It should be minimal and high-intent (e.g., "Join the revolution:", "Scale your agents:").
+Followed immediately by the link.
+Ideally 3-5 words only.
 </section>`;
 
 /**
@@ -41,13 +41,13 @@ Ensure you do not make this section more than 3-6 words.
  * You should make this prompt very specific to the type of content you
  * want included/focused on in the posts.
  */
-export const POST_CONTENT_RULES = `- Focus your post on conveying the core message, findings, or highlights of the input content.
-- ADAPT YOUR TONE: Determine if the content calls for a highly professional tone (e.g. corporate announcements, deep technical tutorials) or a casual, engaging tone (e.g. vlog summaries, indie-hacker updates), and write accordingly.
-- Keep posts engaging and appropriately sized for a social media feed.
-- Limit the use of emojis to the post header, and optionally in the call to action, unless a casual tone dictates otherwise.
-- NEVER use hashtags in the post.
-- ALWAYS use present tense to make announcements feel immediate.
-- ALWAYS include the link to the content being promoted in the call to action section of the post.`;
+export const POST_CONTENT_RULES = `- TONE: Use a "Modern Tech Startup Launch" voice—bold, innovative, and visionary.
+- Focus on the "Next-Gen" or "Revolutionary" aspect of the content.
+- NO hashtags.
+- NO legacy phrases like "LangChain Community Spotlight".
+- Use present tense to maintain urgency.
+- Limit emojis to the headline and CTA for a premium feel.
+- Negative space is your friend—ensure the post feels uncluttered and scroll-stopping.`;
 
 /**
  * This should contain "business content" into the type of content you care

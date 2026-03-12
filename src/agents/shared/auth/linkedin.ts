@@ -168,7 +168,6 @@ export async function getLinkedInAuthOrInterrupt(fields?: {
   returnInterrupt?: boolean;
   postToOrg?: boolean;
 }) {
-  const linkedInUserId = fields?.linkedInUserId || process.env.LINKEDIN_USER_ID;
   if (useArcadeAuth()) {
     if (!fields?.linkedInUserId) {
       throw new Error("Must provide LinkedIn User ID when using Arcade auth.");
@@ -183,6 +182,8 @@ export async function getLinkedInAuthOrInterrupt(fields?: {
       },
     );
   }
+
+  const linkedInUserId = fields?.linkedInUserId || process.env.LINKEDIN_USER_ID;
 
   return getBasicLinkedInAuthOrInterrupt({
     linkedInUserId,

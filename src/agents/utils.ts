@@ -600,7 +600,8 @@ export function capitalize(string: string): string {
  * @returns {boolean} True if LangChain prompts should be used
  */
 export function useLangChainPrompts(): boolean {
-  return process.env.USE_LANGCHAIN_PROMPTS === "true";
+  // Disabling legacy prompts to favor the new 'Omni-Channel' design policy (Premium Tech Launch aesthetic)
+  return false;
 }
 
 /**

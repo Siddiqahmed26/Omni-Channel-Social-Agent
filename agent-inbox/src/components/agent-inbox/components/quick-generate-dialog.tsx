@@ -63,9 +63,14 @@ export function QuickGenerateDialog({ iconOnly = false }: { iconOnly?: boolean }
                 metadata: { user_id: user?.id }
             });
 
-            // Hardcoded for single-user demo mode
-            const twitterUserId = "siddiqahmed.work@gmail.com";
-            const linkedInUserId = "siddiqahmed.work@gmail.com";
+            if (!user?.email) {
+                setErrorMessage("⚠️ Authentication error: User email not found. Please log in again.");
+                setIsSubmitting(false);
+                return;
+            }
+
+            const twitterUserId = user.email;
+            const linkedInUserId = user.email;
 
             await client.runs.create(thread.thread_id, graphId, {
                 input: {

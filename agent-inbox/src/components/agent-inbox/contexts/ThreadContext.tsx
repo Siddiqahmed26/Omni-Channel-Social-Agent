@@ -497,9 +497,18 @@ export function ThreadsProvider<
       return;
     }
     try {
-      // Hardcoded for single-user demo mode to ensure successful Arcade authorization
-      const twitterUserId = "siddiqahmed.work@gmail.com";
-      const linkedInUserId = "siddiqahmed.work@gmail.com";
+      // Use the actual logged-in user's email for social media connection isolation
+      const twitterUserId = user?.email;
+      const linkedInUserId = user?.email;
+
+      if (!twitterUserId || !linkedInUserId) {
+        toast({
+          title: "Authentication Error",
+          description: "User session not found. Please log in again.",
+          variant: "destructive",
+        });
+        return undefined;
+      }
 
       if (options?.stream) {
         return client.runs.stream(threadId, graphId, {
