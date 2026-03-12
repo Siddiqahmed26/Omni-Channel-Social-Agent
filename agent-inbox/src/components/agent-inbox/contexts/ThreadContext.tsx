@@ -169,7 +169,7 @@ export function ThreadsProvider<
       return;
     }
 
-    // Use a small timeout to debounce rapid parameter changes
+    // Use a larger timeout (500ms) to deeply debounce rapid parameter changes and prevent UI thread locking
     const timeoutId = setTimeout(() => {
       if (fetchingRef.current) return;
 
@@ -179,7 +179,7 @@ export function ThreadsProvider<
       } catch (e) {
         logger.error("Error occurred while fetching threads", e);
       }
-    }, 100);
+    }, 500);
 
     return () => clearTimeout(timeoutId);
   }, [limitParam, offsetParam, inboxParam, agentInboxes, user, getSearchParam]);

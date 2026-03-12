@@ -234,10 +234,10 @@ export async function generateImageCandidatesForPost(
     throw new Error("No post content available to generate images");
   }
 
-  // Generate 3 image variations in a single parallel batch
-  const numVariations = 3;
+  // Generate 1 high-quality image variation (prevents saturating backend/blocking UI)
+  const numVariations = 1;
 
-  console.log(`[IMAGE GEN] Generating ${numVariations} image variations in parallel...`);
+  console.log(`[IMAGE GEN] Generating ${numVariations} image variation...`);
 
   const batchResults = await Promise.allSettled(
     Array.from({ length: numVariations }, (_, index) =>
