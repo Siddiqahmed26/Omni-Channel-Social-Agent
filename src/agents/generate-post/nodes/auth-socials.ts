@@ -50,85 +50,59 @@ export async function authSocialsPassthrough(
     );
   }
 
-  console.log(`[AUTH] Checking social auth. useArcade: ${useArcade}, linkedInUserId: ${linkedInUserId}, twitterUserId: ${twitterUserId}, postToOrg: ${postToLinkedInOrg}`);
-
-  const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+  console.log(`[AUTH] Checking social auth. useArcade: ${useArcade}, linkedInUserId: ${linkedInUserId}, twitterUserId: ${twitterUserId}, postToOrg: ${postToLinkedInOrg}, previousAction: ${_state.action}`);
 
   let linkedInHumanInterrupt: HumanInterrupt | undefined = undefined;
   let twitterHumanInterrupt: HumanInterrupt | undefined = undefined;
 
-  // If the user just resumed, give Arcade a few seconds to register the authorization
-  // by polling up to 5 times. This prevents immediate re-interrupts.
-  const maxRetries = _state.action === "resumed" ? 5 : 1;
-  
-  if (_state.action === "resumed") {
-    console.log(`[AUTH] User resumed. Starting polling with ${maxRetries} max retries.`);
+  if (linkedInUserId) {
+    if (isUserAllowed(linkedInUserId)) {
+      linkedInHumanInterrupt = await getLinkedInAuthOrInterrupt({
+        linkedInUserId,
+        returnInterrupt: true,
+        postToOrg: postToLinkedInOrg,
+      });
+      if (linkedInHumanInterrupt) {
+        console.log(`[AUTH] LinkedIn auth missing for ${linkedInUserId}`);
+      } else {
+        console.log(`[AUTH] LinkedIn auth OK for ${linkedInUserId}`);
+      }
+    } else {
+      console.log(`[AUTH] LinkedIn RESTRICTED for user: ${linkedInUserId}`);
+      linkedInHumanInterrupt = {
+        action_request: {
+          action: "[RESTRICTED]: LinkedIn",
+          args: { linkedInRestricted: true }
+        }
+      } as any;
+    }
   }
 
-  for (let i = 0; i < maxRetries; i++) {
-    linkedInHumanInterrupt = undefined;
-    twitterHumanInterrupt = undefined;
-
-    if (linkedInUserId) {
-      if (isUserAllowed(linkedInUserId)) {
-        linkedInHumanInterrupt = await getLinkedInAuthOrInterrupt({
-          linkedInUserId,
-          returnInterrupt: true,
-          postToOrg: postToLinkedInOrg,
-        });
-        if (linkedInHumanInterrupt) {
-          const url = (linkedInHumanInterrupt as any).action_request?.args?.authorizeLinkedInURL || (linkedInHumanInterrupt as any).action_request?.args?.authorizationDocs || "docs";
-          console.log(`[AUTH] LinkedIn auth still missing for ${linkedInUserId}. URL/Docs: ${url}`);
-        }
+  if (twitterUserId) {
+    if (isUserAllowed(twitterUserId)) {
+      twitterHumanInterrupt = await getTwitterAuthOrInterrupt({
+        twitterUserId,
+        returnInterrupt: true,
+      });
+      if (twitterHumanInterrupt) {
+        console.log(`[AUTH] Twitter auth missing for ${twitterUserId}`);
       } else {
-        console.log(`[AUTH] LinkedIn interaction RESTRICTED for user: ${linkedInUserId}`);
-        // User not allowed to connect
-        linkedInHumanInterrupt = {
-          action_request: {
-            action: "[RESTRICTED]: LinkedIn",
-            args: { linkedInRestricted: true }
-          }
-        } as any;
+        console.log(`[AUTH] Twitter auth OK for ${twitterUserId}`);
       }
-    }
-
-    if (twitterUserId) {
-      if (isUserAllowed(twitterUserId)) {
-        twitterHumanInterrupt = await getTwitterAuthOrInterrupt({
-          twitterUserId,
-          returnInterrupt: true,
-        });
-        if (twitterHumanInterrupt) {
-          const url = (twitterHumanInterrupt as any).action_request?.args?.authorizeTwitterURL || "URL";
-          console.log(`[AUTH] Twitter auth still missing for ${twitterUserId}. URL: ${url}`);
+    } else {
+      console.log(`[AUTH] Twitter RESTRICTED for user: ${twitterUserId}`);
+      twitterHumanInterrupt = {
+        action_request: {
+          action: "[RESTRICTED]: Twitter",
+          args: { twitterRestricted: true }
         }
-      } else {
-        console.log(`[AUTH] Twitter interaction RESTRICTED for user: ${twitterUserId}`);
-        // User not allowed to connect
-        twitterHumanInterrupt = {
-          action_request: {
-            action: "[RESTRICTED]: Twitter",
-            args: { twitterRestricted: true }
-          }
-        } as any;
-      }
-    }
-
-    // If both are authorized (or not needed), we can stop polling and proceed.
-    // Note: Restricted users will still have an interrupt, which is intended.
-    if (!linkedInHumanInterrupt && !twitterHumanInterrupt) {
-      break;
-    }
-
-    // If we're polling and still not authorized, wait before the next check.
-    if (i < maxRetries - 1) {
-      console.log(`[AUTH] Auth still missing, polling retry ${i + 1}/${maxRetries}...`);
-      await sleep(2000);
+      } as any;
     }
   }
 
   if (!twitterHumanInterrupt && !linkedInHumanInterrupt) {
-    // User has already authorized. Return early
+    // Both platforms are already authorized. Proceed.
+    console.log(`[AUTH] All social auth checks passed. Proceeding.`);
     return { action: "authorized" };
   }
 
@@ -182,9 +156,12 @@ Once done, please 'accept' this interrupt event.`;
 
   if (interruptRes.type === "accept") {
     // The user clicked "Authorize & Proceed".
-    // Returning 'resumed' helps the edge decide to loop back for a re-check.
-    return { action: "resumed" };
+    // Trust their decision — proceed with whatever platforms are connected.
+    // The upload step will gracefully skip any unconnected platforms.
+    console.log(`[AUTH] User accepted. Proceeding with connected platforms.`);
+    return { action: "authorized" };
   }
 
-  return { action: undefined };
+  return { action: "authorized" };
 }
+
