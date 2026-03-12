@@ -9,7 +9,6 @@ import {
   IngestDataAnnotation,
 } from "./ingest-data-state.js";
 import { ingestSlackData } from "./nodes/ingest-slack.js";
-import { Client } from "@langchain/langgraph-sdk";
 import { getLangGraphClient } from "../shared/nodes/langgraph-client.js";
 import {
   POST_TO_LINKEDIN_ORGANIZATION,

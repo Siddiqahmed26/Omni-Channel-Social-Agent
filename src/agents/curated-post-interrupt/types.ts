@@ -48,9 +48,17 @@ export const CuratedPostInterruptAnnotation = Annotation.Root({
     | "rewritePost"
     | "unknownResponse"
     | "updateScheduleDate"
+    | "rewriteWithSplitUrl"
     | typeof END
     | undefined
   >,
+  /**
+   * Action to perform for graph routing (e.g., 'disconnect' to restart auth).
+   */
+  action: Annotation<"disconnect" | undefined>({
+    reducer: (_state, update) => update,
+    default: () => undefined,
+  }),
   /**
    * The image to attach to the post, and the MIME type.
    */

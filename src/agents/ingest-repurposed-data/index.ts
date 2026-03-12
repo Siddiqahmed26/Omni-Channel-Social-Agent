@@ -5,7 +5,6 @@ import {
   StateGraph,
 } from "@langchain/langgraph";
 import { ingestSlackMessages } from "./nodes/ingest-slack.js";
-import { Client } from "@langchain/langgraph-sdk";
 import { getLangGraphClient } from "../shared/nodes/langgraph-client.js";
 import { POST_TO_LINKEDIN_ORGANIZATION } from "../generate-post/constants.js";
 import { shouldPostToLinkedInOrg } from "../utils.js";

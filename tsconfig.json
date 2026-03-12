@@ -35,6 +35,8 @@
   ],
   "exclude": [
     "node_modules",
-    "dist"
+    "dist",
+    "agent-inbox",
+    "simple-verifier-ts"
   ]
 }

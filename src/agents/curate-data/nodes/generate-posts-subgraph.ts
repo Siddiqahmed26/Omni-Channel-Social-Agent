@@ -1,4 +1,3 @@
-import { Client } from "@langchain/langgraph-sdk";
 import { getLangGraphClient } from "../../shared/nodes/langgraph-client.js";
 import { CurateDataState } from "../state.js";
 import { getTweetLink } from "../../../clients/twitter/utils.js";

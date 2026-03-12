@@ -48,8 +48,6 @@ Guidelines for updates:
 
 Output only the updated rules prompt, with no additional context or instructions.`;
 
-const WHEN_TO_UPDATE_INSTRUCTIONS = `You should update the prompt if the user's feedback is explicit, and can be generalized to apply to all future social media posts.
-You should not update the prompt if the user's feedback does not explicitly request changes, or if the changes are not clear and specific enough to be applied consistently.`;
 
 async function reflection(
   state: typeof ReflectionAnnotation.State,

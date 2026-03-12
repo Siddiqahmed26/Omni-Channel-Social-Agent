@@ -3,7 +3,6 @@ import "dotenv/config";
 
 async function testDelete() {
   const url = "https://cloud.arcade.dev/api/v1/auth";
-  const authId = "fake-auth-id";
   
   const headers = {
     Authorization: `Bearer ${process.env.ARCADE_API_KEY}`,
