@@ -479,17 +479,9 @@ export function ThreadsProvider<
       return;
     }
     try {
-      let twitterUserId = localStorage.getItem("arcade_twitter_userId");
-      if (!twitterUserId) {
-        twitterUserId = crypto.randomUUID();
-        localStorage.setItem("arcade_twitter_userId", twitterUserId);
-      }
-
-      let linkedInUserId = localStorage.getItem("arcade_linkedin_userId");
-      if (!linkedInUserId) {
-        linkedInUserId = crypto.randomUUID();
-        localStorage.setItem("arcade_linkedin_userId", linkedInUserId);
-      }
+      // Hardcoded for single-user demo mode to ensure successful Arcade authorization
+      const twitterUserId = "siddiqahmed.work@gmail.com";
+      const linkedInUserId = "siddiqahmed.work@gmail.com";
 
       if (options?.stream) {
         return client.runs.stream(threadId, graphId, {
