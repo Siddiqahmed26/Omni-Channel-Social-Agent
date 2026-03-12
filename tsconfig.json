@@ -9,6 +9,7 @@
     ],
     "module": "NodeNext",
     "moduleResolution": "nodenext",
+    "isolatedModules": true,
     "esModuleInterop": true,
     "noImplicitReturns": true,
     "declaration": true,
