@@ -71,12 +71,6 @@ const GENERATE_IMAGE_PROMPT_TEMPLATE = {
     style_variation: "{STYLE_VARIATION}",
   },
 };
-  input: {
-    report: "{REPORT}",
-    post: "{POST}",
-    style_variation: "{STYLE_VARIATION}",
-  },
-};
 
 const STYLE_VARIATIONS = [
   `Deep Midnight Blue gradient background with Electric Violet neural flows and Neon Cyan rim lighting.`,
