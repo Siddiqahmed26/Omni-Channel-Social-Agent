@@ -21,4 +21,4 @@ jobs:
           git config user.email "github-actions@github.com"
           git add .
           git commit -m "deploy: clean mirror from github"
-          git push -f https://siddiq262001:$HF_TOKEN@huggingface.co/spaces/s1dd1q262001/my-social-agent main
+          git push -f https://s1dd1q262001:$HF_TOKEN@huggingface.co/spaces/s1dd1q262001/my-social-agent main
