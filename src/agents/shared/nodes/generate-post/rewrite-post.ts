@@ -34,13 +34,33 @@ export function cleanPostOutput(raw: string): string {
     cleaned = postMatch[1].trim();
   }
 
-  // Final cleanup of any potential leftover tags or markdown wrappings
-  return cleaned
+  // Clean any leftover XML tags and code fences
+  cleaned = cleaned
     .replace(/<\/?(post|thinking|original-post)>/gi, "")
     .replace(/^```[a-z]*\n/i, "")
     .replace(/\n```$/i, "")
     .trim();
+
+  // Strip Markdown formatting — social platforms render this as literal characters
+  cleaned = cleaned
+    // Bold: **text** or __text__
+    .replace(/\*\*(.+?)\*\*/g, "$1")
+    .replace(/__(.+?)__/g, "$1")
+    // Italic: *text* or _text_
+    .replace(/\*(.+?)\*/g, "$1")
+    .replace(/_(.+?)_/g, "$1")
+    // Headers: # H1, ## H2, etc.
+    .replace(/^#{1,6}\s+/gm, "")
+    // Inline code: `code`
+    .replace(/`(.+?)`/g, "$1")
+    // Strikethrough: ~~text~~
+    .replace(/~~(.+?)~~/g, "$1")
+    // Markdown links: [text](url) → keep text and url separately
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, "$1 ($2)");
+
+  return cleaned.trim();
 }
+
 
 export async function rewritePost<
   State extends BaseGeneratePostState = BaseGeneratePostState,

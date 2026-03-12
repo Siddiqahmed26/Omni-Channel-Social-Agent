@@ -1,6 +1,30 @@
 import { filterLinksForPostContent } from "../../../utils.js";
 
 /**
+ * Strips Markdown formatting from a string.
+ * Social platforms like LinkedIn and Twitter render markdown as literal characters,
+ * so **bold** appears as **bold** instead of bold text.
+ */
+function stripMarkdown(text: string): string {
+  return text
+    // Bold: **text** or __text__
+    .replace(/\*\*(.+?)\*\*/g, "$1")
+    .replace(/__(.+?)__/g, "$1")
+    // Italic: *text* or _text_
+    .replace(/\*(.+?)\*/g, "$1")
+    .replace(/_(.+?)_/g, "$1")
+    // Headers: # H1, ## H2, etc.
+    .replace(/^#{1,6}\s+/gm, "")
+    // Inline code: `code`
+    .replace(/`(.+?)`/g, "$1")
+    // Strikethrough: ~~text~~
+    .replace(/~~(.+?)~~/g, "$1")
+    // Markdown links: [text](url) → keep text and url
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, "$1 ($2)")
+    .trim();
+}
+
+/**
  * Parse the LLM generation to extract the report from inside the <report> tag.
  * If the report can not be parsed, the original generation is returned.
  * @param generation The text generation to parse
@@ -20,20 +44,22 @@ export function parseGeneration(generation: string): string {
       "\n\nEND OF POST GENERATION",
     );
     // Fallback: If regex fails to find <post> tags, strip them if they exist and return what's left
-    return cleaned
+    const fallback = cleaned
       .replace(/```xml\s*<post>/gi, "")
       .replace(/<post>/gi, "")
       .replace(/<\/post>\s*```/gi, "")
       .replace(/<\/post>/gi, "")
       .trim();
+    return stripMarkdown(fallback);
   }
 
   // Clean up any potential markdown wrappings inside the matched content
   let final = reportMatch[1].trim();
   final = final.replace(/^```[a-z]*\n/i, "").replace(/\n```$/i, "");
 
-  return final;
+  return stripMarkdown(final);
 }
+
 
 export function formatPrompt(report: string, relevantLinks: string[]): string {
   return `Here is the report I wrote on the content I'd like promoted by LangChain:
