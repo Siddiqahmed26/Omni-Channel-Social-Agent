@@ -184,6 +184,37 @@ function ArgsRenderer({ args, onDisconnect }: { args: Record<string, any>, onDis
           );
         }
 
+        // Handle Restricted States
+        if (k === "twitterRestricted" || k === "linkedInRestricted") {
+          const isTwitter = k === "twitterRestricted";
+          const platformName = isTwitter ? "Twitter" : "LinkedIn";
+          const Icon = isTwitter ? Sparkles : CheckCircle2;
+          const brandColor = isTwitter ? "bg-[#1DA1F2]/50" : "bg-[#0A66C2]/50";
+
+          return (
+            <div key={`args-${k}`} className="flex flex-col gap-3 group/arg">
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 group-hover/arg:text-red-400 transition-colors flex items-center gap-2">
+                <Icon className="w-3 h-3" /> Connect Account (Restricted)
+              </p>
+
+              <button
+                type="button"
+                onClick={() => {
+                  toast({
+                    title: "User not allowed",
+                    description: `This demo is restricted to authorized accounts. You are not allowed to connect to ${platformName}.`,
+                    variant: "destructive",
+                  });
+                }}
+                className={`flex items-center justify-center gap-3 w-full py-4 rounded-xl text-white/70 font-bold tracking-wide transition-all active:scale-[0.98] shadow-lg cursor-not-allowed ${brandColor}`}
+              >
+                <CircleX className="w-4 h-4" />
+                <span>Connect to {platformName}</span>
+              </button>
+            </div>
+          );
+        }
+
         // Special handling for Arcade Auth URLs
         if (k === "authorizeTwitterURL" || k === "authorizeLinkedInURL") {
           const isTwitter = k === "authorizeTwitterURL";

@@ -105,9 +105,9 @@ export async function getYouTubeVideoDetails(
     part: ["contentDetails", "snippet"], // Add snippet to get title and description
   });
 
-  if (!videoInfo.data.items?.length || videoInfo.data.items?.length > 1) {
-    // TODO: Handle this better
-    throw new Error(`Expected 1 item, got ${videoInfo.data.items?.length}`);
+  if (!videoInfo.data.items?.length) {
+    console.warn(`YouTube video not found or private: ${videoUrl}`);
+    return { duration: undefined, title: "Unavailable Video", description: "This video is unavailable or private." };
   }
 
   let videoDuration: number | undefined = undefined;
