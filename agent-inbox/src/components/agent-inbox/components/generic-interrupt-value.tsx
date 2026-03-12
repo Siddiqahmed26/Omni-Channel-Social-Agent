@@ -22,12 +22,28 @@ const URL_REGEX = /(https?:\/\/[^\s]+)/g;
 const cleanAndLinkifyText = (text: string): React.ReactNode => {
   if (typeof text !== "string") return text;
 
+  // Safety limit to prevent catastrophic backtracking or excessive processing
+  const MAX_PROCESS_LENGTH = 10000;
+  let processingText = text;
+  let wasTruncated = false;
+
+  if (text.length > MAX_PROCESS_LENGTH) {
+    processingText = text.substring(0, MAX_PROCESS_LENGTH);
+    wasTruncated = true;
+  }
+
   // Strip XML tags like <post>, <thinking> etc.
-  let cleaned = text.replace(/<(post|thinking|original-post)>[\s\S]*?<\/\1>/gi, (match, tag) => {
+  // Using a more efficient approach for large strings
+  let cleaned = processingText.replace(/<(post|thinking|original-post)>[\s\S]*?<\/\1>/gi, (match, tag) => {
     if (tag.toLowerCase() === "post") return match.replace(/<\/?post>/gi, "");
     return "";
   }).trim();
+  
   cleaned = cleaned.replace(/<\/?(post|thinking|original-post)>/gi, "").trim();
+
+  if (wasTruncated) {
+    cleaned += "\n\n... (content truncated for performance)";
+  }
 
   const parts = cleaned.split(URL_REGEX);
   return parts.map((part, i) =>

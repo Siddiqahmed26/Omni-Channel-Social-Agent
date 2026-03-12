@@ -184,8 +184,26 @@ export function ThreadsProvider<
     return () => clearTimeout(timeoutId);
   }, [limitParam, offsetParam, inboxParam, agentInboxes, user, getSearchParam]);
 
+  // Loop protection for fetchThreads
+  const lastFetchRef = React.useRef<number>(0);
+  const fetchCountRef = React.useRef<number>(0);
+
   const fetchThreads = React.useCallback(
     async (inbox: ThreadStatusWithAll) => {
+      const now = Date.now();
+      if (now - lastFetchRef.current < 500) {
+        fetchCountRef.current++;
+        if (fetchCountRef.current > 10) {
+          logger.error("[THREAD_CONTEXT] Excessive fetchThreads calls detected (>10 in 500ms). Throttling.");
+          return;
+        }
+      } else {
+        fetchCountRef.current = 0;
+      }
+      lastFetchRef.current = now;
+
+      logger.log(`[THREAD_CONTEXT] fetchThreads called for inbox: ${inbox}`);
+
       if (fetchingRef.current) return;
       fetchingRef.current = true;
       setLoading(true);

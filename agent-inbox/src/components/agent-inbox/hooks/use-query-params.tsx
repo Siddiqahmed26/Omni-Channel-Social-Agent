@@ -1,5 +1,6 @@
 import * as React from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { logger } from "../utils/logger";
 
 export function useQueryParams() {
   const router = useRouter();
@@ -55,6 +56,7 @@ export function useQueryParams() {
 
       if (hasChanged) {
         // Use replace instead of push to avoid breaking the browser's history
+        logger.log(`[QUERY_PARAMS] Updating ${Array.isArray(key) ? key.join(',') : key} hasChanged: ${hasChanged}`);
         router.replace(`${pathname}?${params.toString()}`, { scroll: false });
       }
     },

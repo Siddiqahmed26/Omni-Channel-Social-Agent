@@ -232,16 +232,26 @@ export default function useInterruptedActions<
           duration: 5000,
         });
 
+        let lastNodeUpdate = 0;
+        const NODE_UPDATE_THROTTLE = 100; // ms
+
         for await (const chunk of response) {
+          const now = Date.now();
           if (
             chunk.data?.event === "on_chain_start" &&
             chunk.data?.metadata?.langgraph_node
           ) {
-            setCurrentNode(chunk.data.metadata.langgraph_node);
+            const node = chunk.data.metadata.langgraph_node;
+            if (now - lastNodeUpdate > NODE_UPDATE_THROTTLE) {
+              logger.log(`[STREAM] Node start: ${node}`);
+              setCurrentNode(node);
+              lastNodeUpdate = now;
+            }
           } else if (
             typeof chunk.event === "string" &&
             chunk.event === "error"
           ) {
+            logger.error(`[STREAM] Error event:`, chunk.data);
             toast({
               title: "Error",
               description: (
