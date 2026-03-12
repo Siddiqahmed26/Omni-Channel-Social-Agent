@@ -9,38 +9,50 @@ export async function authSocialsPassthrough(
   _state: typeof GeneratePostAnnotation.State,
   config: LangGraphRunnableConfig,
 ) {
-  // Use env var directly to avoid ReferenceError
   const useArcade = process.env.USE_ARCADE_AUTH === "true";
-  
+
   let linkedInHumanInterrupt: HumanInterrupt | undefined = undefined;
-  // If using Arcade, prioritize the configurable ID (UUID) for multi-user support.
+
+  // When using Arcade, ONLY use the per-user ID from the run config.
+  // Never fall back to the shared LINKEDIN_USER_ID env var — doing so causes all
+  // users to share the same Arcade token cache, making LinkedIn appear connected for everyone.
   const linkedInUserId = useArcade
-    ? (config.configurable?.linkedInUserId || process.env.LINKEDIN_USER_ID)
+    ? config.configurable?.linkedInUserId
     : process.env.LINKEDIN_USER_ID;
 
-  if (linkedInUserId || useArcade) {
-    if (useArcade && !config.configurable?.linkedInUserId) {
-        console.warn("[AUTH] No LinkedIn User ID provided in config, falling back to environment variable.");
-    }
+  if (useArcade && !linkedInUserId) {
+    throw new Error(
+      "[AUTH] Arcade auth is enabled but no 'linkedInUserId' was provided in the run config. " +
+      "Each run must supply the authenticated user's email as 'linkedInUserId' via configurable fields."
+    );
+  }
+
+  if (linkedInUserId) {
     const postToLinkedInOrg = shouldPostToLinkedInOrg(config);
     linkedInHumanInterrupt = await getLinkedInAuthOrInterrupt({
-      linkedInUserId: linkedInUserId!,
+      linkedInUserId,
       returnInterrupt: true,
       postToOrg: postToLinkedInOrg,
     });
   }
 
   let twitterHumanInterrupt: HumanInterrupt | undefined = undefined;
+
+  // Same isolation: when using Arcade, only accept per-user ID from the run config.
   const twitterUserId = useArcade
-    ? (config.configurable?.twitterUserId || process.env.TWITTER_USER_ID)
+    ? config.configurable?.twitterUserId
     : process.env.TWITTER_USER_ID;
 
-  if (twitterUserId || useArcade) {
-    if (useArcade && !config.configurable?.twitterUserId) {
-        console.warn("[AUTH] No Twitter User ID provided in config, falling back to environment variable.");
-    }
+  if (useArcade && !twitterUserId) {
+    throw new Error(
+      "[AUTH] Arcade auth is enabled but no 'twitterUserId' was provided in the run config. " +
+      "Each run must supply the authenticated user's email as 'twitterUserId' via configurable fields."
+    );
+  }
+
+  if (twitterUserId) {
     twitterHumanInterrupt = await getTwitterAuthOrInterrupt({
-      twitterUserId: twitterUserId!,
+      twitterUserId,
       returnInterrupt: true,
     });
   }
