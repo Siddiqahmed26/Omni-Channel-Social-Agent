@@ -50,42 +50,64 @@ export async function authSocialsPassthrough(
     );
   }
 
+  const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
   let linkedInHumanInterrupt: HumanInterrupt | undefined = undefined;
-
-  if (linkedInUserId) {
-    if (isUserAllowed(linkedInUserId)) {
-      linkedInHumanInterrupt = await getLinkedInAuthOrInterrupt({
-        linkedInUserId,
-        returnInterrupt: true,
-        postToOrg: postToLinkedInOrg,
-      });
-    } else {
-      // User not allowed to connect
-      linkedInHumanInterrupt = {
-        action_request: {
-          action: "[RESTRICTED]: LinkedIn",
-          args: { linkedInRestricted: true }
-        }
-      } as any;
-    }
-  }
-
   let twitterHumanInterrupt: HumanInterrupt | undefined = undefined;
 
-  if (twitterUserId) {
-    if (isUserAllowed(twitterUserId)) {
-      twitterHumanInterrupt = await getTwitterAuthOrInterrupt({
-        twitterUserId,
-        returnInterrupt: true,
-      });
-    } else {
-      // User not allowed to connect
-      twitterHumanInterrupt = {
-        action_request: {
-          action: "[RESTRICTED]: Twitter",
-          args: { twitterRestricted: true }
-        }
-      } as any;
+  // If the user just resumed, give Arcade a few seconds to register the authorization
+  // by polling up to 5 times. This prevents immediate re-interrupts.
+  const maxRetries = _state.action === "resumed" ? 5 : 1;
+  
+  for (let i = 0; i < maxRetries; i++) {
+    linkedInHumanInterrupt = undefined;
+    twitterHumanInterrupt = undefined;
+
+    if (linkedInUserId) {
+      if (isUserAllowed(linkedInUserId)) {
+        linkedInHumanInterrupt = await getLinkedInAuthOrInterrupt({
+          linkedInUserId,
+          returnInterrupt: true,
+          postToOrg: postToLinkedInOrg,
+        });
+      } else {
+        // User not allowed to connect
+        linkedInHumanInterrupt = {
+          action_request: {
+            action: "[RESTRICTED]: LinkedIn",
+            args: { linkedInRestricted: true }
+          }
+        } as any;
+      }
+    }
+
+    if (twitterUserId) {
+      if (isUserAllowed(twitterUserId)) {
+        twitterHumanInterrupt = await getTwitterAuthOrInterrupt({
+          twitterUserId,
+          returnInterrupt: true,
+        });
+      } else {
+        // User not allowed to connect
+        twitterHumanInterrupt = {
+          action_request: {
+            action: "[RESTRICTED]: Twitter",
+            args: { twitterRestricted: true }
+          }
+        } as any;
+      }
+    }
+
+    // If both are authorized (or not needed), we can stop polling and proceed.
+    // Note: Restricted users will still have an interrupt, which is intended.
+    if (!linkedInHumanInterrupt && !twitterHumanInterrupt) {
+      break;
+    }
+
+    // If we're polling and still not authorized, wait before the next check.
+    if (i < maxRetries - 1) {
+      console.log(`[AUTH] Auth still missing, polling retry ${i + 1}/${maxRetries}...`);
+      await sleep(2000);
     }
   }
 
@@ -148,5 +170,5 @@ Once done, please 'accept' this interrupt event.`;
     return { action: "resumed" };
   }
 
-  return {};
+  return { action: undefined };
 }
