@@ -16,8 +16,9 @@ jobs:
         run: |
           rm -rf .git
           git init
+          git checkout -b main
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
           git add .
           git commit -m "deploy: clean mirror from github"
-          git push -f https://s1dd1q262001:$HF_TOKEN@huggingface.co/spaces/s1dd1q262001/my-social-agent main:main
+          git push -f https://s1dd1q262001:$HF_TOKEN@huggingface.co/spaces/s1dd1q262001/my-social-agent main
