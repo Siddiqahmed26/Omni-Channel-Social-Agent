@@ -19,7 +19,8 @@ const truncateString = (str: string, maxLength: number = 100): string => {
 const URL_REGEX = /(https?:\/\/[^\s]+)/g;
 
 // Helper to detect URLs and render them as clickable anchor tags, while also stripping XML tags like <post>
-const cleanAndLinkifyText = (text: string): React.ReactNode => {
+// Helper to detect URLs and render them as clickable anchor tags, while also stripping XML tags like <post>
+const cleanAndFormatText = (text: string): React.ReactNode => {
   if (typeof text !== "string") return text;
 
   // Safety limit to prevent catastrophic backtracking or excessive processing
@@ -83,7 +84,7 @@ const renderCollapsedValue = (
     if (URL_REGEX.test(value)) {
       // Reset lastIndex after test()
       URL_REGEX.lastIndex = 0;
-      return <span className="text-indigo-300 font-medium break-all">{cleanAndLinkifyText(value)}</span>;
+      return <span className="text-indigo-300 font-medium break-all">{cleanAndFormatText(value)}</span>;
     }
     return (
       <span className="text-indigo-300 font-medium">
@@ -130,20 +131,11 @@ const renderTableCellValue = (value: any): React.ReactNode => {
       return <span className="text-red-400">Error stringifying</span>;
     }
   }
-  // For plain strings, render with clickable URLs and preserve newlines
+  // For plain strings, render with clickable URLs and preserve newlines, while stripping internal tags
   if (typeof value === "string") {
-    URL_REGEX.lastIndex = 0;
-    if (URL_REGEX.test(value)) {
-      URL_REGEX.lastIndex = 0;
-      return (
-        <span className="text-slate-200 whitespace-pre-wrap break-words leading-relaxed">
-          {cleanAndLinkifyText(value)}
-        </span>
-      );
-    }
     return (
       <span className="text-slate-200 whitespace-pre-wrap break-words leading-relaxed">
-        {value}
+        {cleanAndFormatText(value)}
       </span>
     );
   }

@@ -24,12 +24,22 @@ Listen to your boss closely, and make the necessary changes to the post. You sho
  * 2. Extracts content from <post>...</post> tags if present
  */
 export function cleanPostOutput(raw: string): string {
-  let cleaned = raw.replace(/<thinking>[\s\S]*?<\/thinking>/gi, "").trim();
+  // Always strip internal tags first to prevent leaks
+  let cleaned = raw
+    .replace(/<(thinking|original-post)>[\s\S]*?<\/\1>/gi, "")
+    .trim();
+
   const postMatch = cleaned.match(/<post>([\s\S]*?)<\/post>/i);
   if (postMatch) {
     cleaned = postMatch[1].trim();
   }
-  return cleaned;
+
+  // Final cleanup of any potential leftover tags or markdown wrappings
+  return cleaned
+    .replace(/<\/?(post|thinking|original-post)>/gi, "")
+    .replace(/^```[a-z]*\n/i, "")
+    .replace(/\n```$/i, "")
+    .trim();
 }
 
 export async function rewritePost<

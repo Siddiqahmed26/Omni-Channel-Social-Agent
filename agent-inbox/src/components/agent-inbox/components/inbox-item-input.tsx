@@ -57,7 +57,10 @@ const cleanAndLinkify = (text: string): React.ReactNode => {
   }).trim();
 
   // If after stripping, it still has <post> or </post> or <thinking> (partial matches), clean them too
-  cleaned = cleaned.replace(/<\/?(post|thinking|original-post)>/gi, "").trim();
+  cleaned = cleaned.replace(/<\/?(post|thinking|original-post)>/gi, "")
+    .replace(/^```[a-z]*\n/i, "")
+    .replace(/\n```$/i, "")
+    .trim();
 
   const URL_REGEX = /(https?:\/\/[^\s]+)/g;
   const parts = cleaned.split(URL_REGEX);
