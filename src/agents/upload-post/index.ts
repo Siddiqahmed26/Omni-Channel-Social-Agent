@@ -247,7 +247,7 @@ export async function uploadPost(
   const hasTwitterCreds =
     process.env.TWITTER_USER_TOKEN && process.env.TWITTER_USER_TOKEN_SECRET &&
     process.env.TWITTER_API_KEY && process.env.TWITTER_API_KEY_SECRET;
-  const hasArcadeTwitter = useArcadeAuth() && !useTwitterApiOnly() && process.env.TWITTER_USER_ID;
+  const hasArcadeTwitter = useArcadeAuth() && !useTwitterApiOnly() && (config.configurable?.twitterUserId || process.env.TWITTER_USER_ID);
 
   if (!hasTwitterCreds && !hasArcadeTwitter) {
     console.log("⏭️  Twitter credentials not configured — skipping Twitter upload.");
@@ -317,7 +317,7 @@ export async function uploadPost(
   // --- LinkedIn (optional — skip gracefully if credentials not configured) ---
   const hasLinkedInCreds =
     process.env.LINKEDIN_ACCESS_TOKEN || config.configurable?.[LINKEDIN_ACCESS_TOKEN];
-  const hasArcadeLinkedIn = useArcadeAuth() && process.env.LINKEDIN_USER_ID;
+  const hasArcadeLinkedIn = useArcadeAuth() && (config.configurable?.linkedInUserId || process.env.LINKEDIN_USER_ID);
 
   if (!hasLinkedInCreds && !hasArcadeLinkedIn) {
     console.log("⏭️  LinkedIn credentials not configured — skipping LinkedIn upload.");
