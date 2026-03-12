@@ -44,8 +44,11 @@ function routeAfterGeneratingReport(
 function routeAfterAuthSocials(
   state: GeneratePostState,
 ): "verifyLinksSubGraph" | "authSocialsPassthrough" {
-  if (state.action === "disconnect") {
+  if (state.action === "disconnect" || state.action === "resumed") {
     return "authSocialsPassthrough";
+  }
+  if (state.action === "authorized") {
+    return "verifyLinksSubGraph";
   }
   return "verifyLinksSubGraph";
 }

@@ -79,7 +79,7 @@ const BaseGeneratePostAnnotation = Annotation.Root({
   /**
    * Action to perform for graph routing (e.g., 'disconnect' to restart auth).
    */
-  action: Annotation<"disconnect" | undefined>({
+  action: Annotation<"disconnect" | "authorized" | "resumed" | undefined>({
     reducer: (_state, update) => update,
     default: () => undefined,
   }),

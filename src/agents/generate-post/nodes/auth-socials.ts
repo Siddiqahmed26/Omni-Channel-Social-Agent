@@ -50,59 +50,58 @@ export async function authSocialsPassthrough(
     );
   }
 
-  while (true) {
-    let linkedInHumanInterrupt: HumanInterrupt | undefined = undefined;
+  let linkedInHumanInterrupt: HumanInterrupt | undefined = undefined;
 
-    if (linkedInUserId) {
-      if (isUserAllowed(linkedInUserId)) {
-        linkedInHumanInterrupt = await getLinkedInAuthOrInterrupt({
-          linkedInUserId,
-          returnInterrupt: true,
-          postToOrg: postToLinkedInOrg,
-        });
-      } else {
-        // User not allowed to connect
-        linkedInHumanInterrupt = {
-          action_request: {
-            action: "[RESTRICTED]: LinkedIn",
-            args: { linkedInRestricted: true }
-          }
-        } as any;
-      }
+  if (linkedInUserId) {
+    if (isUserAllowed(linkedInUserId)) {
+      linkedInHumanInterrupt = await getLinkedInAuthOrInterrupt({
+        linkedInUserId,
+        returnInterrupt: true,
+        postToOrg: postToLinkedInOrg,
+      });
+    } else {
+      // User not allowed to connect
+      linkedInHumanInterrupt = {
+        action_request: {
+          action: "[RESTRICTED]: LinkedIn",
+          args: { linkedInRestricted: true }
+        }
+      } as any;
     }
+  }
 
-    let twitterHumanInterrupt: HumanInterrupt | undefined = undefined;
+  let twitterHumanInterrupt: HumanInterrupt | undefined = undefined;
 
-    if (twitterUserId) {
-      if (isUserAllowed(twitterUserId)) {
-        twitterHumanInterrupt = await getTwitterAuthOrInterrupt({
-          twitterUserId,
-          returnInterrupt: true,
-        });
-      } else {
-        // User not allowed to connect
-        twitterHumanInterrupt = {
-          action_request: {
-            action: "[RESTRICTED]: Twitter",
-            args: { twitterRestricted: true }
-          }
-        } as any;
-      }
+  if (twitterUserId) {
+    if (isUserAllowed(twitterUserId)) {
+      twitterHumanInterrupt = await getTwitterAuthOrInterrupt({
+        twitterUserId,
+        returnInterrupt: true,
+      });
+    } else {
+      // User not allowed to connect
+      twitterHumanInterrupt = {
+        action_request: {
+          action: "[RESTRICTED]: Twitter",
+          args: { twitterRestricted: true }
+        }
+      } as any;
     }
+  }
 
-    if (!twitterHumanInterrupt && !linkedInHumanInterrupt) {
-      // User has already authorized. Return early
-      return {};
-    }
+  if (!twitterHumanInterrupt && !linkedInHumanInterrupt) {
+    // User has already authorized. Return early
+    return { action: "authorized" };
+  }
 
-    const combinedArgs: Record<string, any> = {
-      ...twitterHumanInterrupt?.action_request.args,
-      ...linkedInHumanInterrupt?.action_request.args,
-      twitterConnected: !!twitterUserId && twitterHumanInterrupt === undefined,
-      linkedInConnected: !!linkedInUserId && linkedInHumanInterrupt === undefined,
-    };
+  const combinedArgs: Record<string, any> = {
+    ...twitterHumanInterrupt?.action_request.args,
+    ...linkedInHumanInterrupt?.action_request.args,
+    twitterConnected: !!twitterUserId && twitterHumanInterrupt === undefined,
+    linkedInConnected: !!linkedInUserId && linkedInHumanInterrupt === undefined,
+  };
 
-    const description = `# Authorization Required
+  const description = `# Authorization Required
 
 Please visit the following URL(s) to authorize your social media accounts:
 
@@ -112,43 +111,42 @@ ${combinedArgs.authorizationDocs ? `LinkedIn Authorization Docs: ${combinedArgs.
 
 Once done, please 'accept' this interrupt event.`;
 
-    const interruptEvent: HumanInterrupt = {
-      description,
-      action_request: {
-        action: "Authorize Social Media Accounts",
-        args: combinedArgs,
-      },
-      config: {
-        allow_accept: true,
-        allow_ignore: true,
-        allow_respond: false,
-        allow_edit: true, // We allow edit so we can send the disconnect event
-      },
-    };
+  const interruptEvent: HumanInterrupt = {
+    description,
+    action_request: {
+      action: "Authorize Social Media Accounts",
+      args: combinedArgs,
+    },
+    config: {
+      allow_accept: true,
+      allow_ignore: true,
+      allow_respond: false,
+      allow_edit: true, // We allow edit so we can send the disconnect event
+    },
+  };
 
-    const interruptRes = interrupt<HumanInterrupt[], HumanResponse[]>([
-      interruptEvent,
-    ])[0];
+  const interruptRes = interrupt<HumanInterrupt[], HumanResponse[]>([
+    interruptEvent,
+  ])[0];
 
-    if (interruptRes.type === "ignore") {
-      // Throw an error to end the graph.
-      throw new Error("Authorization denied by user.");
-    }
-
-    if (
-      interruptRes.type === "edit" &&
-      typeof interruptRes.args === "object" &&
-      interruptRes.args?.action === "disconnect"
-    ) {
-      throw new Error("User requested disconnect.");
-    }
-
-    if (interruptRes.type === "accept") {
-      // The user clicked "Authorize & Proceed".
-      // We loop back to the top to re-check if authorization is actually complete.
-      continue;
-    }
-
-    return { action: undefined };
+  if (interruptRes.type === "ignore") {
+    // Throw an error to end the graph.
+    throw new Error("Authorization denied by user.");
   }
+
+  if (
+    interruptRes.type === "edit" &&
+    typeof interruptRes.args === "object" &&
+    interruptRes.args?.action === "disconnect"
+  ) {
+    return { action: "disconnect" };
+  }
+
+  if (interruptRes.type === "accept") {
+    // The user clicked "Authorize & Proceed".
+    // Returning 'resumed' helps the edge decide to loop back for a re-check.
+    return { action: "resumed" };
+  }
+
+  return {};
 }
