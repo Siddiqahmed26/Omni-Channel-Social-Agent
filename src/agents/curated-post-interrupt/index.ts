@@ -9,6 +9,7 @@ import { updateScheduledDate } from "../shared/nodes/update-scheduled-date.js";
 import { humanNode } from "../shared/nodes/generate-post/human-node.js";
 import { schedulePost } from "../shared/nodes/generate-post/schedule-post.js";
 import { rewritePost } from "../shared/nodes/generate-post/rewrite-post.js";
+import { rewritePostWithSplitUrl } from "../generate-post/nodes/rewrite-with-split-url.js";
 
 import { reflectionNode } from "../shared/nodes/reflection-node.js";
 
@@ -16,6 +17,7 @@ function routingEdge(
   state: CuratedPostInterruptState,
 ):
   | "rewritePost"
+  | "rewriteWithSplitUrl"
   | "reflection"
   | "humanNode"
   | "updateScheduleDate"
@@ -68,16 +70,19 @@ const workflow = new StateGraph(
   )
   // Updated the scheduled date from the natural language response from the user.
   .addNode("updateScheduleDate", updateScheduledDate)
+  .addNode("rewriteWithSplitUrl", rewritePostWithSplitUrl)
   .addNode("reflection", reflectionNode)
   .addEdge(START, "humanNode")
   .addConditionalEdges("humanNode", routingEdge, [
     "rewritePost",
+    "rewriteWithSplitUrl",
     "reflection",
     "updateScheduleDate",
     "humanNode",
     END,
   ])
   .addEdge("rewritePost", "reflection")
+  .addEdge("rewriteWithSplitUrl", "reflection")
   .addConditionalEdges("reflection", reflectionRouting, [
     "schedulePost",
     "humanNode",
