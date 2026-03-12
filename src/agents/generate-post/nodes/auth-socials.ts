@@ -65,8 +65,8 @@ export async function authSocialsPassthrough(
   const combinedArgs: Record<string, any> = {
     ...twitterHumanInterrupt?.action_request.args,
     ...linkedInHumanInterrupt?.action_request.args,
-    twitterConnected: !twitterHumanInterrupt?.action_request.args?.authorizeTwitterURL,
-    linkedInConnected: !linkedInHumanInterrupt?.action_request.args?.authorizeLinkedInURL,
+    twitterConnected: !!twitterUserId && twitterHumanInterrupt === undefined,
+    linkedInConnected: !!linkedInUserId && linkedInHumanInterrupt === undefined,
   };
 
   const description = `# Authorization Required
