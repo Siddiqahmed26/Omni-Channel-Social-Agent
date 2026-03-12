@@ -113,6 +113,7 @@ function ImageThumb({ url, label }: { url: string; label?: string }) {
 }
 
 function ArgsRenderer({ args, onDisconnect }: { args: Record<string, any>, onDisconnect: (platform: "Twitter" | "LinkedIn") => void }) {
+  const { toast } = useToast();
   return (
     <div className="grid grid-cols-1 gap-6 w-full mt-2">
       {Object.entries(args).map(([k, v]) => {
