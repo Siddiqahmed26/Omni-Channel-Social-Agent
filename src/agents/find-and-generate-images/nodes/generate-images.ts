@@ -12,57 +12,45 @@ import {
 const GEMINI_MODEL = "gemini-3-pro-image-preview";
 
 const GENERATE_IMAGE_PROMPT_TEMPLATE = {
-  role: "LangChain Brand Design Agent",
+  role: "Premium AI Social Media Visual Designer",
   purpose:
-    "Generate a visually striking, futuristic AI-themed promotional image for social media. The image must feel like a premium global AI product launch announcement.",
-  core_design_principles: {
-    target_audience: ["Developers", "AI Engineers", "Tech Leaders", "Venture Capitalists"],
-    tone: ["Visionary", "Innovative", "Powerful", "Next-Generation", "Premium"],
-    design_style: {
-      aesthetic: "Futuristic Startup Launch / Cyberpunk High-Tech",
-      lighting: "Cinematic neon rim lighting, deep shadows, glowing reflections",
-      composition: "Modern, high-contrast, optimized for social media engagement with clean negative space",
-      elements: [
-        "Deep gradient backgrounds (Midnight Blue, Electric Violet, Neon Cyan accents)",
-        "Glowing abstract AI neural network patterns or data energy waves",
-        "Floating glassmorphism UI panels and holographic tech modules",
-        "Subtle floating light particles and futuristic grid depth",
-      ],
-      constraints: {
-        minimal_text: "Use one powerful, bold headline related to the topic. Keep supporting text minimal and crisp.",
-        premium_feel: "Avoid flat 2D diagrams, flowcharts, or slide-like visuals. Aim for three-dimensional depth and cinematic quality.",
-        no_clutter: "Maintain clarity and scroll-stopping focus. Do not overcrowd the layout.",
-        typography: "Use clean, modern sans-serif fonts in high-contrast white or neon colors."
-      }
-    },
-    forbidden_elements: [
-      "Flat 2D architecture diagrams",
-      "Whiteboard sketches or hand-drawn elements",
-      "Crowded flowcharts or process diagrams",
-      "Parenthetical labels like (AI) or (Input)",
-      "Color legends, swatches, or hex codes (#FFFFFF)",
-      "LangChain Community attribution text",
-      "Parrot imagery or LangChain logos",
-      "ALL CAPS TEXT (use Title Case or Sentence Case)"
-    ]
+    "Create ultra-modern, futuristic, high-impact social media hero graphics for AI / Tech posts. The design must look viral, premium, and trending on LinkedIn and Twitter.",
+  design_style_requirements: {
+    background: "Dark futuristic gradient background (deep navy, violet, electric blue, neon purple)",
+    visual_elements: [
+      "Glowing neural network particles, flowing light streaks, cyber UI holographic elements",
+      "Glassmorphism floating panel in CENTER",
+      "Soft neon rim light + depth blur + cinematic lighting",
+      "Abstract AI circuits, data streams, digital grid atmosphere",
+    ],
+    typography_space: "Minimal clean typography space in center (leave safe empty space for post headline)",
+    aesthetic: "Premium startup branding feel (like Apple AI launch / OpenAI keynote visuals)",
+    quality: "Sharp contrast + high clarity + 4K social media ready composition",
+    vibe: [
+      "Modern tech conference slide aesthetic",
+      "Trending 'AI future' vibe — powerful, bold, visionary",
+    ],
   },
-  image_generation_instructions: {
-    step_1_analyze_input: "Analyze the report and social media post to extract the core 'Innovation' being announced.",
-    step_2_visual_composition: {
-      base_style: "Futuristic / Cinematic / High-Tech",
-      background: "Rich dark gradient with neon cyan/violet energy flows.",
-      foreground: "Centrally focused glassmorphism panel or holographic interface displaying the main theme.",
-      detail: "Add depth with floating holographic cards and neural links."
-    },
-    step_3_typography: {
-      headline: "Bold, modern sans-serif. Title Case. High contrast for readability.",
-      alignment: "Centered or balanced asymmetric for maximum impact."
-    },
-    step_4_lighting: "Add vibrant neon rim lights and atmospheric glow to make elements 'pop' off the dark background.",
-    step_5_output: "A 16:9 high-resolution image with ultra-sharp details and elegant textures."
-  },
-  final_reflection: {
-    self_check: "Is this a premium, futuristic AI visual? Is it CINEMATIC? Does it avoid flat diagrams? If it looks like a slide or a flowchart, it's WRONG. Aim for an Apple/OpenAI launch aesthetic.",
+  strict_exclusions: [
+    "No outer frames",
+    "No content spotlight template layout",
+    "No logos or watermarks",
+    "No text paragraphs",
+    "No collage layout",
+    "No stock illustration style",
+    "No cartoon style",
+    "No flat 2D architecture diagrams",
+    "No whiteboard sketches or hand-drawn elements",
+    "No crowded flowcharts or process diagrams",
+    "No parenthetical labels like (AI) or (Input)",
+    "No color legends, swatches, or hex codes (#FFFFFF)",
+    "No ALL CAPS TEXT",
+  ],
+  composition: {
+    layout: "Single strong centered hero visual",
+    spacing: "Balanced negative space for caption overlay",
+    crop: "Designed for square + landscape crop compatibility",
+    impact: "Social media scroll-stopping impact",
   },
   input: {
     report: "{REPORT}",
