@@ -50,6 +50,8 @@ export async function authSocialsPassthrough(
     );
   }
 
+  console.log(`[AUTH] Checking social auth. useArcade: ${useArcade}, linkedInUserId: ${linkedInUserId}, twitterUserId: ${twitterUserId}, postToOrg: ${postToLinkedInOrg}`);
+
   const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
   let linkedInHumanInterrupt: HumanInterrupt | undefined = undefined;
@@ -59,6 +61,10 @@ export async function authSocialsPassthrough(
   // by polling up to 5 times. This prevents immediate re-interrupts.
   const maxRetries = _state.action === "resumed" ? 5 : 1;
   
+  if (_state.action === "resumed") {
+    console.log(`[AUTH] User resumed. Starting polling with ${maxRetries} max retries.`);
+  }
+
   for (let i = 0; i < maxRetries; i++) {
     linkedInHumanInterrupt = undefined;
     twitterHumanInterrupt = undefined;
@@ -70,7 +76,12 @@ export async function authSocialsPassthrough(
           returnInterrupt: true,
           postToOrg: postToLinkedInOrg,
         });
+        if (linkedInHumanInterrupt) {
+          const url = (linkedInHumanInterrupt as any).action_request?.args?.authorizeLinkedInURL || (linkedInHumanInterrupt as any).action_request?.args?.authorizationDocs || "docs";
+          console.log(`[AUTH] LinkedIn auth still missing for ${linkedInUserId}. URL/Docs: ${url}`);
+        }
       } else {
+        console.log(`[AUTH] LinkedIn interaction RESTRICTED for user: ${linkedInUserId}`);
         // User not allowed to connect
         linkedInHumanInterrupt = {
           action_request: {
@@ -87,7 +98,12 @@ export async function authSocialsPassthrough(
           twitterUserId,
           returnInterrupt: true,
         });
+        if (twitterHumanInterrupt) {
+          const url = (twitterHumanInterrupt as any).action_request?.args?.authorizeTwitterURL || "URL";
+          console.log(`[AUTH] Twitter auth still missing for ${twitterUserId}. URL: ${url}`);
+        }
       } else {
+        console.log(`[AUTH] Twitter interaction RESTRICTED for user: ${twitterUserId}`);
         // User not allowed to connect
         twitterHumanInterrupt = {
           action_request: {
