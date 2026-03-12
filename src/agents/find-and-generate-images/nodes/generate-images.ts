@@ -6,7 +6,6 @@ import {
 } from "../../utils.js";
 import { FindAndGenerateImagesAnnotation } from "../find-and-generate-images-graph.js";
 import {
-  embedImageInTemplate,
   uploadImageBufferToSupabase,
 } from "../helpers.js";
 
@@ -260,12 +259,12 @@ export async function generateImageCandidatesForPost(
 
   // Upload all generated images in parallel
   const uploadedUrlsWithOmissions = await Promise.all(
-    imageResults.map(async ({ data, mimeType }) => {
+    imageResults.map(async ({ data }) => {
       try {
-        const templatedBuffer = await embedImageInTemplate(data, mimeType);
+        const imageBuffer = Buffer.from(data, "base64");
         return await uploadImageBufferToSupabase(
-          templatedBuffer,
-          `nano-banana-pro-templated`,
+          imageBuffer,
+          `nano-banana-pro-full-bleed`,
         );
       } catch (error) {
         console.error("[IMAGE GEN] Failed to upload generated image", { error });
