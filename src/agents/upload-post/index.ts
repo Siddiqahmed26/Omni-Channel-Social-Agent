@@ -317,7 +317,7 @@ export async function uploadPost(
   // --- LinkedIn (optional — skip gracefully if credentials not configured) ---
   const hasLinkedInCreds =
     process.env.LINKEDIN_ACCESS_TOKEN || config.configurable?.[LINKEDIN_ACCESS_TOKEN];
-  const hasArcadeLinkedIn = useArcadeAuth() && (config.configurable?.linkedInUserId || process.env.LINKEDIN_USER_ID);
+  const hasArcadeLinkedIn = useArcadeAuth() && (config.configurable?.linkedInUserId || config.configurable?.userId || process.env.LINKEDIN_USER_ID);
 
   if (!hasLinkedInCreds && !hasArcadeLinkedIn) {
     console.log("⏭️  LinkedIn credentials not configured — skipping LinkedIn upload.");
@@ -325,8 +325,8 @@ export async function uploadPost(
     try {
       let linkedInClient: LinkedInClient;
 
-      if (useArcadeAuth()) {
-        const linkedInUserId = config.configurable?.linkedInUserId || process.env.LINKEDIN_USER_ID;
+      if (useArcadeAuth() && hasArcadeLinkedIn) {
+        const linkedInUserId = config.configurable?.linkedInUserId || config.configurable?.userId || process.env.LINKEDIN_USER_ID;
         if (!linkedInUserId) {
           throw new Error("LinkedIn user ID not found in configurable fields.");
         }
