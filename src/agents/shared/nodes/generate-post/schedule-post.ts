@@ -111,11 +111,9 @@ export async function schedulePost<
       },
       config: {
         configurable: {
+          ...config.configurable,
           [POST_TO_LINKEDIN_ORGANIZATION]: postToLinkedInOrg,
           [TEXT_ONLY_MODE]: isTextOnlyMode,
-          // Forward Arcade user IDs so upload-post can authenticate
-          linkedInUserId: config.configurable?.linkedInUserId,
-          twitterUserId: config.configurable?.twitterUserId,
         },
       },
       ...(afterSeconds ? { afterSeconds } : {}),
