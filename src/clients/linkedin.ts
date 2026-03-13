@@ -185,27 +185,64 @@ export class LinkedInClient {
       },
     );
 
-    // Step 2: Get the image data from the URL
-    const imageResponse = await fetch(imageUrl);
-    const imageBuffer = await imageResponse.arrayBuffer();
-
-    // Step 3: Upload the image to LinkedIn
+    // Step 2 & 3: Get image data and upload to LinkedIn, with retry logic
     const uploadUrl =
       registerResponse.value.uploadMechanism[
         "com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest"
       ].uploadUrl;
 
-    const uploadResponse = await fetch(uploadUrl, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${this.accessToken}`,
-        "Content-Type": "application/octet-stream",
-      },
-      body: imageBuffer,
-    });
+    let uploadSuccess = false;
+    let lastError: any = null;
+    let attempt = 0;
+    const maxAttempts = 3;
 
-    if (!uploadResponse.ok) {
-      throw new Error(`Failed to upload image: ${uploadResponse.statusText}`);
+    while (!uploadSuccess && attempt < maxAttempts) {
+      attempt++;
+      try {
+        // Step 2: Get the image data from the URL using AbortController for timeout
+        const fetchController = new AbortController();
+        const fetchTimeout = setTimeout(() => fetchController.abort(), 15000); // 15s timeout
+        
+        const imageResponse = await fetch(imageUrl, { signal: fetchController.signal });
+        clearTimeout(fetchTimeout);
+        
+        if (!imageResponse.ok) {
+          throw new Error(`Failed to fetch image from URL: ${imageResponse.statusText}`);
+        }
+        const imageBuffer = await imageResponse.arrayBuffer();
+
+        // Step 3: Upload the image to LinkedIn
+        const uploadController = new AbortController();
+        const uploadTimeout = setTimeout(() => uploadController.abort(), 30000); // 30s timeout
+
+        const uploadResponse = await fetch(uploadUrl, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${this.accessToken}`,
+            "Content-Type": "application/octet-stream",
+          },
+          body: imageBuffer,
+          signal: uploadController.signal,
+        });
+        clearTimeout(uploadTimeout);
+
+        if (!uploadResponse.ok) {
+          throw new Error(`Failed to upload image to LinkedIn: ${uploadResponse.statusText}`);
+        }
+
+        uploadSuccess = true;
+      } catch (error) {
+        lastError = error;
+        console.warn(`[LINKEDIN UPLOAD] Attempt ${attempt} failed:`, error instanceof Error ? error.message : String(error));
+        if (attempt < maxAttempts) {
+          // Wait 3 seconds before next attempt
+          await new Promise(resolve => setTimeout(resolve, 3000));
+        }
+      }
+    }
+
+    if (!uploadSuccess) {
+      throw new Error(`Failed to process and upload image to LinkedIn after ${maxAttempts} attempts. Last error: ${lastError instanceof Error ? lastError.message : String(lastError)}`);
     }
 
     return registerResponse.value.asset;
