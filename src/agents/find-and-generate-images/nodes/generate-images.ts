@@ -1,4 +1,5 @@
 import { GoogleGenAI, Part } from "@google/genai";
+import OpenAI from "openai";
 import {
   getMimeTypeFromUrl,
   imageUrlToBuffer,
@@ -82,6 +83,70 @@ const getPromptString = (
   };
   return JSON.stringify(promptWithInput, null, 2);
 };
+
+/**
+ * Build a concise DALL-E 3 prompt from the structured template + post context.
+ */
+function buildDalle3Prompt(post: string, styleVariation: string): string {
+  return `Ultra-modern futuristic social media hero graphic for this post: "${post.slice(0, 200)}".
+
+Style: ${styleVariation}
+
+Design requirements:
+- Dark futuristic gradient background (deep navy, violet, electric blue, neon purple)
+- Glowing neural network particles, flowing light streaks, holographic cyber UI elements
+- Glassmorphism floating panel in center with frosted glass effect
+- Soft neon rim light, depth blur, cinematic volumetric lighting
+- Clean empty center space for text overlay
+- Abstract AI circuits, data streams, digital grid atmosphere
+- Premium startup branding (Apple AI launch / OpenAI keynote aesthetic)
+- Sharp contrast, high clarity, 4K social media composition
+- Single strong centered hero visual with balanced negative space
+
+Strict exclusions: No text, no logos, no watermarks, no frames, no cartoon style, no flat diagrams, no collage layout, no stock illustration.
+
+Photorealistic digital art, scroll-stopping social media impact.`;
+}
+
+/**
+ * Generate an image using OpenAI DALL-E 3.
+ * Used as a fallback when Vertex AI is unavailable.
+ */
+export async function generateImageWithDalle3(
+  post: string,
+  variationIndex: number = 0,
+): Promise<{ data: string; mimeType: string }> {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    throw new Error("OPENAI_API_KEY not set for DALL-E 3 fallback.");
+  }
+
+  const openai = new OpenAI({ apiKey });
+  const styleVariation = STYLE_VARIATIONS[variationIndex % STYLE_VARIATIONS.length];
+  const prompt = buildDalle3Prompt(post, styleVariation);
+
+  console.log("[IMAGE GEN] Using DALL-E 3 fallback...");
+
+  const response = await openai.images.generate({
+    model: "dall-e-3",
+    prompt,
+    n: 1,
+    size: "1792x1024",
+    quality: "hd",
+    style: "vivid",
+    response_format: "b64_json",
+  });
+
+  const imageData = response.data?.[0]?.b64_json;
+  if (!imageData) {
+    throw new Error("No image data returned from DALL-E 3");
+  }
+
+  return {
+    data: imageData,
+    mimeType: "image/png",
+  };
+}
 
 export async function generateImageWithNanoBananaPro(
   report: string,
@@ -192,8 +257,8 @@ export async function generateImageWithNanoBananaPro(
   }
 
   return {
-    data: imagePart.inlineData.data as string, // Safe to cast as string as we have checked that the data is base64 encoded.
-    mimeType: imagePart.inlineData.mimeType as string, // Safe to cast as string as we have checked that the MIME type is valid.
+    data: imagePart.inlineData.data as string,
+    mimeType: imagePart.inlineData.mimeType as string,
   };
 }
 
@@ -207,9 +272,12 @@ export async function generateImageCandidatesForPost(
     image_candidates: existingCandidates,
   } = state;
 
-  if (!process.env.GOOGLE_VERTEX_AI_WEB_CREDENTIALS && !process.env.GOOGLE_WEB_CREDENTIALS && !process.env.GOOGLE_API_KEY) {
+  const hasGoogleCreds = !!(process.env.GOOGLE_VERTEX_AI_WEB_CREDENTIALS || process.env.GOOGLE_WEB_CREDENTIALS || process.env.GOOGLE_API_KEY);
+  const hasOpenAICreds = !!process.env.OPENAI_API_KEY;
+
+  if (!hasGoogleCreds && !hasOpenAICreds) {
     console.warn(
-      "Google credentials or GOOGLE_API_KEY not set. Skipping image generation.",
+      "[IMAGE GEN] No image generation credentials found. Skipping image generation.",
     );
     return {
       imageOptions: imageUrls,
@@ -222,28 +290,45 @@ export async function generateImageCandidatesForPost(
     throw new Error("No post content available to generate images");
   }
 
-  // Generate 1 high-quality image variation (prevents saturating backend/blocking UI)
+  // Generate 1 high-quality image variation
   const numVariations = 1;
-
   console.log(`[IMAGE GEN] Generating ${numVariations} image variation...`);
 
-  const batchResults = await Promise.allSettled(
-    Array.from({ length: numVariations }, (_, index) =>
-      generateImageWithNanoBananaPro(report, post, imageUrls ?? [], index)
-    )
-  );
-
   const imageResults: { data: string; mimeType: string }[] = [];
-  for (const result of batchResults) {
-    if (result.status === "fulfilled") {
-      imageResults.push(result.value);
-    } else {
-      console.error("[IMAGE GEN] Failed to generate image variation", { error: result.reason });
+
+  // Try Vertex AI first, fall back to DALL-E 3
+  for (let i = 0; i < numVariations; i++) {
+    let result: { data: string; mimeType: string } | undefined;
+
+    if (hasGoogleCreds) {
+      try {
+        result = await generateImageWithNanoBananaPro(report, post, imageUrls ?? [], i);
+        console.log(`[IMAGE GEN] Vertex AI succeeded for variation ${i + 1}.`);
+      } catch (error) {
+        console.warn(`[IMAGE GEN] Vertex AI failed for variation ${i + 1}. Falling back to DALL-E 3...`, {
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
+    }
+
+    // Fallback to DALL-E 3
+    if (!result && hasOpenAICreds) {
+      try {
+        result = await generateImageWithDalle3(post, i);
+        console.log(`[IMAGE GEN] DALL-E 3 fallback succeeded for variation ${i + 1}.`);
+      } catch (dalleError) {
+        console.error(`[IMAGE GEN] DALL-E 3 fallback also failed for variation ${i + 1}.`, {
+          error: dalleError instanceof Error ? dalleError.message : String(dalleError),
+        });
+      }
+    }
+
+    if (result) {
+      imageResults.push(result);
     }
   }
 
   console.log(`[IMAGE GEN] ${imageResults.length}/${numVariations} images generated successfully.`);
-
 
   // Upload all generated images in parallel
   const uploadedUrlsWithOmissions = await Promise.all(
@@ -252,7 +337,7 @@ export async function generateImageCandidatesForPost(
         const imageBuffer = Buffer.from(data, "base64");
         return await uploadImageBufferToSupabase(
           imageBuffer,
-          `nano-banana-pro-full-bleed`,
+          `generated-hero`,
         );
       } catch (error) {
         console.error("[IMAGE GEN] Failed to upload generated image", { error });
