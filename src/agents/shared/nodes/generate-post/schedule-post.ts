@@ -12,6 +12,9 @@ import {
 import { SlackClient } from "../../../../clients/slack/client.js";
 import { isTextOnly, shouldPostToLinkedInOrg } from "../../../utils.js";
 import {
+  LINKEDIN_ACCESS_TOKEN,
+  LINKEDIN_ORGANIZATION_ID,
+  LINKEDIN_PERSON_URN,
   POST_TO_LINKEDIN_ORGANIZATION,
   TEXT_ONLY_MODE,
 } from "../../../generate-post/constants.js";
@@ -111,9 +114,14 @@ export async function schedulePost<
       },
       config: {
         configurable: {
-          ...config.configurable,
           [POST_TO_LINKEDIN_ORGANIZATION]: postToLinkedInOrg,
           [TEXT_ONLY_MODE]: isTextOnlyMode,
+          linkedInUserId: config.configurable?.linkedInUserId,
+          twitterUserId: config.configurable?.twitterUserId,
+          userId: config.configurable?.userId,
+          [LINKEDIN_ACCESS_TOKEN]: config.configurable?.[LINKEDIN_ACCESS_TOKEN],
+          [LINKEDIN_PERSON_URN]: config.configurable?.[LINKEDIN_PERSON_URN],
+          [LINKEDIN_ORGANIZATION_ID]: config.configurable?.[LINKEDIN_ORGANIZATION_ID],
         },
       },
       ...(afterSeconds ? { afterSeconds } : {}),
