@@ -117,7 +117,8 @@ export class LinkedInClient {
     });
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const errorText = await response.text().catch(() => "Could not read error text");
+      throw new Error(`HTTP error! status: ${response.status}\nResponse: ${errorText}`);
     }
 
     return response.json();
