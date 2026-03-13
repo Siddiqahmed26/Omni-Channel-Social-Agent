@@ -226,7 +226,7 @@ export async function generateImageWithNanoBananaPro(
       },
     });
 
-  const retryOpts = { maxRetries: 3, baseDelayMs: 3000, timeoutMs: 120_000 };
+  const retryOpts = { maxRetries: 1, baseDelayMs: 3000, timeoutMs: 45_000 };
 
   const response = await retryWithTimeout(
     () => generate(contents),
