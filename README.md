@@ -53,8 +53,7 @@ graph TD
     end
 ```
 
-### High-Level Visual
-![Detailed Architecture Overview](./static/architecture.png)
+
 
 ---
 
