@@ -1,3 +1,10 @@
+
+# 🤖 Omni-Channel Social Media Agent
+
+> **One URL. Any Content. Every Platform.**
+
+The **Omni-Channel Social Media Agent** is a premium, autonomous system designed to transform diverse content sources into viral social media posts. Whether it's a technical GitHub repo, a deep-dive YouTube video, or a trending news article, this agent digests the context and adapts its tone to match your unique brand voice—all from a beautiful, 3D-enhanced dashboard.
+
 --- 
 title: Omni-Channel Social Agent 
 emoji: 🤖 
@@ -7,12 +14,6 @@ sdk: docker
 app_port: 7860 
 pinned: false 
 ---
-# 🤖 Omni-Channel Social Media Agent
-
-> **One URL. Any Content. Every Platform.**
-
-The **Omni-Channel Social Media Agent** is a premium, autonomous system designed to transform diverse content sources into viral social media posts. Whether it's a technical GitHub repo, a deep-dive YouTube video, or a trending news article, this agent digests the context and adapts its tone to match your unique brand voice—all from a beautiful, 3D-enhanced dashboard.
-
 ---
 
 ## 🏗️ System Architecture
