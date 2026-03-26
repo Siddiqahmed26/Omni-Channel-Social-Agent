@@ -8,6 +8,8 @@ sdk: docker
 app_port: 7860
 pinned: false
 
+
+---
 # 🤖 Omni-Channel Social Media Agent
 
 > **One URL. Any Content. Every Platform.**
