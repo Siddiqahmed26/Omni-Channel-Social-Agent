@@ -16,6 +16,24 @@ The **Omni-Channel Social Media Agent** is a premium, autonomous system designed
 
 ---
 
+## 🎬 See Omni in Action
+
+Turn any URL into viral content — powered by AI.
+
+<div align="center">
+
+[https://github.com/user-attachments/assets/abc123-xyz456.mp4](https://github.com/Siddiqahmed26/Omni-Channel-Social-Agent/issues/14#issue-4147439152)
+
+</div>
+
+<p align="center">
+  <i>2 min 35 sec demo • Real product walkthrough</i>
+</p>
+
+---
+
+---
+
 
 ## 🏗️ System Architecture
 
