@@ -22,7 +22,7 @@ Turn any URL into viral content — powered by AI.
 
 <div align="center">
 
-[https://github.com/user-attachments/assets/abc123-xyz456.mp4](https://github.com/Siddiqahmed26/Omni-Channel-Social-Agent/issues/14#issue-4147439152)
+https://github.com/Siddiqahmed26/Omni-Channel-Social-Agent/issues/14#issue-4147439152
 
 </div>
 
