@@ -1,4 +1,3 @@
----
 # 🤖 Omni-Channel Social Media Agent
 
 > **One URL. Any Content. Every Platform.**
